@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.zzlin</groupId>
+    <artifactId>foodie-dev</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <modules>
+        <module>foodie-dev-common</module>
+        <module>foodie-dev-pojo</module>
+        <module>foodie-dev-mapper</module>
+        <module>foodie-dev-service</module>
+        <module>foodie-dev-api</module>
+    </modules>
+
+    <!--
+        1. 聚合工程里面可以分为顶级项目（顶级工程、父工程）与子工程，这两者的关系其实就是父子继承的关系
+        子工程在maven里称为模块（module），模块之间是平级，是可以相互依赖的。
+        2. 子模块可以使用顶级工程里的所有资源（依赖），子模块之间如果要使用依赖，必须构建依赖（构建关系）即添加dependency依赖
+        3. 一个顶级工程可以是由多个不同的子工程共同组合而成
+        4. 各个模块完成后需要进行mvn install进行安装后才可使用
+
+        数据库建模工具：ERStudio、PDMan
+        数据库字符集：utf8mb4（支持表情，如emoji）
+        数据库物理外键移除原因：性能影响、热更新、降低耦合度、数据库分库分表。
+        大型项目绝对不能使用数据库物理外键，传统项目随意。
+
+        -> @SpringBootApplication -> @EnableAutoConfiguration -> AutoConfigurationImportSelector.class
+        -> selectImports() -> getAutoConfigurationEntry() -> getCandidateConfigurations() -> META-INF/spring.factories
+        -> (定位打开spring.factories)
+        -> EmbeddedWebServerFactoryCustomizerAutoConfiguration,WebMvcAutoConfiguration,ServletWebServerFactoryAutoConfiguration
+
+        数据源 HikariCP 高性能JDBC连接池 https://github.com/brettwooldridge/HikariCP
+    -->
+
+    <!--  jar(默认为jar),war,pom(聚合工程)，本项目使用的是聚合工程 -->
+    <packaging>pom</packaging>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.1.5.RELEASE</version>
+        <relativePath/>
+    </parent>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>1.8</java.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+            <!--            <exclusions>-->
+            <!--                <exclusion>-->
+            <!--                    <groupId>org.springframework.boot</groupId>-->
+            <!--                    <artifactId>spring-boot-starter-logging</artifactId>-->
+            <!--                </exclusion>-->
+            <!--            </exclusions>-->
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <!-- springboot默认可以解析yml，若需要解析xml或properties需要添加这个依赖，一般都会引入这个依赖 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- mysql驱动 -->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>5.1.41</version>
+        </dependency>
+        <!-- mybatis -->
+        <dependency>
+            <groupId>org.mybatis.spring.boot</groupId>
+            <artifactId>mybatis-spring-boot-starter</artifactId>
+            <version>2.1.0</version>
+        </dependency>
+        <!-- 通用mapper逆向工具 -->
+        <dependency>
+            <groupId>tk.mybatis</groupId>
+            <artifactId>mapper-spring-boot-starter</artifactId>
+            <version>2.1.5</version>
+        </dependency>
+
+    </dependencies>
+
+</project>

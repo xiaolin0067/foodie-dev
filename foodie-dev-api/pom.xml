@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>foodie-dev</artifactId>
+        <groupId>com.zzlin</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>foodie-dev-api</artifactId>
+
+    <dependencies>
+        <!--
+            api -> service -> mapper -> pojo -> common
+            api依赖了service，service依赖了mapper，mapper依赖了pojo，pojo依赖了common，所以api也是可以使用了service、mapper、pojo、common中的方法的
+            但api不可调用mapper，需经过service
+            若api需要调用其他组件可添加依赖
+            api -> common-mail
+        -->
+        <dependency>
+            <groupId>com.zzlin</groupId>
+            <artifactId>foodie-dev-service</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+</project>
