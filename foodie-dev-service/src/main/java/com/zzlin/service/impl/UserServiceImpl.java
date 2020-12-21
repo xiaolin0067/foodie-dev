@@ -1,14 +1,21 @@
 package com.zzlin.service.impl;
 
+import com.zzlin.enums.Sex;
 import com.zzlin.mapper.UsersMapper;
 import com.zzlin.pojo.Users;
+import com.zzlin.pojo.bo.UserBO;
 import com.zzlin.service.UserService;
+import com.zzlin.utils.DateUtil;
+import com.zzlin.utils.MD5Utils;
+import org.n3r.idworker.Sid;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
+import java.security.NoSuchAlgorithmException;
+import java.util.Date;
 
 /**
  * @author zlin
@@ -19,6 +26,11 @@ public class UserServiceImpl implements UserService {
 
     @Resource
     UsersMapper usersMapper;
+
+    @Resource
+    Sid sid;
+
+    private static final String USER_FACE = "http://122.152.205.72:88/group1/M00/00/05/CpoxxFw_8_qAIlFXAAAcIhVPdSg994.png";
 
     /**
      * 判断用户名是否已存在
@@ -32,5 +44,31 @@ public class UserServiceImpl implements UserService {
         userCriteria.andEqualTo("username", username);
         int count = usersMapper.selectCountByExample(userExample);
         return count > 0;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED,rollbackFor = Exception.class)
+    @Override
+    public Users createUser(UserBO userBO) {
+        Users user = new Users();
+        user.setId(sid.nextShort());
+        user.setUsername(userBO.getUsername());
+        try {
+            user.setPassword(MD5Utils.getMd5Str(userBO.getPassword()));
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        // 默认用户昵称同用户名
+        user.setNickname(userBO.getUsername());
+        // 默认头像
+        user.setFace(USER_FACE);
+        // 默认生日
+        user.setBirthday(DateUtil.stringToDate("1900-01-01"));
+        // 默认性别为 保密
+        user.setSex(Sex.secret.type);
+        user.setCreatedTime(new Date());
+        user.setUpdatedTime(new Date());
+
+        usersMapper.insert(user);
+        return user;
     }
 }
