@@ -19,8 +19,13 @@ public class PassportController {
     @Resource
     UserService userService;
 
+    /**
+     * 若参数不带@RequestParam注解，swagger中Parameter content type为application/json
+     * @param username 用户名
+     * @return 返回结果
+     */
     @GetMapping("/usernameIsExist")
-    public Result usernameIsExist(String username) {
+    public Result usernameIsExist(@RequestParam String username) {
         if (StringUtils.isBlank(username)) {
             return Result.errorMsg("用户名不能为空");
         }
