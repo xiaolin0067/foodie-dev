@@ -4,6 +4,7 @@ import com.zzlin.service.StuService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
+import springfox.documentation.annotations.ApiIgnore;
 
 import javax.annotation.Resource;
 
@@ -11,6 +12,7 @@ import javax.annotation.Resource;
  * @author zlin
  * @date 20201106
  */
+@ApiIgnore
 @RestController
 public class StuFooController {
 

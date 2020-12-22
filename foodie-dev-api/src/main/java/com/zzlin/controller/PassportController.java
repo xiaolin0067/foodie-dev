@@ -3,6 +3,10 @@ package com.zzlin.controller;
 import com.zzlin.pojo.bo.UserBO;
 import com.zzlin.service.UserService;
 import com.zzlin.utils.Result;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,6 +16,7 @@ import javax.annotation.Resource;
  * @author zlin
  * @date 20201219
  */
+@Api(value = "注册登录", tags = {"用于注册登录的相关接口"})
 @RestController
 @RequestMapping("passport")
 public class PassportController {
@@ -24,6 +29,10 @@ public class PassportController {
      * @param username 用户名
      * @return 返回结果
      */
+    @ApiOperation(value = "用户名是否存在", notes = "用户名是否存在", httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(value = "用户名", name = "username", dataType = "string", paramType = "query", required = true)
+    })
     @GetMapping("/usernameIsExist")
     public Result usernameIsExist(@RequestParam String username) {
         if (StringUtils.isBlank(username)) {
@@ -36,6 +45,7 @@ public class PassportController {
         return Result.ok();
     }
 
+    @ApiOperation(value = "用户注册", notes = "用户注册", httpMethod = "POST")
     @PostMapping("/regist")
     public Result regist(@RequestBody UserBO userBO) {
         String username = userBO.getUsername();
