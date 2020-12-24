@@ -1,5 +1,6 @@
 package com.zzlin.controller;
 
+import com.zzlin.pojo.Users;
 import com.zzlin.pojo.bo.UserBO;
 import com.zzlin.service.UserService;
 import com.zzlin.utils.Result;
@@ -25,6 +26,7 @@ public class PassportController {
     UserService userService;
 
     /**
+     * 检查用户名是否存在
      * 若参数不带@RequestParam注解，swagger中Parameter content type为application/json
      * @param username 用户名
      * @return 返回结果
@@ -45,6 +47,11 @@ public class PassportController {
         return Result.ok();
     }
 
+    /**
+     * 用户注册
+     * @param userBO 注册信息
+     * @return 返回结果
+     */
     @ApiOperation(value = "用户注册", notes = "用户注册", httpMethod = "POST")
     @PostMapping("/regist")
     public Result regist(@RequestBody UserBO userBO) {
@@ -70,5 +77,28 @@ public class PassportController {
         // 注册
         userService.createUser(userBO);
         return Result.ok();
+    }
+
+    /**
+     * 用户登录
+     * @param userBO 登录信息
+     * @return 返回结果
+     */
+    @ApiOperation(value = "用户登录", notes = "用户登录", httpMethod = "POST")
+    @PostMapping("/login")
+    public Result login(@RequestBody UserBO userBO) {
+        String username = userBO.getUsername();
+        String password = userBO.getPassword();
+        String confirmPassword = userBO.getConfirmPassword();
+        // 用户名和密码不能为空
+        if (StringUtils.isBlank(username) || StringUtils.isBlank(password)) {
+            return Result.errorMsg("用户名和密码不能为空");
+        }
+        // 登录
+        Users users = userService.queryUserForLogin(username, password);
+        if (users == null) {
+            return Result.errorMsg("用户名或密码错误");
+        }
+        return Result.ok(users);
     }
 }

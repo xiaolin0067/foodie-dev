@@ -36,7 +36,7 @@ public class UserServiceImpl implements UserService {
      * 判断用户名是否已存在
      * @return true-存在，false-不存在
      */
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    @Transactional(propagation = Propagation.SUPPORTS,rollbackFor = Exception.class)
     @Override
     public boolean queryUsernameIsExist(String username) {
         Example userExample = new Example(Users.class);
@@ -46,6 +46,11 @@ public class UserServiceImpl implements UserService {
         return count > 0;
     }
 
+    /**
+     * 用户注册
+     * @param userBO 前端参数
+     * @return 用户
+     */
     @Transactional(propagation = Propagation.REQUIRED,rollbackFor = Exception.class)
     @Override
     public Users createUser(UserBO userBO) {
@@ -70,5 +75,26 @@ public class UserServiceImpl implements UserService {
 
         usersMapper.insert(user);
         return user;
+    }
+
+    /**
+     * 用户登录，检查用户名密码是否匹配
+     * @param username 用户名
+     * @param password 密码
+     * @return 用户
+     */
+    @Transactional(propagation = Propagation.SUPPORTS,rollbackFor = Exception.class)
+    @Override
+    public Users queryUserForLogin(String username, String password) {
+        try {
+            password = MD5Utils.getMd5Str(password);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        Example userExample = new Example(Users.class);
+        Example.Criteria userCriteria = userExample.createCriteria();
+        userCriteria.andEqualTo("username", username);
+        userCriteria.andEqualTo("password", password);
+        return usersMapper.selectOneByExample(userExample);
     }
 }

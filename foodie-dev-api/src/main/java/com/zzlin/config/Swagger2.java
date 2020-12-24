@@ -43,7 +43,7 @@ public class Swagger2 {
                 // 文档页标题
                 .title("天天吃货 电商平台接口api")
                 // 联系人信息
-                .contact(new Contact("imooc",
+                .contact(new Contact("zzlin",
                         "https://www.imooc.com",
                         "abc@imooc.com"))
                 // 详细信息
@@ -51,7 +51,7 @@ public class Swagger2 {
                 // 文档版本号
                 .version("1.0.1")
                 // 网站地址
-                .termsOfServiceUrl("https://www.imooc.com")
+                .termsOfServiceUrl("https://www.baidu.com")
                 .build();
     }
 }

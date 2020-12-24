@@ -17,9 +17,17 @@ public interface UserService {
     boolean queryUsernameIsExist(String username);
 
     /**
-     * 创建用户
+     * 用户注册
      * @param userBO 前端参数
      * @return 用户
      */
     Users createUser(UserBO userBO);
+
+    /**
+     * 用户登录，检查用户名密码是否匹配
+     * @param username 用户名
+     * @param password 密码
+     * @return 用户
+     */
+    Users queryUserForLogin(String username, String password);
 }
