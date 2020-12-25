@@ -3,6 +3,8 @@ package com.zzlin.controller;
 import com.zzlin.pojo.Users;
 import com.zzlin.pojo.bo.UserBO;
 import com.zzlin.service.UserService;
+import com.zzlin.utils.CookieUtils;
+import com.zzlin.utils.JsonUtils;
 import com.zzlin.utils.Result;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -12,6 +14,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author zlin
@@ -54,7 +58,7 @@ public class PassportController {
      */
     @ApiOperation(value = "用户注册", notes = "用户注册", httpMethod = "POST")
     @PostMapping("/regist")
-    public Result regist(@RequestBody UserBO userBO) {
+    public Result regist(@RequestBody UserBO userBO, HttpServletRequest request, HttpServletResponse response) {
         String username = userBO.getUsername();
         String password = userBO.getPassword();
         String confirmPassword = userBO.getConfirmPassword();
@@ -75,7 +79,11 @@ public class PassportController {
             return Result.errorMsg("两次密码不一致");
         }
         // 注册
-        userService.createUser(userBO);
+        Users user = userService.createUser(userBO);
+        // 登录信息脱敏
+        setNullProperty(user);
+        //登录信息缓存
+        CookieUtils.setCookie(request, response, "user", JsonUtils.objectToJson(user), true);
         return Result.ok();
     }
 
@@ -86,19 +94,32 @@ public class PassportController {
      */
     @ApiOperation(value = "用户登录", notes = "用户登录", httpMethod = "POST")
     @PostMapping("/login")
-    public Result login(@RequestBody UserBO userBO) {
+    public Result login(@RequestBody UserBO userBO, HttpServletRequest request, HttpServletResponse response) {
         String username = userBO.getUsername();
         String password = userBO.getPassword();
-        String confirmPassword = userBO.getConfirmPassword();
         // 用户名和密码不能为空
         if (StringUtils.isBlank(username) || StringUtils.isBlank(password)) {
             return Result.errorMsg("用户名和密码不能为空");
         }
         // 登录
-        Users users = userService.queryUserForLogin(username, password);
-        if (users == null) {
+        Users user = userService.queryUserForLogin(username, password);
+        if (user == null) {
             return Result.errorMsg("用户名或密码错误");
         }
-        return Result.ok(users);
+        // 登录信息脱敏
+        setNullProperty(user);
+        //登录信息缓存
+        CookieUtils.setCookie(request, response, "user", JsonUtils.objectToJson(user), true);
+
+        return Result.ok(user);
+    }
+
+    private void setNullProperty(Users userResult) {
+        userResult.setPassword(null);
+        userResult.setMobile(null);
+        userResult.setEmail(null);
+        userResult.setCreatedTime(null);
+        userResult.setUpdatedTime(null);
+        userResult.setBirthday(null);
     }
 }
