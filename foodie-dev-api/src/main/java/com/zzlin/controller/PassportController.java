@@ -108,10 +108,22 @@ public class PassportController {
         }
         // 登录信息脱敏
         setNullProperty(user);
-        //登录信息缓存
+        // 登录信息缓存
         CookieUtils.setCookie(request, response, "user", JsonUtils.objectToJson(user), true);
 
         return Result.ok(user);
+    }
+
+    @PostMapping("/logout")
+    @ApiOperation(value = "用户退出登陆", notes = "用户退出登陆", httpMethod = "POST")
+    public Result logout(String userId, HttpServletRequest request, HttpServletResponse response) {
+        // 清除用户相关cookie
+        CookieUtils.deleteCookie(request, response, "user");
+
+        // 用户退出登录，需要清空购物车
+        // 分布式会话中需要清除用户数据
+
+        return Result.ok();
     }
 
     private void setNullProperty(Users userResult) {
