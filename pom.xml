@@ -67,6 +67,10 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
         <!-- springboot默认可以解析yml，若需要解析xml或properties需要添加这个依赖，一般都会引入这个依赖 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
