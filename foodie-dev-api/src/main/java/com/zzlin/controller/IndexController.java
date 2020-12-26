@@ -2,7 +2,9 @@ package com.zzlin.controller;
 
 import com.zzlin.enums.YesOrNo;
 import com.zzlin.pojo.Carousel;
+import com.zzlin.pojo.Category;
 import com.zzlin.service.CarouseService;
+import com.zzlin.service.CategoryService;
 import com.zzlin.utils.Result;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -24,6 +26,8 @@ public class IndexController {
 
     @Resource
     CarouseService carouseService;
+    @Resource
+    CategoryService categoryService;
 
     /**
      * 获取轮播图
@@ -34,5 +38,12 @@ public class IndexController {
     public Result carousel() {
         List<Carousel> carousels = carouseService.queryAll(YesOrNo.YES.type);
         return Result.ok(carousels);
+    }
+
+    @ApiOperation(value = "获取商品分类（一级）", notes = "获取商品分类（一级）", httpMethod = "GET")
+    @GetMapping("/cats")
+    public Result cats() {
+        List<Category> categories = categoryService.queryAllRootCat();
+        return Result.ok(categories);
     }
 }
