@@ -3,6 +3,7 @@ package com.zzlin.controller;
 import com.zzlin.enums.YesOrNo;
 import com.zzlin.pojo.Carousel;
 import com.zzlin.pojo.Category;
+import com.zzlin.pojo.vo.CatNewItemsVO;
 import com.zzlin.pojo.vo.CategoryVO;
 import com.zzlin.service.CarouseService;
 import com.zzlin.service.CategoryService;
@@ -59,6 +60,18 @@ public class IndexController {
             return Result.errorMsg("分类不存在");
         }
         List<CategoryVO> categories = categoryService.getSubCatList(rootCatId);
+        return Result.ok(categories);
+    }
+
+    @ApiOperation(value = "获取每个一级分类下的6个最新商品信息", notes = "获取每个一级分类下的6个最新商品信息", httpMethod = "GET")
+    @GetMapping("/sixNewItems/{rootCatId}")
+    public Result sixNewItems(
+            @ApiParam(name = "rootCatId", value = "商品一级分类ID", required = true)
+            @PathVariable Integer rootCatId) {
+        if (rootCatId == null) {
+            return Result.errorMsg("分类不存在");
+        }
+        List<CatNewItemsVO> categories = categoryService.getCatNewestSixItemList(rootCatId);
         return Result.ok(categories);
     }
 }
