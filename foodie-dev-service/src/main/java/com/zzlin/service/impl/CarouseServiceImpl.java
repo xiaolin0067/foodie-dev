@@ -4,6 +4,8 @@ import com.zzlin.mapper.CarouselMapper;
 import com.zzlin.pojo.Carousel;
 import com.zzlin.service.CarouseService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
@@ -25,6 +27,7 @@ public class CarouseServiceImpl implements CarouseService {
      * @param isShow 是否展示
      * @return 轮播图列表
      */
+    @Transactional(propagation = Propagation.SUPPORTS)
     @Override
     public List<Carousel> queryAll(Integer isShow) {
         Example example = new Example(Carousel.class);

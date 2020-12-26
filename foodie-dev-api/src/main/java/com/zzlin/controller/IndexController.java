@@ -3,12 +3,15 @@ package com.zzlin.controller;
 import com.zzlin.enums.YesOrNo;
 import com.zzlin.pojo.Carousel;
 import com.zzlin.pojo.Category;
+import com.zzlin.pojo.vo.CategoryVO;
 import com.zzlin.service.CarouseService;
 import com.zzlin.service.CategoryService;
 import com.zzlin.utils.Result;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -44,6 +47,18 @@ public class IndexController {
     @GetMapping("/cats")
     public Result cats() {
         List<Category> categories = categoryService.queryAllRootCat();
+        return Result.ok(categories);
+    }
+
+    @ApiOperation(value = "获取商品子分类", notes = "获取商品子分类", httpMethod = "GET")
+    @GetMapping("/subCat/{rootCatId}")
+    public Result subCat(
+            @ApiParam(name = "rootCatId", value = "商品一级分类ID", required = true)
+            @PathVariable Integer rootCatId) {
+        if (rootCatId == null) {
+            return Result.errorMsg("分类不存在");
+        }
+        List<CategoryVO> categories = categoryService.getSubCatList(rootCatId);
         return Result.ok(categories);
     }
 }

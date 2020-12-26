@@ -1,6 +1,7 @@
 package com.zzlin.service;
 
 import com.zzlin.pojo.Category;
+import com.zzlin.pojo.vo.CategoryVO;
 
 import java.util.List;
 
@@ -15,4 +16,11 @@ public interface CategoryService {
      * @return 一级分类列表
      */
     List<Category> queryAllRootCat();
+
+    /**
+     * 根据一级分类ID查询子分类列表
+     * @param rootCatId 一级分类ID
+     * @return 子分类列表
+     */
+    List<CategoryVO> getSubCatList(Integer rootCatId);
 }
