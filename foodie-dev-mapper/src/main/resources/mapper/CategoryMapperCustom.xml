@@ -43,9 +43,9 @@
         <result column="rootCatName" property="rootCatName" />
         <result column="slogan" property="slogan" />
         <result column="catImage" property="catImage" />
-        <result column="bg_color" property="bg_color" />
+        <result column="bgColor" property="bgColor" />
 
-        <collection property="simpleItemVoList" ofType="com.zzlin.pojo.vo.SimpleItemVo">
+        <collection property="simpleItemList" ofType="com.zzlin.pojo.vo.SimpleItemVo">
             <id column="itemId" property="itemId" />
             <result column="itemName" property="itemName" />
             <result column="itemUrl" property="itemUrl" />

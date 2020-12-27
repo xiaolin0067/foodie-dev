@@ -15,7 +15,7 @@ public class CatNewItemsVO {
     private String catImage;
     private String bgColor;
 
-    private List<SimpleItemVo> simpleItemVoList;
+    private List<SimpleItemVo> simpleItemList;
 
     public Integer getRootCatId() {
         return rootCatId;
@@ -57,11 +57,11 @@ public class CatNewItemsVO {
         this.bgColor = bgColor;
     }
 
-    public List<SimpleItemVo> getSimpleItemVoList() {
-        return simpleItemVoList;
+    public List<SimpleItemVo> getSimpleItemList() {
+        return simpleItemList;
     }
 
-    public void setSimpleItemVoList(List<SimpleItemVo> simpleItemVoList) {
-        this.simpleItemVoList = simpleItemVoList;
+    public void setSimpleItemList(List<SimpleItemVo> simpleItemList) {
+        this.simpleItemList = simpleItemList;
     }
 }
