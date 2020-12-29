@@ -101,6 +101,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public CommentLevelCountsVo queryCommentCounts(String itemId) {
         CommentLevelCountsVo resultLevelCount = new CommentLevelCountsVo();
+        // 只查询一次数据库统计评价等级数量
         List<CommentsLevelCount> levelCountList = itemsCommentsMapperCustom.queryCommentsLevelCount(itemId);
         if (!CollectionUtils.isEmpty(levelCountList)) {
             // 统计commentsCount为totalCount
@@ -120,6 +121,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     /**
+     * 课程中的统计方式，会多次查询数据库--弃用
      * 通过商品ID和评价级别查询评价数量
      * @param itemId 商品ID
      * @param level 评价级别
