@@ -1,6 +1,7 @@
 package com.zzlin.controller;
 
 import com.zzlin.pojo.*;
+import com.zzlin.pojo.vo.CommentLevelCountsVo;
 import com.zzlin.pojo.vo.ItemInfoVO;
 import com.zzlin.service.ItemService;
 import com.zzlin.utils.Result;
@@ -8,10 +9,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -45,5 +43,21 @@ public class ItemController {
         List<ItemsSpec> itemSpecList = itemService.queryItemSpecList(itemId);
         ItemsParam itemParams = itemService.queryItemParam(itemId);
         return Result.ok(new ItemInfoVO(item, itemImgList, itemSpecList, itemParams));
+    }
+
+    /**
+     * 商品评价等级数量统计
+     * @return 商品详情
+     */
+    @ApiOperation(value = "商品评价等级数量统计", notes = "商品评价等级数量统计", httpMethod = "GET")
+    @GetMapping("/commentLevel")
+    public Result commentLevel(
+            @ApiParam(name = "itemId", value = "商品唯一标识", required = true)
+            @RequestParam String itemId) {
+        if (StringUtils.isBlank(itemId)) {
+            return Result.errorMsg("商品不存在");
+        }
+        CommentLevelCountsVo levelCountsVo = itemService.queryCommentCounts(itemId);
+        return Result.ok(levelCountsVo);
     }
 }

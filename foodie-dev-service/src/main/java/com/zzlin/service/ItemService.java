@@ -4,6 +4,7 @@ import com.zzlin.pojo.Items;
 import com.zzlin.pojo.ItemsImg;
 import com.zzlin.pojo.ItemsParam;
 import com.zzlin.pojo.ItemsSpec;
+import com.zzlin.pojo.vo.CommentLevelCountsVo;
 
 import java.util.List;
 
@@ -40,4 +41,11 @@ public interface ItemService {
      * @return 商品参数
      */
     ItemsParam queryItemParam(String itemId);
+
+    /**
+     * 通过商品ID查询商品评价数量
+     * @param itemId 商品ID
+     * @return 评价数量
+     */
+    CommentLevelCountsVo queryCommentCounts(String itemId);
 }
