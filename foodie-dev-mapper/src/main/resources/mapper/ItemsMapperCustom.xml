@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zzlin.mapper.ItemsMapperCustom" >
+    
+    <select id="queryItemComments" parameterType="Map" resultType="com.zzlin.pojo.vo.ItemCommentVO">
+        SELECT
+            c.comment_level AS commentLevel,
+            c.content AS content,
+            c.sepc_name AS specName,
+            c.created_time AS createdTime,
+            u.face AS userFace,
+            u.nickname AS nickname
+        FROM
+            items_comments c
+            LEFT JOIN users u ON c.user_id = u.id
+        WHERE
+            c.item_id = #{paramsMap.itemId}
+            <if test="paramsMap.level != null and paramsMap.level != ''">
+                AND c.comment_level = #{paramsMap.level}
+            </if>
+    </select>
+</mapper>

@@ -4,6 +4,7 @@ import com.zzlin.pojo.*;
 import com.zzlin.pojo.vo.CommentLevelCountsVo;
 import com.zzlin.pojo.vo.ItemInfoVO;
 import com.zzlin.service.ItemService;
+import com.zzlin.utils.PagedGridResult;
 import com.zzlin.utils.Result;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -21,7 +22,7 @@ import java.util.List;
 @Api(value = "商品详情", tags = {"商品详情相关接口"})
 @RequestMapping("items")
 @RestController
-public class ItemController {
+public class ItemController extends BaseController {
 
     @Resource
     ItemService itemService;
@@ -46,8 +47,8 @@ public class ItemController {
     }
 
     /**
-     * 商品评价等级数量统计
-     * @return 商品详情
+     * 查询商品评价等级数量统计
+     * @return 评价等级数量统计
      */
     @ApiOperation(value = "商品评价等级数量统计", notes = "商品评价等级数量统计", httpMethod = "GET")
     @GetMapping("/commentLevel")
@@ -59,5 +60,33 @@ public class ItemController {
         }
         CommentLevelCountsVo levelCountsVo = itemService.queryCommentCounts(itemId);
         return Result.ok(levelCountsVo);
+    }
+
+    /**
+     * 查询商品评价
+     * @return 商品评价
+     */
+    @ApiOperation(value = "查询商品评价", notes = "查询商品评价", httpMethod = "GET")
+    @GetMapping("/comments")
+    public Result comments(
+            @ApiParam(name = "itemId", value = "商品唯一标识", required = true)
+            @RequestParam String itemId,
+            @ApiParam(name = "level", value = "评价等级")
+            @RequestParam Integer level,
+            @ApiParam(name = "page", value = "页码")
+            @RequestParam Integer page,
+            @ApiParam(name = "pageSize", value = "每页记录数")
+            @RequestParam Integer pageSize) {
+        if (StringUtils.isBlank(itemId)) {
+            return Result.errorMsg("商品不存在");
+        }
+        if (page == null) {
+            page = 1;
+        }
+        if (pageSize == null) {
+            pageSize = COMMENT_PAGE_SIZE;
+        }
+        PagedGridResult pagedGridResult = itemService.queryPagedComments(itemId, level, page, pageSize);
+        return Result.ok(pagedGridResult);
     }
 }
