@@ -8,6 +8,7 @@ import com.zzlin.pojo.*;
 import com.zzlin.pojo.vo.CommentLevelCountsVo;
 import com.zzlin.pojo.vo.ItemCommentVO;
 import com.zzlin.service.ItemService;
+import com.zzlin.utils.DesensitizationUtil;
 import com.zzlin.utils.PagedGridResult;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -161,6 +162,9 @@ public class ItemServiceImpl implements ItemService {
         PageHelper.startPage(page, pageSize);
 
         List<ItemCommentVO> itemComments = itemsMapperCustom.queryItemComments(paramsMap);
+        for (ItemCommentVO comment : itemComments) {
+            comment.setNickname(DesensitizationUtil.commonDisplay(comment.getNickname()));
+        }
 
         return setterPagedGrid(itemComments, page);
     }
