@@ -202,4 +202,26 @@ public class ItemServiceImpl implements ItemService {
 
         return setterPagedGrid(itemComments, page);
     }
+
+    /**
+     * 搜索商品
+     *
+     * @param catId    分类ID
+     * @param sort     排序规则，c: 根据销量排序，p: 根据价格排序
+     * @param page     页码
+     * @param pageSize 每页数量
+     * @return 商品列表
+     */
+    @Transactional(propagation = Propagation.SUPPORTS)
+    @Override
+    public PagedGridResult searchItems(Integer catId, String sort, Integer page, Integer pageSize) {
+        Map<String, Object> paramsMap = new HashMap<>();
+        paramsMap.put("catId", catId);
+        paramsMap.put("sort", sort);
+        PageHelper.startPage(page, pageSize);
+
+        List<SearchItemsVO> itemComments = itemsMapperCustom.searchItemsByCatId(paramsMap);
+
+        return setterPagedGrid(itemComments, page);
+    }
 }

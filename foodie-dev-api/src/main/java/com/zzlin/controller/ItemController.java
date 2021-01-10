@@ -94,7 +94,7 @@ public class ItemController extends BaseController {
      * 搜索商品
      * @return 商品列表
      */
-    @ApiOperation(value = "搜索商品", notes = "搜索商品", httpMethod = "GET")
+    @ApiOperation(value = "搜索商品，通过关键字搜索", notes = "搜索商品，通过关键字搜索", httpMethod = "GET")
     @GetMapping("/search")
     public Result search(
             @ApiParam(name = "keywords", value = "搜索关键字", required = true)
@@ -115,6 +115,34 @@ public class ItemController extends BaseController {
             pageSize = PAGE_SIZE;
         }
         PagedGridResult pagedGridResult = itemService.searchItems(keywords, sort, page, pageSize);
+        return Result.ok(pagedGridResult);
+    }
+
+    /**
+     * 搜索商品
+     * @return 商品列表
+     */
+    @ApiOperation(value = "搜索商品，通过分类ID搜索", notes = "搜索商品，通过分类ID搜索", httpMethod = "GET")
+    @GetMapping("/catItems")
+    public Result catItems(
+            @ApiParam(name = "catId", value = "分类ID", required = true)
+            @RequestParam Integer catId,
+            @ApiParam(name = "sort", value = "排序规则，c: 根据销量排序，p: 根据价格排序")
+            @RequestParam String sort,
+            @ApiParam(name = "page", value = "页码")
+            @RequestParam Integer page,
+            @ApiParam(name = "pageSize", value = "每页记录数")
+            @RequestParam Integer pageSize) {
+        if (catId == null) {
+            return Result.errorMsg(null);
+        }
+        if (page == null) {
+            page = 1;
+        }
+        if (pageSize == null) {
+            pageSize = PAGE_SIZE;
+        }
+        PagedGridResult pagedGridResult = itemService.searchItems(catId, sort, page, pageSize);
         return Result.ok(pagedGridResult);
     }
 }
