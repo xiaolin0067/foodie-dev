@@ -5,6 +5,7 @@ import com.zzlin.pojo.ItemsImg;
 import com.zzlin.pojo.ItemsParam;
 import com.zzlin.pojo.ItemsSpec;
 import com.zzlin.pojo.vo.CommentLevelCountsVo;
+import com.zzlin.pojo.vo.ShopCartVO;
 import com.zzlin.utils.PagedGridResult;
 
 import java.util.List;
@@ -79,4 +80,11 @@ public interface ItemService {
      * @return 商品列表
      */
     PagedGridResult searchItems(Integer catId, String sort, Integer page, Integer pageSize);
+
+    /**
+     * 根据商品规格ID查询商品信息（用于刷新购物车商品信息）
+     * @param specIds 规格ID
+     * @return 商品列表
+     */
+    List<ShopCartVO> queryItemsBySpecIds(String specIds);
 }

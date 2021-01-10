@@ -3,6 +3,7 @@ package com.zzlin.controller;
 import com.zzlin.pojo.*;
 import com.zzlin.pojo.vo.CommentLevelCountsVo;
 import com.zzlin.pojo.vo.ItemInfoVO;
+import com.zzlin.pojo.vo.ShopCartVO;
 import com.zzlin.service.ItemService;
 import com.zzlin.utils.PagedGridResult;
 import com.zzlin.utils.Result;
@@ -144,5 +145,21 @@ public class ItemController extends BaseController {
         }
         PagedGridResult pagedGridResult = itemService.searchItems(catId, sort, page, pageSize);
         return Result.ok(pagedGridResult);
+    }
+
+    /**
+     * 根据商品规格ID查询商品信息（用于刷新购物车商品信息，主要是价格），类似淘宝京东
+     * @return 商品列表
+     */
+    @ApiOperation(value = "根据商品规格ID查询商品信息", notes = "根据商品规格ID查询商品信息", httpMethod = "GET")
+    @GetMapping("/refresh")
+    public Result refresh(
+            @ApiParam(name = "itemSpecIds", value = "商品规格ID，多个逗号分隔", required = true, example = "1,2,3")
+            @RequestParam String itemSpecIds) {
+        if (StringUtils.isBlank(itemSpecIds)) {
+            return Result.ok();
+        }
+        List<ShopCartVO> shopCartVOList = itemService.queryItemsBySpecIds(itemSpecIds);
+        return Result.ok(shopCartVOList);
     }
 }

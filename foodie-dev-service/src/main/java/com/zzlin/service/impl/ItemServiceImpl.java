@@ -8,6 +8,7 @@ import com.zzlin.pojo.*;
 import com.zzlin.pojo.vo.CommentLevelCountsVo;
 import com.zzlin.pojo.vo.ItemCommentVO;
 import com.zzlin.pojo.vo.SearchItemsVO;
+import com.zzlin.pojo.vo.ShopCartVO;
 import com.zzlin.service.ItemService;
 import com.zzlin.utils.DesensitizationUtil;
 import com.zzlin.utils.PagedGridResult;
@@ -18,9 +19,8 @@ import org.springframework.util.CollectionUtils;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author zlin
@@ -223,5 +223,19 @@ public class ItemServiceImpl implements ItemService {
         List<SearchItemsVO> itemComments = itemsMapperCustom.searchItemsByCatId(paramsMap);
 
         return setterPagedGrid(itemComments, page);
+    }
+
+    /**
+     * 根据商品规格ID查询商品信息（用于刷新购物车商品信息）
+     *
+     * @param specIds 规格ID
+     * @return 商品列表
+     */
+    @Transactional(propagation = Propagation.SUPPORTS)
+    @Override
+    public List<ShopCartVO> queryItemsBySpecIds(String specIds) {
+        List<String> specIdList = Arrays.stream(specIds.split(",")).collect(Collectors.toList());
+//        Collections.addAll(List, str[])
+        return itemsMapperCustom.queryItemsBySpecIds(specIdList);
     }
 }

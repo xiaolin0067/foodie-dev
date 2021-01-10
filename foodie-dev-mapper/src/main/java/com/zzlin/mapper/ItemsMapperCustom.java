@@ -2,6 +2,7 @@ package com.zzlin.mapper;
 
 import com.zzlin.pojo.vo.ItemCommentVO;
 import com.zzlin.pojo.vo.SearchItemsVO;
+import com.zzlin.pojo.vo.ShopCartVO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -18,4 +19,6 @@ public interface ItemsMapperCustom {
     List<SearchItemsVO> searchItems(@Param("paramsMap") Map<String, Object> paramsMap);
 
     List<SearchItemsVO> searchItemsByCatId(@Param("paramsMap") Map<String, Object> paramsMap);
+
+    List<ShopCartVO> queryItemsBySpecIds(@Param("paramsList") List<String> paramsList);
 }
