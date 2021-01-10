@@ -7,6 +7,7 @@ import com.zzlin.mapper.*;
 import com.zzlin.pojo.*;
 import com.zzlin.pojo.vo.CommentLevelCountsVo;
 import com.zzlin.pojo.vo.ItemCommentVO;
+import com.zzlin.pojo.vo.SearchItemsVO;
 import com.zzlin.service.ItemService;
 import com.zzlin.utils.DesensitizationUtil;
 import com.zzlin.utils.PagedGridResult;
@@ -154,6 +155,7 @@ public class ItemServiceImpl implements ItemService {
      * @param pageSize 每页数量
      * @return 商品评价列表
      */
+    @Transactional(propagation = Propagation.SUPPORTS)
     @Override
     public PagedGridResult queryPagedComments(String itemId, Integer level, Integer page, Integer pageSize) {
         Map<String, Object> paramsMap = new HashMap<>();
@@ -177,5 +179,27 @@ public class ItemServiceImpl implements ItemService {
         grid.setTotal(pageList.getPages());
         grid.setRecords(pageList.getTotal());
         return grid;
+    }
+
+    /**
+     * 搜索商品
+     *
+     * @param keywords 搜索关键字
+     * @param sort     排序规则，c: 根据销量排序，p: 根据价格排序
+     * @param page     页码
+     * @param pageSize 每页数量
+     * @return 商品列表
+     */
+    @Transactional(propagation = Propagation.SUPPORTS)
+    @Override
+    public PagedGridResult searchItems(String keywords, String sort, Integer page, Integer pageSize) {
+        Map<String, Object> paramsMap = new HashMap<>();
+        paramsMap.put("keywords", keywords);
+        paramsMap.put("sort", sort);
+        PageHelper.startPage(page, pageSize);
+
+        List<SearchItemsVO> itemComments = itemsMapperCustom.searchItems(paramsMap);
+
+        return setterPagedGrid(itemComments, page);
     }
 }
