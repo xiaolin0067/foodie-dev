@@ -31,10 +31,10 @@ public class ShopCatController extends BaseController {
      */
     @ApiOperation(value = "添加商品到购物车", notes = "添加商品到购物车", httpMethod = "POST")
     @PostMapping("/add")
-    public Result catItems(
+    public Result add(
             @ApiParam(name = "userId", value = "用户ID", required = true)
             @RequestParam String userId,
-            @ApiParam(name = "sort", value = "商品")
+            @ApiParam(name = "shopCartBO", value = "商品")
             @RequestBody ShopCartBO shopCartBO,
             HttpServletRequest request,
             HttpServletResponse response) {
@@ -43,7 +43,32 @@ public class ShopCatController extends BaseController {
             return Result.errorMsg(null);
         }
 
-        LOGGER.info("购物车商品 shopCartBO：{}", JsonUtils.objectToJson(shopCartBO));
+        LOGGER.info("添加商品到购物车 userId：{}, shopCartBO：{}", userId, JsonUtils.objectToJson(shopCartBO));
+
+        // TODO 在用户登录的情况下，需要同步购物车到Redis
+
+        return Result.ok();
+    }
+
+    /**
+     * 删除购物车商品
+     * @return 删除结果
+     */
+    @ApiOperation(value = "删除购物车商品", notes = "删除购物车商品", httpMethod = "POST")
+    @PostMapping("/del")
+    public Result del(
+            @ApiParam(name = "userId", value = "用户ID", required = true)
+            @RequestParam String userId,
+            @ApiParam(name = "itemSpecId", value = "商品规格ID")
+            @RequestParam String itemSpecId,
+            HttpServletRequest request,
+            HttpServletResponse response) {
+
+        if (StringUtils.isBlank(userId) || StringUtils.isBlank(itemSpecId)) {
+            return Result.errorMsg(null);
+        }
+
+        LOGGER.info("删除购物车商品 userId：{}, itemSpecId：{}", userId, itemSpecId);
 
         // TODO 在用户登录的情况下，需要同步购物车到Redis
 
