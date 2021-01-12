@@ -75,6 +75,42 @@ public class AddressController extends BaseController {
         return Result.ok();
     }
 
+    /**
+     * 删除收货地址
+     * @return 结果
+     */
+    @ApiOperation(value = "删除收货地址", notes = "删除收货地址", httpMethod = "POST")
+    @PostMapping("/delete")
+    public Result delete(
+            @ApiParam(name = "userId", value = "用户ID", required = true)
+            @RequestParam String userId,
+            @ApiParam(name = "addressId", value = "地址ID", required = true)
+            @RequestParam String addressId) {
+        if (StringUtils.isBlank(addressId) || StringUtils.isBlank(userId)) {
+            return Result.errorMsg("userId或addressId为空");
+        }
+        addressService.deleteUserAddress(userId, addressId);
+        return Result.ok();
+    }
+
+    /**
+     * 设置默认收货地址
+     * @return 结果
+     */
+    @ApiOperation(value = "设置默认收货地址", notes = "设置默认收货地址", httpMethod = "POST")
+    @PostMapping("/setDefalut")
+    public Result setDefalut(
+            @ApiParam(name = "userId", value = "用户ID", required = true)
+            @RequestParam String userId,
+            @ApiParam(name = "addressId", value = "地址ID", required = true)
+            @RequestParam String addressId) {
+        if (StringUtils.isBlank(addressId) || StringUtils.isBlank(userId)) {
+            return Result.errorMsg("userId或addressId为空");
+        }
+        addressService.updateUserAddressToBeDefault(userId, addressId);
+        return Result.ok();
+    }
+
     private Result checkAddress(AddressBO addressBO) {
         String receiver = addressBO.getReceiver();
         if (StringUtils.isBlank(receiver)) {

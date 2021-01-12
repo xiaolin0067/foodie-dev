@@ -1,5 +1,6 @@
 package com.zzlin.service.impl;
 
+import com.zzlin.enums.YesOrNo;
 import com.zzlin.mapper.UserAddressMapper;
 import com.zzlin.pojo.UserAddress;
 import com.zzlin.pojo.bo.AddressBO;
@@ -46,7 +47,7 @@ public class AddressServiceImpl implements AddressService {
      *
      * @param addressBO 地址BO
      */
-    @Transactional(propagation = Propagation.REQUIRED)
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
     public void addNewUserAddress(AddressBO addressBO) {
 
@@ -71,7 +72,7 @@ public class AddressServiceImpl implements AddressService {
      *
      * @param addressBO 地址BO
      */
-    @Transactional(propagation = Propagation.REQUIRED)
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
     public void updateUserAddress(AddressBO addressBO) {
         UserAddress userAddress = new UserAddress();
@@ -89,9 +90,13 @@ public class AddressServiceImpl implements AddressService {
      * @param userId    用户ID
      * @param addressId 地址ID
      */
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
     public void deleteUserAddress(String userId, String addressId) {
-
+        UserAddress userAddress = new UserAddress();
+        userAddress.setId(addressId);
+        userAddress.setUserId(userId);
+        userAddressMapper.delete(userAddress);
     }
 
     /**
@@ -100,9 +105,22 @@ public class AddressServiceImpl implements AddressService {
      * @param userId    用户ID
      * @param addressId 地址ID
      */
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
     public void updateUserAddressToBeDefault(String userId, String addressId) {
-
+        UserAddress userAddress = new UserAddress();
+        userAddress.setUserId(userId);
+        userAddress.setIsDefault(YesOrNo.YES.type);
+        List<UserAddress> userAddressList = userAddressMapper.select(userAddress);
+        for (UserAddress address : userAddressList) {
+            address.setIsDefault(YesOrNo.NO.type);
+            // TODO 在事务中只会提交一次到数据库？
+            userAddressMapper.updateByPrimaryKeySelective(address);
+        }
+        UserAddress newDefaultAddress = new UserAddress();
+        newDefaultAddress.setId(addressId);
+        newDefaultAddress.setIsDefault(YesOrNo.YES.type);
+        userAddressMapper.updateByPrimaryKeySelective(newDefaultAddress);
     }
 
     /**
@@ -115,6 +133,9 @@ public class AddressServiceImpl implements AddressService {
     @Transactional(propagation = Propagation.SUPPORTS)
     @Override
     public UserAddress queryUserAddress(String userId, String addressId) {
-        return null;
+        UserAddress userAddress = new UserAddress();
+        userAddress.setId(addressId);
+        userAddress.setUserId(userId);
+        return userAddressMapper.selectOne(userAddress);
     }
 }
