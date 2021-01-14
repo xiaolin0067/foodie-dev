@@ -87,4 +87,11 @@ public interface ItemService {
      * @return 商品列表
      */
     List<ShopCartVO> queryItemsBySpecIds(String specIds);
+
+    /**
+     * 通过规格IDs查询商品规格列表
+     * @param itemSpecIds 规格IDs
+     * @return 商品规格列表
+     */
+    List<ItemsSpec> queryItemSpecListByIds(String itemSpecIds);
 }

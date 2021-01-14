@@ -238,4 +238,19 @@ public class ItemServiceImpl implements ItemService {
 //        Collections.addAll(List, str[])
         return itemsMapperCustom.queryItemsBySpecIds(specIdList);
     }
+
+    /**
+     * 通过规格IDs查询商品规格列表
+     *
+     * @param itemSpecIds 规格IDs
+     * @return 商品规格列表
+     */
+    @Transactional(propagation = Propagation.SUPPORTS)
+    @Override
+    public List<ItemsSpec> queryItemSpecListByIds(String itemSpecIds) {
+        Example example = new Example(ItemsSpec.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("id", Arrays.asList(itemSpecIds.split(",")));
+        return itemsSpecMapper.selectByExample(example);
+    }
 }
