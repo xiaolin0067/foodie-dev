@@ -55,6 +55,8 @@ public class OrdersController extends BaseController {
 
         // 3、向支付中心发送当前订单，用于保存支付中心的订单数据
 
-        return Result.ok(order);
+        LOGGER.info("创建订单请求响应结果 {}", JsonUtils.objectToJson(order));
+        // 响应为{"orderId":"210117F9AR96A6NC","merchantOrdersVO":null}时报400错误，在请求目标中找到无效字符。有效字符在RFC 7230和RFC 3986中定义
+        return Result.ok(order.getOrderId());
     }
 }
