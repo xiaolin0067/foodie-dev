@@ -94,4 +94,19 @@ public interface ItemService {
      * @return 商品规格列表
      */
     List<ItemsSpec> queryItemSpecListByIds(String itemSpecIds);
+
+
+    /**
+     * 通过商品ID查询商品主图URL
+     * @param itemId 商品ID
+     * @return 商品主图URL
+     */
+    String queryItemMainImgByItemId(String itemId);
+
+    /**
+     * 减少商品规格库存数量
+     * @param specId 商品规格ID
+     * @param counts 数量
+     */
+    void decreaseItemSpecStock(String specId, int counts);
 }

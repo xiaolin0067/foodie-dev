@@ -3,6 +3,7 @@ package com.zzlin.service.impl;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.zzlin.enums.CommentLevel;
+import com.zzlin.enums.YesOrNo;
 import com.zzlin.mapper.*;
 import com.zzlin.pojo.*;
 import com.zzlin.pojo.vo.CommentLevelCountsVo;
@@ -252,5 +253,40 @@ public class ItemServiceImpl implements ItemService {
         Example.Criteria criteria = example.createCriteria();
         criteria.andIn("id", Arrays.asList(itemSpecIds.split(",")));
         return itemsSpecMapper.selectByExample(example);
+    }
+
+    /**
+     * 通过商品ID查询商品主图URL
+     *
+     * @param itemId 商品ID
+     * @return 商品主图URL
+     */
+    @Transactional(propagation = Propagation.SUPPORTS)
+    @Override
+    public String queryItemMainImgByItemId(String itemId) {
+        ItemsImg im = new ItemsImg();
+        im.setItemId(itemId);
+        im.setIsMain(YesOrNo.YES.type);
+        ItemsImg itemsImg = itemsImgMapper.selectOne(im);
+        return itemsImg.getUrl();
+    }
+
+    /**
+     * 减少商品规格库存数量
+     *
+     * @param specId 商品规格ID
+     * @param counts 数量
+     */
+    @Transactional(propagation = Propagation.REQUIRED)
+    @Override
+    public void decreaseItemSpecStock(String specId, int counts) {
+
+        // lockUtil.getLock(); -- 加锁
+        // lockUtil.unLock();  -- 解锁
+
+        int updateRows = itemsMapperCustom.decreaseItemSpecStock(specId, counts);
+        if (updateRows != 1) {
+            throw new RuntimeException("规格不存在或库存不足");
+        }
     }
 }

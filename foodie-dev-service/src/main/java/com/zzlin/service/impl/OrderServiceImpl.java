@@ -1,10 +1,11 @@
 package com.zzlin.service.impl;
 
+import com.zzlin.enums.OrderStatusEnum;
 import com.zzlin.enums.YesOrNo;
-import com.zzlin.pojo.ItemsSpec;
-import com.zzlin.pojo.OrderStatus;
-import com.zzlin.pojo.Orders;
-import com.zzlin.pojo.UserAddress;
+import com.zzlin.mapper.OrderItemsMapper;
+import com.zzlin.mapper.OrderStatusMapper;
+import com.zzlin.mapper.OrdersMapper;
+import com.zzlin.pojo.*;
 import com.zzlin.pojo.bo.SubmitOrderBO;
 import com.zzlin.pojo.vo.OrderVO;
 import com.zzlin.service.AddressService;
@@ -31,6 +32,15 @@ public class OrderServiceImpl implements OrderService {
 
     @Resource
     private ItemService itemService;
+
+    @Resource
+    private OrderItemsMapper orderItemsMapper;
+
+    @Resource
+    private OrdersMapper ordersMapper;
+
+    @Resource
+    private OrderStatusMapper orderStatusMapper;
 
     @Resource
     private Sid sid;
@@ -72,18 +82,51 @@ public class OrderServiceImpl implements OrderService {
         newOrder.setCreatedTime(new Date());
         newOrder.setUpdatedTime(new Date());
 
-        // 2. 循环根据itemSpecIds保存订单商品信息表
+        // 2. 根据itemSpecIds保存订单商品信息表
         Integer totalAmount = 0;
         Integer realPayAmount = 0;
-
         // TODO 整合redis后，商品购买的数量重新从redis的购物车中获取
-        int buyCounts = 1;
+        Integer buyCounts = 1;
         List<ItemsSpec> itemsSpecList = itemService.queryItemSpecListByIds(itemSpecIds);
         for (ItemsSpec itemsSpec : itemsSpecList) {
-
+            // 2.1 根据商品规格计算总价与折扣价
+            totalAmount += itemsSpec.getPriceNormal() * buyCounts;
+            realPayAmount += itemsSpec.getPriceDiscount() * buyCounts;
+            // 2.2 获取订单商品信息和图片地址，TODO 可优化
+            String itemId = itemsSpec.getItemId();
+            Items items = itemService.queryItemById(itemId);
+            String mainImgUrl = itemService.queryItemMainImgByItemId(itemId);
+            String orderItemId = sid.nextShort();
+            // 2.3 订单商品赋值
+            OrderItems orderItem = new OrderItems();
+            orderItem.setBuyCounts(buyCounts);
+            orderItem.setId(orderItemId);
+            orderItem.setItemId(itemId);
+            orderItem.setItemImg(mainImgUrl);
+            orderItem.setItemName(items.getItemName());
+            orderItem.setItemSpecName(itemsSpec.getName());
+            orderItem.setItemSpecId(itemsSpec.getId());
+            orderItem.setOrderId(orderId);
+            orderItem.setPrice(itemsSpec.getPriceDiscount());
+            // 2.4 订单商品入库
+            orderItemsMapper.insert(orderItem);
+            // 2.5 减少库存
+            itemService.decreaseItemSpecStock(itemsSpec.getId(), buyCounts);
         }
+        newOrder.setTotalAmount(totalAmount);
+        newOrder.setRealPayAmount(realPayAmount);
+        ordersMapper.insert(newOrder);
 
-        return null;
+        // 3. 订单状态保存
+        OrderStatus orderStatus = new OrderStatus();
+        orderStatus.setOrderId(orderId);
+        orderStatus.setOrderStatus(OrderStatusEnum.WAIT_PAY.type);
+        orderStatus.setCreatedTime(new Date());
+        orderStatusMapper.insert(orderStatus);
+
+        OrderVO orderVO = new OrderVO();
+        orderVO.setOrderId(orderId);
+        return orderVO;
     }
 
     /**
