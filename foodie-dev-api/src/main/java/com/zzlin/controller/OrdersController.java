@@ -2,22 +2,20 @@ package com.zzlin.controller;
 
 import com.zzlin.enums.OrderStatusEnum;
 import com.zzlin.enums.PayMethod;
+import com.zzlin.pojo.OrderStatus;
 import com.zzlin.pojo.bo.SubmitOrderBO;
 import com.zzlin.pojo.vo.MerchantOrdersVO;
 import com.zzlin.pojo.vo.OrderVO;
 import com.zzlin.service.OrderService;
-import com.zzlin.utils.CookieUtils;
 import com.zzlin.utils.JsonUtils;
 import com.zzlin.utils.Result;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
@@ -88,9 +86,28 @@ public class OrdersController extends BaseController {
      * @param merchantOrderId 商户订单ID
      * @return 结果
      */
+    @ApiOperation(value = "支付中心更新订单状态为已支付", notes = "更新订单状态为已支付", httpMethod = "POST")
     @PostMapping("notifyMerchantOrderPaid")
     public Integer notifyMerchantOrderPaid(String merchantOrderId){
+        if (StringUtils.isBlank(merchantOrderId)) {
+            return HttpStatus.INTERNAL_SERVER_ERROR.value();
+        }
         orderService.updateOrderStatus(merchantOrderId, OrderStatusEnum.WAIT_DELIVER.type);
         return HttpStatus.OK.value();
+    }
+
+    /**
+     * 查询订单状态
+     * @param orderId 订单ID
+     * @return 订单状态
+     */
+    @ApiOperation(value = "查询订单状态", notes = "查询订单状态", httpMethod = "POST")
+    @PostMapping("getPaidOrderInfo")
+    public Result getPaidOrderInfo(String orderId) {
+        if (StringUtils.isBlank(orderId)) {
+            return Result.errorMsg("");
+        }
+        OrderStatus orderStatus = orderService.queryOrderStatusInfo(orderId);
+        return Result.ok(orderStatus);
     }
 }

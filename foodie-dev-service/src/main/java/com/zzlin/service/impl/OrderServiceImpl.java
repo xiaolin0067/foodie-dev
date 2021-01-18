@@ -163,7 +163,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(propagation = Propagation.SUPPORTS)
     @Override
     public OrderStatus queryOrderStatusInfo(String orderId) {
-        return null;
+        return orderStatusMapper.selectByPrimaryKey(orderId);
     }
 
     /**
