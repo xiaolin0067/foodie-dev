@@ -7,6 +7,7 @@ import com.zzlin.mapper.OrderStatusMapper;
 import com.zzlin.mapper.OrdersMapper;
 import com.zzlin.pojo.*;
 import com.zzlin.pojo.bo.SubmitOrderBO;
+import com.zzlin.pojo.vo.MerchantOrdersVO;
 import com.zzlin.pojo.vo.OrderVO;
 import com.zzlin.service.AddressService;
 import com.zzlin.service.ItemService;
@@ -124,8 +125,16 @@ public class OrderServiceImpl implements OrderService {
         orderStatus.setCreatedTime(new Date());
         orderStatusMapper.insert(orderStatus);
 
+        // 4. 构建商户订单，传给支付中心
+        MerchantOrdersVO merchantOrders = new MerchantOrdersVO();
+        merchantOrders.setAmount(totalAmount + postAmount);
+        merchantOrders.setMerchantOrderId(orderId);
+        merchantOrders.setMerchantUserId(userId);
+        merchantOrders.setPayMethod(payMethod);
+
         OrderVO orderVO = new OrderVO();
         orderVO.setOrderId(orderId);
+        orderVO.setMerchantOrdersVO(merchantOrders);
         return orderVO;
     }
 
@@ -138,7 +147,11 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
     public void updateOrderStatus(String orderId, Integer orderStatus) {
-
+        OrderStatus os = new OrderStatus();
+        os.setOrderId(orderId);
+        os.setOrderStatus(orderStatus);
+        os.setPayTime(new Date());
+        orderStatusMapper.updateByPrimaryKeySelective(os);
     }
 
     /**
