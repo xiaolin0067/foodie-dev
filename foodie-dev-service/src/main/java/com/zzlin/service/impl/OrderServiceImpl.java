@@ -160,7 +160,7 @@ public class OrderServiceImpl implements OrderService {
      * @param orderId 订单ID
      * @return 订单状态
      */
-    @Transactional(propagation = Propagation.SUPPORTS)
+    @Transactional(propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
     @Override
     public OrderStatus queryOrderStatusInfo(String orderId) {
         return orderStatusMapper.selectByPrimaryKey(orderId);
@@ -172,6 +172,25 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
     public void closePayOvertimeOrder() {
+        OrderStatus queryOs = new OrderStatus();
+        queryOs.setOrderStatus(OrderStatusEnum.WAIT_PAY.type);
+        List<OrderStatus> waitOrderStatus = orderStatusMapper.select(queryOs);
+        for (OrderStatus orderStatus : waitOrderStatus) {
+            long createTime = orderStatus.getCreatedTime().getTime();
+            // 一天未支付，TODO 是否有性能影响
+            if ((System.currentTimeMillis() - createTime) > 86400000) {
+                doCloseOrder(orderStatus.getOrderId());
+            }
+        }
 
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    void doCloseOrder(String orderId) {
+        OrderStatus os = new OrderStatus();
+        os.setOrderStatus(OrderStatusEnum.CLOSE.type);
+        os.setCloseTime(new Date());
+        os.setOrderId(orderId);
+        orderStatusMapper.updateByPrimaryKeySelective(os);
     }
 }
