@@ -9,11 +9,17 @@ import com.zzlin.utils.Result;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author zlin
@@ -31,12 +37,35 @@ public class CentUserController {
     @PostMapping("update")
     public Result update(@ApiParam(name = "userId", value = "用户ID", required = true)
                          @RequestParam String userId,
-                         @RequestBody CenterUserBO centerUserBO,
+                         @Valid @RequestBody CenterUserBO centerUserBO,
+                         BindingResult bindingResult,
                          HttpServletRequest request, HttpServletResponse response) {
+
+        if (StringUtils.isBlank(userId)) {
+            return Result.errorMsg("用户ID为空");
+        }
+        if (bindingResult.hasErrors()) {
+            Map<String, String> errorMap = getErrors(bindingResult);
+            return Result.errorMap(errorMap);
+        }
+
         Users userResult = centerUserService.updateUserInfo(userId, centerUserBO);
         setNullProperty(userResult);
         CookieUtils.setCookie(request, response, "user", JsonUtils.objectToJson(userResult), true);
         return Result.ok();
+    }
+
+    private Map<String, String> getErrors(BindingResult bindingResult) {
+        Map<String, String> resultMap = new HashMap<>();
+        if (bindingResult == null) {
+            return resultMap;
+        }
+        for (FieldError error : bindingResult.getFieldErrors()) {
+            String field = error.getField();
+            String errorMsg = error.getDefaultMessage();
+            resultMap.put(field, errorMsg);
+        }
+        return resultMap;
     }
 
     private void setNullProperty(Users userResult) {
