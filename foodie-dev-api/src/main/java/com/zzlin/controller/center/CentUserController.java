@@ -1,5 +1,6 @@
 package com.zzlin.controller.center;
 
+import com.zzlin.config.Config;
 import com.zzlin.controller.BaseController;
 import com.zzlin.pojo.Users;
 import com.zzlin.pojo.bo.center.CenterUserBO;
@@ -41,6 +42,9 @@ public class CentUserController extends BaseController {
     @Resource
     private CenterUserService centerUserService;
 
+    @Resource
+    private Config config;
+
     @ApiOperation(value = "更新用户头像", notes = "更新用户头像", httpMethod = "POST")
     @PostMapping("uploadFace")
     public Result uploadFace(
@@ -51,7 +55,7 @@ public class CentUserController extends BaseController {
         if (StringUtils.isBlank(userId)) {
             return Result.errorMsg("用户ID为空");
         }
-        String uploadPath = IMAGE_USER_FACE_LOCATION + File.separator + userId;
+        String uploadPath = config.getImageUserFaceLocation() + File.separator + userId;
         if (file == null || file.isEmpty()) {
             return Result.errorMsg("头像文件为空");
         }
