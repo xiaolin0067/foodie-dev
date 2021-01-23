@@ -1,5 +1,6 @@
 package com.zzlin.controller.center;
 
+import com.zzlin.controller.BaseController;
 import com.zzlin.pojo.Users;
 import com.zzlin.pojo.bo.center.CenterUserBO;
 import com.zzlin.service.center.CenterUserService;
@@ -9,15 +10,20 @@ import com.zzlin.utils.Result;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,10 +34,45 @@ import java.util.Map;
 @Api(value = "用户中信息相关接口", tags = {"用户信息相关接口"})
 @RestController
 @RequestMapping("userInfo")
-public class CentUserController {
+public class CentUserController extends BaseController {
+
+    private final static Logger LOGGER = LoggerFactory.getLogger(CentUserController.class);
 
     @Resource
     private CenterUserService centerUserService;
+
+    @ApiOperation(value = "更新用户头像", notes = "更新用户头像", httpMethod = "POST")
+    @PostMapping("uploadFace")
+    public Result uploadFace(
+            @ApiParam(name = "userId", value = "用户ID", required = true)
+            @RequestParam String userId,
+            @RequestBody MultipartFile file,
+            HttpServletRequest request, HttpServletResponse response) {
+        if (StringUtils.isBlank(userId)) {
+            return Result.errorMsg("用户ID为空");
+        }
+        String uploadPath = IMAGE_USER_FACE_LOCATION + File.separator + userId;
+        if (file == null || file.isEmpty()) {
+            return Result.errorMsg("头像文件为空");
+        }
+        String originalFilename = file.getOriginalFilename();
+        if (StringUtils.isNotBlank(originalFilename)) {
+            String newFileName = "face-" + userId + "-" + originalFilename;
+            String finalFacePath = uploadPath + File.separator + newFileName;
+            File saveFile = new File(finalFacePath);
+            File parentFile = saveFile.getParentFile();
+            if (parentFile != null) {
+                parentFile.mkdirs();
+            }
+            try (OutputStream outputStream = new FileOutputStream(saveFile);
+                 InputStream inputStream = file.getInputStream()) {
+                IOUtils.copy(inputStream, outputStream);
+            }catch (IOException e) {
+                LOGGER.error("上传用户头像文件失败", e);
+            }
+        }
+        return Result.ok();
+    }
 
     @ApiOperation(value = "更新用户信息", notes = "更新用户信息", httpMethod = "POST")
     @PostMapping("update")
