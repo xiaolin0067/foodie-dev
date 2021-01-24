@@ -14,6 +14,15 @@ import org.springframework.stereotype.Component;
 public class Config {
 
     private String imageUserFaceLocation;
+    private String imageServerUrl;
+
+    public String getImageServerUrl() {
+        return imageServerUrl;
+    }
+
+    public void setImageServerUrl(String imageServerUrl) {
+        this.imageServerUrl = imageServerUrl;
+    }
 
     public String getImageUserFaceLocation() {
         return imageUserFaceLocation;

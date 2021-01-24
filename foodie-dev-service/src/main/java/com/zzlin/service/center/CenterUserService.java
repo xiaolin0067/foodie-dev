@@ -24,4 +24,12 @@ public interface CenterUserService {
      * @return 用户信息
      */
     Users updateUserInfo(String userId, CenterUserBO centerUserBO);
+
+    /**
+     * 更新用户头像
+     * @param userId 用户ID
+     * @param faceUrl 用户头像
+     * @return 用户信息
+     */
+    Users updateUserFace(String userId, String faceUrl);
 }
