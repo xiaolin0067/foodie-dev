@@ -2,6 +2,7 @@ package com.zzlin.controller.center;
 
 import com.zzlin.config.Config;
 import com.zzlin.controller.BaseController;
+import com.zzlin.enums.ImageFileSuffix;
 import com.zzlin.pojo.Users;
 import com.zzlin.pojo.bo.center.CenterUserBO;
 import com.zzlin.service.center.CenterUserService;
@@ -63,13 +64,21 @@ public class CentUserController extends BaseController {
         String faceUrl = config.getImageServerUrl() + "/" + userId;
         String originalFilename = file.getOriginalFilename();
         if (StringUtils.isNotBlank(originalFilename)) {
+            String suffix = originalFilename.substring(originalFilename.lastIndexOf(".")+1);
+            if (ImageFileSuffix.illegalSuffix(suffix)) {
+                return Result.errorMsg("不合法的文件类型");
+            }
             String newFileName = "face-" + userId + "-" + originalFilename;
             String finalFacePath = uploadPath + File.separator + newFileName;
             faceUrl += ("/" + newFileName);
             File saveFile = new File(finalFacePath);
             File parentFile = saveFile.getParentFile();
             if (parentFile != null) {
-                parentFile.mkdirs();
+                boolean mkdirResult = parentFile.mkdirs();
+                if (mkdirResult) {
+                    LOGGER.error("头像上传失败，文件夹创建失败 {}", parentFile.getAbsolutePath());
+                    return Result.errorMsg("文件上传失败");
+                }
             }
             try (OutputStream outputStream = new FileOutputStream(saveFile);
                  InputStream inputStream = file.getInputStream()) {
