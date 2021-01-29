@@ -5,6 +5,7 @@ package com.zzlin.enums;
  */
 public enum OrderStatusEnum {
 
+    /** */
 	WAIT_PAY(10, "待付款"),
 	WAIT_DELIVER(20, "已付款，待发货"),
 	WAIT_RECEIVE(30, "已发货，待收货"),
@@ -18,5 +19,17 @@ public enum OrderStatusEnum {
 		this.type = type;
 		this.value = value;
 	}
+
+	public static boolean illegalStatus(Integer type) {
+        if (type == null) {
+            return true;
+        }
+        for (OrderStatusEnum value : OrderStatusEnum.values()) {
+            if (value.type.equals(type)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
 }

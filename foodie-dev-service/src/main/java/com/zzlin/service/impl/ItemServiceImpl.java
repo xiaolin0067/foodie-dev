@@ -169,17 +169,7 @@ public class ItemServiceImpl implements ItemService {
             comment.setNickname(DesensitizationUtil.commonDisplay(comment.getNickname()));
         }
 
-        return setterPagedGrid(itemComments, page);
-    }
-
-    private PagedGridResult setterPagedGrid(List<?> list, Integer page) {
-        PageInfo<?> pageList = new PageInfo<>(list);
-        PagedGridResult grid = new PagedGridResult();
-        grid.setPage(page);
-        grid.setRows(list);
-        grid.setTotal(pageList.getPages());
-        grid.setRecords(pageList.getTotal());
-        return grid;
+        return new PagedGridResult(itemComments, page);
     }
 
     /**
@@ -201,7 +191,7 @@ public class ItemServiceImpl implements ItemService {
 
         List<SearchItemsVO> itemComments = itemsMapperCustom.searchItems(paramsMap);
 
-        return setterPagedGrid(itemComments, page);
+        return new PagedGridResult(itemComments, page);
     }
 
     /**
@@ -223,7 +213,7 @@ public class ItemServiceImpl implements ItemService {
 
         List<SearchItemsVO> itemComments = itemsMapperCustom.searchItemsByCatId(paramsMap);
 
-        return setterPagedGrid(itemComments, page);
+        return new PagedGridResult(itemComments, page);
     }
 
     /**

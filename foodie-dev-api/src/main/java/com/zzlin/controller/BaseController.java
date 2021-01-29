@@ -11,8 +11,8 @@ import java.io.File;
 @Controller
 public class BaseController {
 
-    static final Integer COMMENT_PAGE_SIZE = 10;
-    static final Integer PAGE_SIZE = 20;
+    public static final Integer COMMENT_PAGE_SIZE = 10;
+    public static final Integer PAGE_SIZE = 20;
 
     static final String SHOP_CART = "shopcart";
 

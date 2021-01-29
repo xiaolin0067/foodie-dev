@@ -1,20 +1,23 @@
 package com.zzlin.utils;
 
+import com.github.pagehelper.PageInfo;
+
 import java.util.List;
 
-/**
- * 
- * @Title: PagedGridResult.java
- * @Package com.imooc.utils
- * @Description: 用来返回分页Grid的数据格式
- * Copyright: Copyright (c) 2019
- */
 public class PagedGridResult {
 	
 	private int page;			// 当前页数
 	private int total;			// 总页数	
 	private long records;		// 总记录数
 	private List<?> rows;		// 每行显示的内容
+
+    public PagedGridResult(List<?> list, Integer page) {
+        PageInfo<?> pageList = new PageInfo<>(list);
+        setPage(page);
+        setRows(list);
+        setTotal(pageList.getPages());
+        setRecords(pageList.getTotal());
+    }
 
 	public int getPage() {
 		return page;

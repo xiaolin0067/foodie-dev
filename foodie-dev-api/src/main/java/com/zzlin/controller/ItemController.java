@@ -107,7 +107,7 @@ public class ItemController extends BaseController {
             @ApiParam(name = "pageSize", value = "每页记录数")
             @RequestParam Integer pageSize) {
         if (StringUtils.isBlank(keywords)) {
-            return Result.errorMsg(null);
+            return Result.errorMsg("用户ID为空");
         }
         if (page == null) {
             page = 1;

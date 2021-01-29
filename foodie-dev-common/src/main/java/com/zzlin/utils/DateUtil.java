@@ -572,10 +572,6 @@ public class DateUtil {
     /**
      * 
      * @Description: 获得本月的第一天日期
-     * @return
-     * 
-     * @author leechenxiang
-     * @date 2017年5月31日 下午1:37:34
      */
     public static String getFirstDateOfThisMonth() {
     	
@@ -593,10 +589,6 @@ public class DateUtil {
     /**
      * 
      * @Description: 获得本月的最后一天日期
-     * @return
-     * 
-     * @author leechenxiang
-     * @date 2017年5月31日 下午1:37:50
      */
     public static String getLastDateOfThisMonth() {
     	SimpleDateFormat format = new SimpleDateFormat(ISO_EXPANDED_DATE_FORMAT);  
