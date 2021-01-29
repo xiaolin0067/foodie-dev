@@ -12,7 +12,14 @@
         <result column="isComment" property="isComment" />
         <result column="orderStatus" property="orderStatus" />
 
-        <collection property="subOrderItemList" ofType="com.zzlin.pojo.vo.MySubOrderItemVO">
+        <!--
+        select属性为使用子查询，值为子查询ID名
+        column为子查询参数，值为父查询的property值
+        -->
+        <collection property="subOrderItemList"
+                    select="getOrderItems"
+                    column="orderId"
+                    ofType="com.zzlin.pojo.vo.MySubOrderItemVO">
             <result column="itemId" property="itemId" />
             <result column="itemImg" property="itemImg" />
             <result column="itemName" property="itemName" />
@@ -21,8 +28,48 @@
             <result column="price" property="price" />
         </collection>
     </resultMap>
-    
+
+    <select id="getOrderItems" parameterType="String" resultType="com.zzlin.pojo.vo.MySubOrderItemVO">
+        SELECT
+        oi.item_id as itemId,
+        oi.item_name as itemName,
+        oi.item_img as itemImg,
+        oi.item_spec_name as itemSpecName,
+        oi.buy_counts as buyCounts,
+        oi.price as price
+        FROM
+        order_items oi
+        WHERE
+        oi.order_id = #{orderId}
+    </select>
+
     <select id="queryMyOrders" resultMap="myOrderVO" parameterType="Map">
+        SELECT
+        od.id as orderId,
+        od.created_time as createdTime,
+        od.pay_method as payMethod,
+        od.real_pay_amount as realPayAmount,
+        od.post_amount as postAmount,
+        os.order_status as orderStatus,
+        od.is_comment as isComment
+        FROM
+        orders od
+        LEFT JOIN
+        order_status os
+        on od.id = os.order_id
+        WHERE
+        od.user_id = #{paramsMap.userId}
+        AND
+        od.is_delete = 0
+        <if test="paramsMap.orderStatus != null">
+            and os.order_status = #{paramsMap.orderStatus}
+        </if>
+        ORDER BY
+        od.updated_time ASC
+    </select>
+
+    <!--  包含子列表时PageHelper分页插件会分页错误  -->
+    <select id="queryMyOrders_OLD" resultMap="myOrderVO" parameterType="Map">
         SELECT
         od.id as orderId,
         od.created_time as createdTime,
