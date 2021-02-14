@@ -2,6 +2,7 @@ package com.zzlin.controller.center;
 
 import com.zzlin.controller.BaseController;
 import com.zzlin.enums.OrderStatusEnum;
+import com.zzlin.pojo.Orders;
 import com.zzlin.service.center.MyOrderService;
 import com.zzlin.utils.PagedGridResult;
 import com.zzlin.utils.Result;
@@ -9,10 +10,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
@@ -53,5 +51,68 @@ public class MyOrderController extends BaseController {
         }
         PagedGridResult pageResult = myOrderService.queryMyOrders(userId, orderStatus, page, pageSize);
         return Result.ok(pageResult);
+    }
+
+    @ApiOperation(value = "商家发货", notes = "商家发货", httpMethod = "GET")
+    @GetMapping("deliver")
+    public Result deliver(
+            @ApiParam(name = "orderId", value = "订单ID", required = true)
+            @RequestParam String orderId) {
+        if (StringUtils.isBlank(orderId)) {
+            return Result.errorMsg("订单ID不能为空");
+        }
+        myOrderService.updateDeliverOrderStatus(orderId);
+        return Result.ok();
+    }
+
+    @ApiOperation(value = "用户确认收货", notes = "用户确认收货", httpMethod = "POST")
+    @PostMapping("confirmReceive")
+    public Result confirmReceive(
+            @ApiParam(name = "orderId", value = "订单ID", required = true)
+            @RequestParam String orderId,
+            @ApiParam(name = "userId", value = "用户ID", required = true)
+            @RequestParam String userId) {
+        Result result = checkUserOrder(userId, orderId);
+        if (!result.isOK()) {
+            return result;
+        }
+        boolean updateResult = myOrderService.updateReceiveOrderStatus(orderId);
+        if (!updateResult) {
+            return Result.errorMsg("确认收货失败！");
+        }
+        return Result.ok();
+    }
+
+    @ApiOperation(value = "用户删除订单", notes = "用户删除订单", httpMethod = "POST")
+    @PostMapping("delete")
+    public Result delete(
+            @ApiParam(name = "orderId", value = "订单ID", required = true)
+            @RequestParam String orderId,
+            @ApiParam(name = "userId", value = "用户ID", required = true)
+            @RequestParam String userId) {
+        Result result = checkUserOrder(userId, orderId);
+        if (!result.isOK()) {
+            return result;
+        }
+
+        boolean deleteResult = myOrderService.deleteOrder(userId, orderId);
+        if (!deleteResult) {
+            return Result.errorMsg("删除订单失败！");
+        }
+        return Result.ok();
+    }
+
+    /**
+     * 检查订单是否存在
+     * @param userId 用户ID
+     * @param orderId 订单ID
+     * @return 结果
+     */
+    private Result checkUserOrder(String userId, String orderId) {
+        Orders orders = myOrderService.queryMyOrder(userId, orderId);
+        if (orders == null) {
+            return Result.errorMsg("订单不存在!");
+        }
+        return Result.ok();
     }
 }

@@ -3,24 +3,18 @@ package com.zzlin.service.impl.center;
 import com.github.pagehelper.PageHelper;
 import com.zzlin.enums.OrderStatusEnum;
 import com.zzlin.enums.YesOrNo;
-import com.zzlin.mapper.OrderItemsMapper;
 import com.zzlin.mapper.OrderStatusMapper;
 import com.zzlin.mapper.OrdersMapper;
 import com.zzlin.mapper.OrdersMapperCustom;
-import com.zzlin.pojo.*;
-import com.zzlin.pojo.bo.SubmitOrderBO;
-import com.zzlin.pojo.vo.MerchantOrdersVO;
+import com.zzlin.pojo.OrderStatus;
+import com.zzlin.pojo.Orders;
 import com.zzlin.pojo.vo.MyOrdersVO;
-import com.zzlin.pojo.vo.OrderVO;
-import com.zzlin.service.AddressService;
-import com.zzlin.service.ItemService;
-import com.zzlin.service.OrderService;
 import com.zzlin.service.center.MyOrderService;
 import com.zzlin.utils.PagedGridResult;
-import org.n3r.idworker.Sid;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.util.Date;
@@ -38,6 +32,12 @@ public class MyOrderServiceImpl implements MyOrderService {
     @Resource
     private OrdersMapperCustom ordersMapperCustom;
 
+    @Resource
+    private OrderStatusMapper orderStatusMapper;
+
+    @Resource
+    private OrdersMapper ordersMapper;
+
     /**
      * 分页查询我的订单列表
      *
@@ -47,7 +47,7 @@ public class MyOrderServiceImpl implements MyOrderService {
      * @param pageSize    每页数量
      * @return 订单分页列表
      */
-    @Transactional(propagation = Propagation.SUPPORTS)
+    @Transactional(propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
     @Override
     public PagedGridResult queryMyOrders(String userId, Integer orderStatus, Integer page, Integer pageSize) {
         PageHelper.startPage(page, pageSize);
@@ -58,5 +58,85 @@ public class MyOrderServiceImpl implements MyOrderService {
         }
         List<MyOrdersVO> myOrdersVoList = ordersMapperCustom.queryMyOrders(paramMap);
         return new PagedGridResult(myOrdersVoList, page);
+    }
+
+    /**
+     * 更新订单发货状态
+     *
+     * @param orderId 订单ID
+     */
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @Override
+    public void updateDeliverOrderStatus(String orderId) {
+        OrderStatus orderStatus = new OrderStatus();
+        orderStatus.setOrderId(orderId);
+        orderStatus.setOrderStatus(OrderStatusEnum.WAIT_RECEIVE.type);
+        orderStatus.setDeliverTime(new Date());
+
+        Example example = new Example(OrderStatus.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("orderId", orderId);
+        criteria.andEqualTo("orderStatus", OrderStatusEnum.WAIT_DELIVER.type);
+        orderStatusMapper.updateByExampleSelective(orderStatus, example);
+    }
+
+    /**
+     * 查询我的订单
+     *
+     * @param userId  用户ID
+     * @param orderId 订单ID
+     * @return 订单实体
+     */
+    @Transactional(propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
+    @Override
+    public Orders queryMyOrder(String userId, String orderId) {
+        Orders order = new Orders();
+        order.setUserId(userId);
+        order.setId(orderId);
+        order.setIsDelete(YesOrNo.NO.type);
+        return ordersMapper.selectOne(order);
+    }
+
+    /**
+     * 更新订单状态 ---> 确认收货
+     *
+     * @param orderId 订单ID
+     * @return 更新状态
+     */
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @Override
+    public boolean updateReceiveOrderStatus(String orderId) {
+        OrderStatus orderStatus = new OrderStatus();
+        orderStatus.setOrderStatus(OrderStatusEnum.SUCCESS.type);
+        orderStatus.setSuccessTime(new Date());
+
+        Example example = new Example(OrderStatus.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("orderId", orderId);
+        criteria.andEqualTo("orderStatus", OrderStatusEnum.WAIT_RECEIVE.type);
+        int result = orderStatusMapper.updateByExampleSelective(orderStatus, example);
+        return result == 1;
+    }
+
+    /**
+     * 删除订单（逻辑删除）
+     *
+     * @param userId  用户ID
+     * @param orderId 订单ID
+     * @return 删除结果
+     */
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @Override
+    public boolean deleteOrder(String userId, String orderId) {
+        Orders order = new Orders();
+        order.setIsDelete(YesOrNo.YES.type);
+        order.setUpdatedTime(new Date());
+
+        Example example = new Example(Orders.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("id", orderId);
+        criteria.andEqualTo("userId", userId);
+        int result = ordersMapper.updateByExampleSelective(order, example);
+        return result == 1;
     }
 }
