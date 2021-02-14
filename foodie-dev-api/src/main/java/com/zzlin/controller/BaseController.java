@@ -1,7 +1,11 @@
 package com.zzlin.controller;
 
+import com.zzlin.pojo.Orders;
+import com.zzlin.service.center.MyOrderService;
+import com.zzlin.utils.Result;
 import org.springframework.stereotype.Controller;
 
+import javax.annotation.Resource;
 import java.io.File;
 
 /**
@@ -34,4 +38,21 @@ public class BaseController {
             File.separator + "images" +
             File.separator + "foodie" +
             File.separator + "faces";
+
+    @Resource
+    public MyOrderService myOrderService;
+
+    /**
+     * 检查订单是否存在
+     * @param userId 用户ID
+     * @param orderId 订单ID
+     * @return 结果
+     */
+    public Result checkUserOrder(String userId, String orderId) {
+        Orders orders = myOrderService.queryMyOrder(userId, orderId);
+        if (orders == null) {
+            return Result.errorMsg("订单不存在!");
+        }
+        return Result.ok(orders);
+    }
 }

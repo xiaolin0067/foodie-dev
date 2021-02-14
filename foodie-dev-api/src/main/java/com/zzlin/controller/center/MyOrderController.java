@@ -2,8 +2,6 @@ package com.zzlin.controller.center;
 
 import com.zzlin.controller.BaseController;
 import com.zzlin.enums.OrderStatusEnum;
-import com.zzlin.pojo.Orders;
-import com.zzlin.service.center.MyOrderService;
 import com.zzlin.utils.PagedGridResult;
 import com.zzlin.utils.Result;
 import io.swagger.annotations.Api;
@@ -11,8 +9,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
-
-import javax.annotation.Resource;
 
 /**
  * @author zlin
@@ -22,9 +18,6 @@ import javax.annotation.Resource;
 @RestController
 @RequestMapping("myorders")
 public class MyOrderController extends BaseController {
-
-    @Resource
-    private MyOrderService myOrderService;
 
     @ApiOperation(value = "分页查询我的订单列表", notes = "分页查询我的订单列表", httpMethod = "POST")
     @PostMapping("query")
@@ -98,20 +91,6 @@ public class MyOrderController extends BaseController {
         boolean deleteResult = myOrderService.deleteOrder(userId, orderId);
         if (!deleteResult) {
             return Result.errorMsg("删除订单失败！");
-        }
-        return Result.ok();
-    }
-
-    /**
-     * 检查订单是否存在
-     * @param userId 用户ID
-     * @param orderId 订单ID
-     * @return 结果
-     */
-    private Result checkUserOrder(String userId, String orderId) {
-        Orders orders = myOrderService.queryMyOrder(userId, orderId);
-        if (orders == null) {
-            return Result.errorMsg("订单不存在!");
         }
         return Result.ok();
     }
