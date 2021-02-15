@@ -1,5 +1,6 @@
 package com.zzlin.mapper;
 
+import com.zzlin.pojo.OrderStatus;
 import com.zzlin.pojo.vo.MyOrdersVO;
 import org.apache.ibatis.annotations.Param;
 
@@ -18,4 +19,18 @@ public interface OrdersMapperCustom {
      * @return 订单列表
      */
     List<MyOrdersVO> queryMyOrders(@Param("paramsMap") Map<String, Object> map);
+
+    /**
+     * 查询订单状态数量
+     * @param map 参数
+     * @return 订单数量
+     */
+    int getMyOrderStatusCounts(@Param("paramsMap") Map<String, Object> map);
+
+    /**
+     * 查询订单动向
+     * @param map 参数
+     * @return 订单状态
+     */
+    List<OrderStatus> getMyOrderTrend(@Param("paramsMap") Map<String, Object> map);
 }

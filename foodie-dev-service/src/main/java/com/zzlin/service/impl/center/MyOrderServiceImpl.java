@@ -9,6 +9,7 @@ import com.zzlin.mapper.OrdersMapperCustom;
 import com.zzlin.pojo.OrderStatus;
 import com.zzlin.pojo.Orders;
 import com.zzlin.pojo.vo.MyOrdersVO;
+import com.zzlin.pojo.vo.OrderStatusCountsVO;
 import com.zzlin.service.center.MyOrderService;
 import com.zzlin.utils.PagedGridResult;
 import org.springframework.stereotype.Service;
@@ -138,5 +139,55 @@ public class MyOrderServiceImpl implements MyOrderService {
         criteria.andEqualTo("userId", userId);
         int result = ordersMapper.updateByExampleSelective(order, example);
         return result == 1;
+    }
+
+    /**
+     * 查询用户订单数
+     *
+     * @param userId 用户ID
+     * @return 订单数VO
+     */
+    @Transactional(propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
+    @Override
+    public OrderStatusCountsVO getOrderStatusCounts(String userId) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("userId", userId);
+
+        map.put("orderStatus", OrderStatusEnum.WAIT_PAY.type);
+        int waitPayCounts = ordersMapperCustom.getMyOrderStatusCounts(map);
+
+        map.put("orderStatus", OrderStatusEnum.WAIT_DELIVER.type);
+        int waitDeliverCounts = ordersMapperCustom.getMyOrderStatusCounts(map);
+
+        map.put("orderStatus", OrderStatusEnum.WAIT_RECEIVE.type);
+        int waitReceiveCounts = ordersMapperCustom.getMyOrderStatusCounts(map);
+
+        map.put("orderStatus", OrderStatusEnum.SUCCESS.type);
+        map.put("isComment", YesOrNo.NO.type);
+        int waitCommentCounts = ordersMapperCustom.getMyOrderStatusCounts(map);
+
+        return new OrderStatusCountsVO(waitPayCounts,
+                waitDeliverCounts,
+                waitReceiveCounts,
+                waitCommentCounts);
+    }
+
+    /**
+     * 获得分页的订单动向
+     *
+     * @param userId   用户ID
+     * @param page     页码
+     * @param pageSize 每页数量
+     * @return 订单动向
+     */
+    @Transactional(propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
+    @Override
+    public PagedGridResult getOrdersTrend(String userId, Integer page, Integer pageSize) {
+        Map<String, Object> map = new HashMap<>(1);
+        map.put("userId", userId);
+        PageHelper.startPage(page, pageSize);
+        List<OrderStatus> list = ordersMapperCustom.getMyOrderTrend(map);
+
+        return new PagedGridResult(list, page);
     }
 }

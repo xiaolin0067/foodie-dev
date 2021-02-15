@@ -1,6 +1,7 @@
 package com.zzlin.service.center;
 
 import com.zzlin.pojo.Orders;
+import com.zzlin.pojo.vo.OrderStatusCountsVO;
 import com.zzlin.utils.PagedGridResult;
 
 /**
@@ -48,4 +49,20 @@ public interface MyOrderService {
      * @return 删除结果
      */
     boolean deleteOrder(String userId, String orderId);
+
+    /**
+     * 查询用户订单数
+     * @param userId 用户ID
+     * @return 订单数VO
+     */
+    OrderStatusCountsVO getOrderStatusCounts(String userId);
+
+    /**
+     * 获得分页的订单动向
+     * @param userId 用户ID
+     * @param page 页码
+     * @param pageSize 每页数量
+     * @return 订单动向
+     */
+    PagedGridResult getOrdersTrend(String userId, Integer page, Integer pageSize);
 }
