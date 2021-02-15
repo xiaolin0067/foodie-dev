@@ -4,15 +4,14 @@ import com.zzlin.controller.BaseController;
 import com.zzlin.enums.YesOrNo;
 import com.zzlin.pojo.OrderItems;
 import com.zzlin.pojo.Orders;
+import com.zzlin.pojo.bo.center.OrderItemsCommentBO;
 import com.zzlin.service.center.MyCommentsService;
 import com.zzlin.utils.Result;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -46,6 +45,29 @@ public class MyCommentsController extends BaseController {
         }
         List<OrderItems> orderItemsList = myCommentsService.queryPendingComment(orderId);
         return Result.ok(orderItemsList);
+    }
+
+    @ApiOperation(value = "保存商品评价列表", notes = "保存商品评价列表", httpMethod = "POST")
+    @PostMapping("saveList")
+    public Result saveList(
+            @ApiParam(name = "userId", value = "用户ID", required = true)
+            @RequestParam String userId,
+            @ApiParam(name = "orderId", value = "订单ID", required = true)
+            @RequestParam String orderId,
+            @RequestBody List<OrderItemsCommentBO> commentList) {
+        if (CollectionUtils.isEmpty(commentList)) {
+            return Result.errorMsg("评价列表为空!");
+        }
+        Result result = checkUserOrder(userId, orderId);
+        if (!result.isOK()) {
+            return result;
+        }
+        Orders orders = (Orders) result.getData();
+        if (orders.getIsComment().equals(YesOrNo.YES.type)) {
+            return Result.errorMsg("订单已评价!");
+        }
+        myCommentsService.saveComments(orderId, userId, commentList);
+        return Result.ok();
     }
 
 }
