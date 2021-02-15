@@ -1,12 +1,15 @@
 package com.zzlin.service.impl.center;
 
+import com.github.pagehelper.PageHelper;
 import com.zzlin.enums.YesOrNo;
 import com.zzlin.mapper.*;
 import com.zzlin.pojo.OrderItems;
 import com.zzlin.pojo.OrderStatus;
 import com.zzlin.pojo.Orders;
 import com.zzlin.pojo.bo.center.OrderItemsCommentBO;
+import com.zzlin.pojo.vo.MyCommentVO;
 import com.zzlin.service.center.MyCommentsService;
+import com.zzlin.utils.PagedGridResult;
 import org.n3r.idworker.Sid;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -84,5 +87,23 @@ public class MyCommentsServiceImpl implements MyCommentsService {
         orderStatus.setOrderId(orderId);
         orderStatus.setCommentTime(new Date());
         orderStatusMapper.updateByPrimaryKeySelective(orderStatus);
+    }
+
+    /**
+     * 分页查询我的评价列表
+     *
+     * @param userId   用户ID
+     * @param page     页码
+     * @param pageSize 每页数量
+     * @return 评价列表
+     */
+    @Override
+    public PagedGridResult queryMyComments(String userId, Integer page, Integer pageSize) {
+        Map<String, Object> map = new HashMap<>(1);
+        map.put("userId", userId);
+        PageHelper.startPage(page, pageSize);
+        List<MyCommentVO> list = itemsCommentsMapperCustom.queryMyComments(map);
+
+        return new PagedGridResult(list, page);
     }
 }
