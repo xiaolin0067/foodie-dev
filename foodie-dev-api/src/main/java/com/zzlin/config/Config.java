@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @ConfigurationProperties(prefix = "file")
-@PropertySource("classpath:config-dev.properties")
+@PropertySource("classpath:config-prod.properties")
 public class Config {
 
     private String imageUserFaceLocation;

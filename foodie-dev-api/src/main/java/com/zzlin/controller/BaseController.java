@@ -24,7 +24,7 @@ public class BaseController {
      * 微信支付成功 -> 支付中心 -> 天天吃货平台
      *                      |-> 回调通知的url
      */
-    static final String PAT_RETURN_URL = "http://localhost:8088/orders/notifyMerchantOrderPaid";
+    static final String PAT_RETURN_URL = "http://192.168.3.16:8088/foodie-dev-api/orders/notifyMerchantOrderPaid";
 
     /**
      * 支付中心的调用地址
