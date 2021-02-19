@@ -116,9 +116,9 @@ public class MyOrderController extends BaseController {
     public Result trend(
             @ApiParam(name = "userId", value = "用户id", required = true)
             @RequestParam String userId,
-            @ApiParam(name = "page", value = "查询下一页的第几页", required = false)
+            @ApiParam(name = "page", value = "查询下一页的第几页")
             @RequestParam Integer page,
-            @ApiParam(name = "pageSize", value = "分页的每一页显示的条数", required = false)
+            @ApiParam(name = "pageSize", value = "分页的每一页显示的条数")
             @RequestParam Integer pageSize) {
 
         if (StringUtils.isBlank(userId)) {
