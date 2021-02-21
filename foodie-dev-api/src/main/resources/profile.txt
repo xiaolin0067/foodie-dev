@@ -7,3 +7,6 @@
     file.imageUserFaceLocation=/workspaces/images/foodie/faces
     file.imageServerUrl=http://192.168.3.16:8088/foodie-dev-api/foodie/faces
 4. 支付中心回调天天货地址，回调通知的url
+
+打包方式：jar：服务化概念，war：应用程序概念
+
