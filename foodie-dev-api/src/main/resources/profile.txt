@@ -10,3 +10,9 @@
 
 打包方式：jar：服务化概念，war：应用程序概念
 
+修改/tomcat/conf/context.xml
+在<Context>中增加
+<CookieProcessor className="org.apache.tomcat.util.http.LegacyCookieProcessor" />
+可修改Tomcat的cookie处理器
+解决不合法的域报错，IllegalArgumentException: An invalid domain [*] was specified for this cookie
+
