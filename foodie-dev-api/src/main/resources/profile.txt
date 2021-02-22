@@ -14,5 +14,5 @@
 在<Context>中增加
 <CookieProcessor className="org.apache.tomcat.util.http.LegacyCookieProcessor" />
 可修改Tomcat的cookie处理器
-解决不合法的域报错[.z.mukewang.com作为cookie域名报错]，IllegalArgumentException: An invalid domain [*] was specified for this cookie
+解决不合法的域报错[.z.mukewang.com作为cookie域名报错，而z.mukewang.com则不会]，IllegalArgumentException: An invalid domain [*] was specified for this cookie
 
