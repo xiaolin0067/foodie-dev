@@ -22,6 +22,8 @@ public class CorsConfig {
         // 1. 添加cors配置信息
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.addAllowedOrigin("http://localhost:8080");
+        configuration.addAllowedOrigin("http://192.168.3.16:8080");
+        configuration.addAllowedOrigin("http://192.168.3.16");
         // 设置允许请求的方式
         configuration.addAllowedMethod("*");
         // 设置允许的header
