@@ -1,0 +1,67 @@
+安装时配置Nginx
+./configure \
+--prefix=/usr/local/nginx \
+--pid-path=/var/run/nginx/nginx.pid \
+--lock-path=/var/lock/nginx.lock \
+--error-log-path=/var/log/nginx/error.log \
+--http-log-path=/var/log/nginx/access.log \
+--with-http_gzip_static_module \
+--http-client-body-temp-path=/var/temp/nginx/client \
+--http-proxy-temp-path=/var/temp/nginx/proxy \
+--http-fastcgi-temp-path=/var/temp/nginx/fastcgi \
+--http-uwsgi-temp-path=/var/temp/nginx/uwsgi \
+--http-scgi-temp-path=/var/temp/nginx/scgi \
+--with-http_ssl_module
+
+启动报错：
+nginx: [error] invalid PID number "" in "/var/run/nginx/nginx.pid"
+解决：
+./nginx -c /usr/local/nginx/conf/nginx.conf
+./nginx -s reload
+关闭nginx，暴力 ./nginx -s stop，优雅 ./nginx -s quit(仅针对http请求)
+
+gzip压缩文件类型列表
+text/plain application/javascript application/x-javascript text/css application/xml text/javascript application/x-httpd-php image/jpeg image/gif image/png application/json
+
+nginx日志使用crontab定时切割
+1、安装定时任务
+yum install crontabs
+2、crontab -e 编辑并且添加一行新的任务：
+*/1 * * * * /usr/local/nginx/sbin/cut_my_log.sh
+3、重启服务
+service crond restart
+4、常用定时任务命令：
+service crond start    //启动服务
+service crond stop     //关闭服务
+service crond restart  //重启服务
+service crond reload   //重新载入配置
+crontab -e             //编辑任务
+crontab -l             //看任务列表
+
+CDN：
+根据发起请求者所在区域返回最近的机房的服务器地址，降低网络拥塞，提高用户访问响应速度和命中率，达到加速目的。
+CDN节点可缓存静态资源，减少请求到达源站。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
