@@ -40,10 +40,17 @@ service crond reload   //重新载入配置
 crontab -e             //编辑任务
 crontab -l             //看任务列表
 
-CDN：
+
+动静分离
+CDN Content Delivery Network，内容分发网络
 根据发起请求者所在区域返回最近的机房的服务器地址，降低网络拥塞，提高用户访问响应速度和命中率，达到加速目的。
 CDN节点可缓存静态资源，减少请求到达源站。
+使用CDN，将静态资源放在第三方的
+静态资源使用一级域名，动态资源使用二级域名
 
+动静分离带来的问题
+跨域解决：springboot nginx jsonp
+分布式回话：分布式缓存中间件redis
 
 
 
