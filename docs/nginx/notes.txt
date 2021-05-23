@@ -1,3 +1,5 @@
+检测nginx是否安装了ssl模块
+nginx -V
 安装时配置Nginx
 ./configure \
 --prefix=/usr/local/nginx \
