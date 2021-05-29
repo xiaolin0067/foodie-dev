@@ -11,6 +11,8 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -25,6 +27,8 @@ import javax.servlet.http.HttpServletResponse;
 @RestController
 @RequestMapping("passport")
 public class PassportController {
+
+    final static Logger logger = LoggerFactory.getLogger(PassportController.class);
 
     @Resource
     UserService userService;
@@ -98,6 +102,8 @@ public class PassportController {
     @ApiOperation(value = "用户登录", notes = "用户登录", httpMethod = "POST")
     @PostMapping("/login")
     public Result login(@RequestBody UserBO userBO, HttpServletRequest request, HttpServletResponse response) {
+        // request uri为nginx代理的location中配置的proxy_pass http://api.tomcats.com;中的域名
+        logger.info("Request url: {}", request.getRequestURL().toString());
         String username = userBO.getUsername();
         String password = userBO.getPassword();
         // 用户名和密码不能为空
