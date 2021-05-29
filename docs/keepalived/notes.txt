@@ -1,0 +1,25 @@
+1. 安装
+官网下载安装包解压，https://keepalived.org/download.html
+./configure --prefix=/usr/local/keepalived --sysconf=/etc
+可能会出现警告：
+*** WARNING - this build will not support IPVS with IPv6. Please install libnl/libnl-3 dev libraries to support IPv6 with IPVS.
+只需安装依赖
+yum install -y libnl libnl-devel
+安装
+make && make install
+
+2. 启动
+cd /usr/local/keepalived/sbin/
+./keepalived
+查看虚拟IP
+ip addr
+
+3. 将keepalived注册为系统服务
+进入安装包解压后的目录
+cd keepalived/etc
+cp init.d/keepalived /etc/init.d/
+cp sysconfig/keepalived /etc/sysconfig
+systemctl daemon-reload
+启动：systemctl start keepalived
+停止：systemctl stop keepalived
+重启：systemctl restart keepalived
