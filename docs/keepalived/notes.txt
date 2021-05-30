@@ -23,3 +23,8 @@ systemctl daemon-reload
 启动：systemctl start keepalived
 停止：systemctl stop keepalived
 重启：systemctl restart keepalived
+
+测试部署IP约定：
+MASTER：192.168.3.16
+BACKUP：192.168.3.26
+VIP：192.168.3.20

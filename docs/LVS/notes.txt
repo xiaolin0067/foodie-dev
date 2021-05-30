@@ -1,0 +1,27 @@
+1. LVS (Linux Virtual Server)简介
+http://www.linux-vs.org/
+是一个四层(基于IP+Port)的负载均衡调度器
+(七层负载均衡：内容转换，应用层内对请求报文转换)
+章文嵩博士主导的开源负载均衡项目
+LVS(ipvs)已被集成到Linux内核中
+将用户请求负载均衡的转发到真实服务器上RS (Real Server)
+
+2. 为什么使用LVS+Nginx
+LVS基于四层负载均衡，工作效率高。LVS基于OSI四层对请求进行转发，不会处理请求，可以只接收不响应，最大并发压力是Nginx的几十倍
+单个Nginx也是会有瓶颈的，在面对极高的并发时需要集群
+LVS作为Nginx集群的负载均衡器
+Nginx接受请求同时需要响应，而LVS可以只接收不响应
+
+ipvs为LVS核心软件，可通过ipvs生成虚拟IP(VIP)
+用户请求->vip->负载均衡调度器LVS->服务器节点RS
+
+3. LVS模式：NAT模式、TUN模式(IP隧道模式)、DR(Direct Routing直接路由)模式
+3.1 NAT模式：类似Nginx
+用户->vip->LVS->RS
+用户<-vip<-LVS<-RS
+3.2 TUN模式(IP隧道)：所有计算机节点必须要有网卡，用于建立隧道，节点通过隧道互通。RS响应不会通过LVS，直接返回给用户。
+下行的量可以很大，极大的提高了吞吐量，但RS需要暴露公网。
+用户->vip->LVS->RS->用户
+3.3 DR(Direct Routing直接路由)模式：RS处理完成后通过路由Router返回给用户，RS不必暴露公网。
+用户->vip->LVS->RS->Router->用户
+
