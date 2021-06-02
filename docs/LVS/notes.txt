@@ -113,4 +113,16 @@ route add -host 192.168.3.150 dev lo:1
 echo "route add -host 192.168.3.150 dev lo:1" >> /etc/rc.local
 查看添加状态，route -n
 
+4.7 使用ipvsadm配置集群规则
+查看帮助
+ipvsadm -h, man ipvsadm
+# -A 添加集群, -t 协议类型为TCP, 集群, -s 负载均衡算法 rr 轮询
+ipvsadm -A -t 192.168.3.150:80 -s rr
+# -a 添加真实服务器节点, -t 协议类型为TCP, 集群, -r 真实服务器节点RS的IP:Port, -g LVS的DR模式
+ipvsadm -a -t 192.168.3.150:80 -r 192.168.3.26:80 -g
+ipvsadm -a -t 192.168.3.150:80 -r 192.168.3.27:80 -g
+查看当前配置
+ipvsadm -ln
+配置结束，可测试使用虚拟IP 192.168.3.150访问到RS
+
 
