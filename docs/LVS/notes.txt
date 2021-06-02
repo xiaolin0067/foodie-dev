@@ -25,70 +25,92 @@ ipvs为LVS核心软件，可通过ipvs生成虚拟IP(VIP)
 3.3 DR(Direct Routing直接路由)模式：RS处理完成后通过路由Router返回给用户，RS不必暴露公网。
   用户->vip->LVS->RS->Router->用户
 
-4. 部署
-
-
 4. 搭建LVS-DR模式
 服务器IP约定
 LVS：DIP：192.168.3.16,VIP：192.168.3.150
 RS1：RIP：192.168.3.26,VIP：192.168.3.150
 RS2：RIP：192.168.3.27,VIP：192.168.3.150
-    4.1 关闭网络配置管理器(由于使用的是本地虚拟机，可能会引起网络接口冲突)
-      三台虚拟机都需要关闭
-      systemctl stop NetworkManager
-      systemctl disable NetworkManager
-    4.2 配置LVS节点
-        4.2.1 构建虚拟IP
-            进入网卡配置目录
-            cd /etc/sysconfig/network-scripts/
-            拷贝网卡配置
-            cp ifcfg-ens33 ifcfg-ens33:1
-            修改拷贝的网卡配置
-            vim ifcfg-ens33:1
-                修改DEVICE为ens33:1
-                修改IPADDR为虚拟IP：192.168.3.150
-                删除其他配置，只剩下最终如下5行：
-                BOOTPROTO=static
-                DEVICE=ens33:1
-                ONBOOT=yes
-                IPADDR=192.168.3.150
-                NETMASK=255.255.255.0
-            保存退出，使用ip addr查看此时未增加虚拟IP，此时重启网卡
-            service network restart
-            重新查看发现增加了虚拟IP
-        4.2.2 安装集群管理工具ipvsadm
-            ipvs内核自带，需要ipvsadm来进行管理
-            yum install -y ipvsadm
-            查看状态
-            ipvsadm -Ln
-            注：使用云服务器时，阿里云不支持虚拟IP，需要付费购买负载均衡产品；腾讯云支持虚拟IP，但需要付费，最多10个。
-    4.3 配置RS1节点
-        4.3.1 构建虚拟IP
-            lo(local)为环回接口，IP为127.0.0.1。
-            虚拟网络接口并不真实地从外界接收和发送数据包，而是在系统内部接收和发送数据包，因此虚拟网络接口不需要驱动程序。
-            需要构建虚拟IP，且这个虚拟IP仅用于返回用户数据，而不能被用户访问到真实服务器，就会使用lo来构建子接口。
+4.1 关闭网络配置管理器(由于使用的是本地虚拟机，可能会引起网络接口冲突)
+  三台虚拟机都需要关闭
+  systemctl stop NetworkManager
+  systemctl disable NetworkManager
+4.2 配置LVS节点
+4.2.1 构建虚拟IP
+    进入网卡配置目录
+    cd /etc/sysconfig/network-scripts/
+    拷贝网卡配置
+    cp ifcfg-ens33 ifcfg-ens33:1
+    修改拷贝的网卡配置
+    vim ifcfg-ens33:1
+        修改DEVICE为ens33:1
+        修改IPADDR为虚拟IP：192.168.3.150
+        删除其他配置，只剩下最终如下5行：
+BOOTPROTO=static
+DEVICE=ens33:1
+ONBOOT=yes
+IPADDR=192.168.3.150
+NETMASK=255.255.255.0
+    保存退出，使用ip addr查看此时未增加虚拟IP，此时重启网卡
+    service network restart
+    重新查看发现增加了虚拟IP
+4.2.2 安装集群管理工具ipvsadm
+    ipvs内核自带，需要ipvsadm来进行管理
+    yum install -y ipvsadm
+    查看状态
+    ipvsadm -Ln
+    注：使用云服务器时，阿里云不支持虚拟IP，需要付费购买负载均衡产品；腾讯云支持虚拟IP，但需要付费，最多10个。
+4.3 配置RS1节点
+4.3.1 构建虚拟IP
+    lo(local)为环回接口，IP为127.0.0.1。
+    虚拟网络接口并不真实地从外界接收和发送数据包，而是在系统内部接收和发送数据包，因此虚拟网络接口不需要驱动程序。
+    需要构建虚拟IP，且这个虚拟IP仅用于返回用户数据，而不能被用户访问到真实服务器，就会使用lo来构建子接口。
 
-            进入网卡配置目录
-            cd /etc/sysconfig/network-scripts/
-            拷贝网卡配置
-            cp ifcfg-lo ifcfg-lo:1
-            修改拷贝的网卡配置
-            vim ifcfg-lo:1
-                修改DEVICE为lo:1
-                修改IPADDR为192.168.3.150
-                修改NETMASK为255.255.255.255
-                最终如下：
-                DEVICE=lo:1
-                IPADDR=192.168.3.150
-                NETMASK=255.255.255.255
-                NETWORK=127.0.0.0
-                # If you're having problems with gated making 127.0.0.0/8 a martian,
-                # you can change this to something else (255.255.255.255, for example)
-                BROADCAST=127.255.255.255
-                ONBOOT=yes
-                NAME=loopback
-            保存退出，使用ip addr查看此时lo网卡未增加虚拟IP，此时刷新
-            ifup lo
-            或者service network restart也可以，重新查看发现lo中增加了虚拟IP
-    4.4 配置RS2节点，步骤同4.3
+    进入网卡配置目录
+    cd /etc/sysconfig/network-scripts/
+    拷贝网卡配置
+    cp ifcfg-lo ifcfg-lo:1
+    修改拷贝的网卡配置
+    vim ifcfg-lo:1
+        修改DEVICE为lo:1
+        修改IPADDR为192.168.3.150
+        修改NETMASK为255.255.255.255
+        最终如下：
+DEVICE=lo:1
+IPADDR=192.168.3.150
+NETMASK=255.255.255.255
+NETWORK=127.0.0.0
+# If you're having problems with gated making 127.0.0.0/8 a martian,
+# you can change this to something else (255.255.255.255, for example)
+BROADCAST=127.255.255.255
+ONBOOT=yes
+NAME=loopback
+    保存退出，使用ip addr查看此时lo网卡未增加虚拟IP，此时刷新
+    ifup lo
+    或者service network restart也可以，重新查看发现lo中增加了虚拟IP
+4.4 配置RS2节点，步骤同4.3
+
+4.5 配置ARP
+4.5.1 RS1的ARP配置
+    vim /etc/sysctl.conf
+    插入如下配置：
+# configration for lvs
+# arp_ignore: ARP响应级别
+net.ipv4.conf.all.arp_ignore = 1
+net.ipv4.conf.default.arp_ignore = 1
+net.ipv4.conf.lo.arp_ignore = 1
+# arp_announce: ARP通告级别
+net.ipv4.conf.all.arp_announce = 2
+net.ipv4.conf.default.arp_announce = 2
+net.ipv4.conf.lo.arp_announce = 2
+    刷新配置
+    sysctl -p
+4.5.2 RS2的ARP配置，同4.5.1
+
+4.6 增加虚拟IP路由
+RS1与RS2分别执行
+route add -host 192.168.3.150 dev lo:1
+开机设置路由
+echo "route add -host 192.168.3.150 dev lo:1" >> /etc/rc.local
+查看添加状态，route -n
+
 
