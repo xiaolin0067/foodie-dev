@@ -113,7 +113,7 @@ route add -host 192.168.3.150 dev lo:1
 echo "route add -host 192.168.3.150 dev lo:1" >> /etc/rc.local
 查看添加状态，route -n
 
-4.7 使用ipvsadm配置集群规则
+4.7 使用ipvsadm配置集群规则，在LVS服务器上执行
 查看帮助
 ipvsadm -h, man ipvsadm
 # -A 添加集群, -t 协议类型为TCP, 集群, -s 负载均衡算法 rr 轮询
