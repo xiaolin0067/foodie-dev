@@ -125,4 +125,20 @@ ipvsadm -a -t 192.168.3.150:80 -r 192.168.3.27:80 -g
 ipvsadm -ln
 配置结束，可测试使用虚拟IP 192.168.3.150访问到RS
 
+4.7 LVS的持久化机制
+查看状态
+ipvsadm -ln --stats
+发现没有OutPkts与OutBytes，说明为DR模式
+LVS持久化配置 --persistent   -p
+将持久化时间改为5秒
+ipvsadm -E -t 192.168.3.150:80 -s rr -p 5
+
+tcp超时时间
+--set tcp tcpfin udp        set connection timeout values
+修改tcp tcpfin udp的超时时间
+ipvsadm --set 1 1 1
+查看连接过期时间详细信息
+ipvsadm -lnc
+若没有发生切换，为连接发生了持久化
+
 
