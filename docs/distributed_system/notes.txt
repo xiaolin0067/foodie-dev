@@ -42,6 +42,41 @@ Redis
     缺点：单线程、单核
 与Memcache相比：Memcache不能够持久化容灾
 
+Redis安装
+https://redis.io
+解压安装包，进入解压后的目录，安装gcc-c++
+yum install -y gcc-c++
+编译与安装
+make && make install
+复制Redis启动文件到/etc/init.d/
+cp utils/redis_init_script /etc/init.d/
+配置Redis
+cd /usr/local/redis
+创建工作目录
+mkdir working
+    编辑配置
+    vim redis.conf
+    在后台运行
+    daemonize yes
+    工作目录
+    dir /usr/local/redis/working
+    允许访问的IP
+    bind 0.0.0.0
+    访问端口
+    port 6379
+    访问密码
+    requirepass 123456
+    进程号文件
+    pidfile /var/run/redis_6379.pid
 
-
-
+编辑Redis启动脚本
+    cd /etc/init.d
+    vim redis_init_script
+    修改配置文件
+    CONF="/use/local/redis/redis.conf"
+    修改脚本权限
+    chmod +x redis_init_script
+    启动Redis
+    ./redis_init_script start
+    开机自启动
+    chkconfig redis_init_script on
