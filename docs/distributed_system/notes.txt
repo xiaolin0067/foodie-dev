@@ -80,3 +80,17 @@ mkdir working
     ./redis_init_script start
     开机自启动
     chkconfig redis_init_script on
+
+redisl-cli使用
+直接在命令行使用命令
+    redis-cli -a 123456 get name
+    redis-cli -a 123456 ping
+    给缓存设置过期时间
+    set name test PX 3000
+
+停止Redis
+1.直接kill Redis pid
+2.修改redis_init_script脚本，增加密码
+$CLIEXEC -a 123456 -p $REDISPORT shutdown
+保存退出后执行
+./redis_init_script stop
