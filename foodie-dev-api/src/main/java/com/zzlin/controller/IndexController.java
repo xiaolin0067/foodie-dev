@@ -7,10 +7,13 @@ import com.zzlin.pojo.vo.CatNewItemsVO;
 import com.zzlin.pojo.vo.CategoryVO;
 import com.zzlin.service.CarouseService;
 import com.zzlin.service.CategoryService;
+import com.zzlin.utils.JsonUtils;
+import com.zzlin.utils.RedisOperator;
 import com.zzlin.utils.Result;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,23 +35,42 @@ public class IndexController {
     CarouseService carouseService;
     @Resource
     CategoryService categoryService;
+    @Resource
+    private RedisOperator redisOperator;
 
     /**
      * 获取轮播图
+     *
+     * 缓存更新问题：
+     *     1. 后台运营系统，一旦广告(轮播图)发生更改，就可以删除缓存，然后重置
+     *     2. 定时重置，注意不可同一时刻将所有缓存清除
+     *     3. 每个轮播图都有可能是一个广告，每个广告都有一个过期时间，过期重置
      * @return 轮播图列表
      */
     @ApiOperation(value = "获取首页轮播图列表", notes = "获取首页轮播图列表", httpMethod = "GET")
     @GetMapping("/carousel")
     public Result carousel() {
+        String redisKey = "index.carousel";
+        String carouselJson = redisOperator.get(redisKey);
+        if (!StringUtils.isBlank(carouselJson)) {
+            return Result.ok(JsonUtils.jsonToList(carouselJson, Carousel.class));
+        }
         List<Carousel> carousels = carouseService.queryAll(YesOrNo.YES.type);
+        redisOperator.set(redisKey, JsonUtils.objectToJson(carousels));
         return Result.ok(carousels);
     }
 
     @ApiOperation(value = "获取商品分类（一级）", notes = "获取商品分类（一级）", httpMethod = "GET")
     @GetMapping("/cats")
     public Result cats() {
-        List<Category> categories = categoryService.queryAllRootCat();
-        return Result.ok(categories);
+        String redisKey = "index.cats.categories";
+        String catsJson = redisOperator.get(redisKey);
+        if (!StringUtils.isBlank(catsJson)) {
+            return Result.ok(JsonUtils.jsonToList(catsJson, Category.class));
+        }
+        List<Category> cats = categoryService.queryAllRootCat();
+        redisOperator.set(redisKey, JsonUtils.objectToJson(cats));
+        return Result.ok(cats);
     }
 
     @ApiOperation(value = "获取商品子分类", notes = "获取商品子分类", httpMethod = "GET")
@@ -59,7 +81,13 @@ public class IndexController {
         if (rootCatId == null) {
             return Result.errorMsg("分类不存在");
         }
+        String redisKey = "index.subcat.categories." + rootCatId;
+        String categoriesJson = redisOperator.get(redisKey);
+        if (!StringUtils.isBlank(categoriesJson)) {
+            return Result.ok(JsonUtils.jsonToList(categoriesJson, CategoryVO.class));
+        }
         List<CategoryVO> categories = categoryService.getSubCatList(rootCatId);
+        redisOperator.set(redisKey, JsonUtils.objectToJson(categories));
         return Result.ok(categories);
     }
 

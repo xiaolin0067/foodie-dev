@@ -3,12 +3,12 @@ package com.zzlin.controller;
 import com.zzlin.utils.RedisOperator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.annotations.ApiIgnore;
+
+import javax.annotation.Resource;
 
 /**
  * @author zlin
@@ -21,7 +21,7 @@ public class RedisController {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(RedisController.class);
 
-    @Autowired
+    @Resource
     private RedisOperator redisOperator;
 
     @GetMapping("/set")

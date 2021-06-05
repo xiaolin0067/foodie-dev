@@ -63,3 +63,5 @@ $CLIEXEC -a 123456 -p $REDISPORT shutdown
 
 redis默认有16个数据库，index： 0~15
 database设置使用哪个数据库，在redis-cli中使用命令select ${dbIndex}来使用该库
+清除所有数据，所有库
+flushall
