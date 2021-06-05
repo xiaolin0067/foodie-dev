@@ -50,7 +50,7 @@ public class IndexController {
     @ApiOperation(value = "获取首页轮播图列表", notes = "获取首页轮播图列表", httpMethod = "GET")
     @GetMapping("/carousel")
     public Result carousel() {
-        String redisKey = "index.carousel";
+        String redisKey = "index:carousel";
         String carouselJson = redisOperator.get(redisKey);
         if (!StringUtils.isBlank(carouselJson)) {
             return Result.ok(JsonUtils.jsonToList(carouselJson, Carousel.class));
@@ -63,7 +63,7 @@ public class IndexController {
     @ApiOperation(value = "获取商品分类（一级）", notes = "获取商品分类（一级）", httpMethod = "GET")
     @GetMapping("/cats")
     public Result cats() {
-        String redisKey = "index.cats.categories";
+        String redisKey = "index:cats:categories";
         String catsJson = redisOperator.get(redisKey);
         if (!StringUtils.isBlank(catsJson)) {
             return Result.ok(JsonUtils.jsonToList(catsJson, Category.class));
@@ -81,7 +81,7 @@ public class IndexController {
         if (rootCatId == null) {
             return Result.errorMsg("分类不存在");
         }
-        String redisKey = "index.subcat.categories." + rootCatId;
+        String redisKey = "index:subcat:categories:" + rootCatId;
         String categoriesJson = redisOperator.get(redisKey);
         if (!StringUtils.isBlank(categoriesJson)) {
             return Result.ok(JsonUtils.jsonToList(categoriesJson, CategoryVO.class));
