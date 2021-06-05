@@ -50,26 +50,26 @@ public class IndexController {
     @ApiOperation(value = "获取首页轮播图列表", notes = "获取首页轮播图列表", httpMethod = "GET")
     @GetMapping("/carousel")
     public Result carousel() {
-        String redisKey = "index:carousel";
-        String carouselJson = redisOperator.get(redisKey);
-        if (!StringUtils.isBlank(carouselJson)) {
+        String carouselKey = "index:carousel";
+        String carouselJson = redisOperator.get(carouselKey);
+        if (StringUtils.isNotBlank(carouselJson)) {
             return Result.ok(JsonUtils.jsonToList(carouselJson, Carousel.class));
         }
         List<Carousel> carousels = carouseService.queryAll(YesOrNo.YES.type);
-        redisOperator.set(redisKey, JsonUtils.objectToJson(carousels));
+        redisOperator.set(carouselKey, JsonUtils.objectToJson(carousels));
         return Result.ok(carousels);
     }
 
     @ApiOperation(value = "获取商品分类（一级）", notes = "获取商品分类（一级）", httpMethod = "GET")
     @GetMapping("/cats")
     public Result cats() {
-        String redisKey = "index:cats:categories";
-        String catsJson = redisOperator.get(redisKey);
-        if (!StringUtils.isBlank(catsJson)) {
+        String categoriesKey = "index:cats:categories";
+        String catsJson = redisOperator.get(categoriesKey);
+        if (StringUtils.isNotBlank(catsJson)) {
             return Result.ok(JsonUtils.jsonToList(catsJson, Category.class));
         }
         List<Category> cats = categoryService.queryAllRootCat();
-        redisOperator.set(redisKey, JsonUtils.objectToJson(cats));
+        redisOperator.set(categoriesKey, JsonUtils.objectToJson(cats));
         return Result.ok(cats);
     }
 
@@ -81,13 +81,13 @@ public class IndexController {
         if (rootCatId == null) {
             return Result.errorMsg("分类不存在");
         }
-        String redisKey = "index:subcat:categories:" + rootCatId;
-        String categoriesJson = redisOperator.get(redisKey);
-        if (!StringUtils.isBlank(categoriesJson)) {
+        String categoriesKey = "index:subcat:categories:" + rootCatId;
+        String categoriesJson = redisOperator.get(categoriesKey);
+        if (StringUtils.isNotBlank(categoriesJson)) {
             return Result.ok(JsonUtils.jsonToList(categoriesJson, CategoryVO.class));
         }
         List<CategoryVO> categories = categoryService.getSubCatList(rootCatId);
-        redisOperator.set(redisKey, JsonUtils.objectToJson(categories));
+        redisOperator.set(categoriesKey, JsonUtils.objectToJson(categories));
         return Result.ok(categories);
     }
 
