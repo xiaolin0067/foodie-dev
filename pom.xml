@@ -67,19 +67,20 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
             <!-- 打包war step 2 移除内置tomcat -->
-            <exclusions>
-                <exclusion>
-                    <artifactId>spring-boot-starter-tomcat</artifactId>
-                    <groupId>org.springframework.boot</groupId>
-                </exclusion>
-            </exclusions>
+<!--            <exclusions>-->
+<!--                <exclusion>-->
+<!--                    <artifactId>spring-boot-starter-tomcat</artifactId>-->
+<!--                    <groupId>org.springframework.boot</groupId>-->
+<!--                </exclusion>-->
+<!--            </exclusions>-->
         </dependency>
         <!-- 打包war step 3 添加servlet依赖（去除web中的Tomcat后需要添加servlet依赖） -->
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>javax.servlet</groupId>-->
+<!--            <artifactId>javax.servlet-api</artifactId>-->
+<!--            <scope>provided</scope>-->
+<!--        </dependency>-->
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
@@ -114,6 +115,12 @@
             <groupId>com.github.pagehelper</groupId>
             <artifactId>pagehelper-spring-boot-starter</artifactId>
             <version>1.2.12</version>
+        </dependency>
+
+        <!-- 引入redis依赖 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
 
         <!-- apache 工具类 -->

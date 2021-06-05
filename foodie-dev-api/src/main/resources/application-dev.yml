@@ -6,6 +6,12 @@ spring:
     url: jdbc:mysql://localhost:3306/foodie-shop-dev?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true
     username: root
     password: root
+  redis:
+    # database设置使用哪个数据库，在redis-cli中使用命令select 1来使用该库
+    database: 1
+    host: 192.168.3.26
+    port: 6379
+    password: 123456
 
 mybatis:
   configuration:
