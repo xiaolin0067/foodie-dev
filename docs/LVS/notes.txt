@@ -111,6 +111,8 @@ RS1与RS2分别执行
 route add -host 192.168.3.150 dev lo:1
 开机设置路由
 echo "route add -host 192.168.3.150 dev lo:1" >> /etc/rc.local
+需要保证rc.local有执行权限
+chmod +x /etc/rc.d/rc.local
 查看添加状态，route -n
 
 4.7 使用ipvsadm配置集群规则，在LVS服务器上执行
@@ -140,5 +142,21 @@ ipvsadm --set 1 1 1
 查看连接过期时间详细信息
 ipvsadm -lnc
 若没有发生切换，为连接发生了持久化
+
+4.8 keepalived+lvs+nginx 高可用部署
+keepalived就是为了lvs而设计的，通过keepalived就可以配置lvs与rs的关系，比如负载均衡算法、持久化连接、健康检查配置等
+4.8.1 在MASTER LVS节点使用keepalived的配置文件来配置lvs集群规则
+查看当前集群规则
+ipvsadm -ln
+清除所有规则
+ipvsadm -C
+配置keepalived配置文件，见docs\LVS\master\keepalived.conf
+重启keepalived
+systemctl restart keepalived
+
+4.8.2 在BACKUP LVS节点使用keepalived的配置文件来配置lvs集群规则
+同4.8.1，配置文件见docs\LVS\backup\keepalived.conf
+
+停止MASTER LVS节点keepalived测试
 
 

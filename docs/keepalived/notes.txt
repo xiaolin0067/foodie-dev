@@ -24,6 +24,8 @@ systemctl daemon-reload
 停止：systemctl stop keepalived
 重启：systemctl restart keepalived
 
+keepalived若无配置默认为抢占式，即MASTER恢复后会立刻抢占为MASTER状态
+
 测试部署IP约定：
 MASTER：192.168.3.16
 BACKUP：192.168.3.26
