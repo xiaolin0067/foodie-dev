@@ -193,7 +193,32 @@ set可以做交集、并集、差集运算
 并集运算
     SUNION set1 set2
 
+zset类型
+有序的set，也叫sorted set，可排序的set，且带有分数scope
+添加元素
+    zadd zset1 10 a 20 b 30 c
+查看所有元素
+    ZRANGE zset1 0 -1
+查看所有元素与元素分数
+    ZRANGE zset1 0 -1 withscores
+查看指定元素所在index
+    ZRANK zset1 c
+查看指定元素分数
+    ZSCORE zset1 c
+查看元素个数
+    ZCARD zset
+统计指定分数范围内的元素个数
+    ZCOUNT zset1 11 31
+查看指定分数范围内的元素
+    ZRANGEBYSCORE zset1 10 30
+查看指定分数范围内的元素，limit指定输出数据
+    ZRANGEBYSCORE zset1 10 30 limit 1 2
+查看指定分数范围内的元素，不包含最大最小值
+    ZRANGEBYSCORE zset1 (10 (30
+删除指定元素
+    zrem zset1 a
 
+Redis命令网址：http://redisdoc.com/
 
 
 
