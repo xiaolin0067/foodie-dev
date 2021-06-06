@@ -167,7 +167,31 @@ list类型，列表、数组
 删除列表
     del list1
 
-
+set类型
+只会保留不相同的元素
+添加元素
+    sadd set1 a b c a a b d
+查看所有元素
+    smembers set1
+查看元素数量
+    scard set1
+指定元素是否在指定set中
+    SISMEMBER set1 a
+删除指定set中指定元素
+    srem set1 a
+从set中随机取出指定数量的元素
+    spop set1 2
+从set中随机查看指定数量的元素，不指定数量默认为1个
+    SRANDMEMBER set2 3
+将指定set中的指定元素移动到另一个指定set中
+    SMOVE set3 set2 d
+set可以做交集、并集、差集运算
+差集运算，打印在set1中在set2中不存在的元素，set1-set2
+    SDIFF set1 set2
+交集运算，打印在set1与set2中都存在的元素
+    SINTER set1 set2
+并集运算
+    SUNION set1 set2
 
 
 
