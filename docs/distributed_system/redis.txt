@@ -48,11 +48,18 @@ mkdir working
     chkconfig redis_init_script on
 
 redisl-cli使用
+登录
+    redis-cli 或者 redis-cli -p 6379 -h 127.0.0.1
+鉴权
+    auth 123456
+基础使用
+    set age 18
+    get age
+    del age
+命令补全，输入命令得一部分然后按TAB键
 直接在命令行使用命令
     redis-cli -a 123456 get name
     redis-cli -a 123456 ping
-    给缓存设置过期时间
-    set name test PX 3000
 
 停止Redis
 1.直接kill Redis pid
@@ -61,7 +68,69 @@ $CLIEXEC -a 123456 -p $REDISPORT shutdown
 保存退出后执行
 ./redis_init_script stop
 
-redis默认有16个数据库，index： 0~15
-database设置使用哪个数据库，在redis-cli中使用命令select ${dbIndex}来使用该库
-清除所有数据，所有库
-flushall
+Redis的数据类型
+string类型
+查看所有的key，生产环境禁用，因生产环境key太多
+匹配所有
+    keys *
+匹配以age开头
+    keys age*
+查看key的value类型
+    type age
+set会覆盖value，SETNX则不会覆盖，若key存在则不设置
+    setnx age 20
+查看缓存过期时间，time to leave，-1为永不过期，-2为已过期
+    ttl age
+给已添加的缓存设置过期时间，单位秒
+    expire age 30
+设置缓存时给缓存设置过期时间，ex为s, px为ms
+    set name test px 3000
+清除屏幕
+    clear
+value拼接字符串
+    append email 123
+查看字符串长度
+    STRLEN email
+对于数字类型value累加操作，步长为1
+    incr age
+对于数字类型value累减操作，步长为1
+    decr age
+对于数字类型value累加操作，自定义步长
+    INCRBY age 10
+对于数字类型value累减操作，自定义步长
+    DECRBY age 10
+获取value字符串指定范围内的内容, -1为最后位置
+    getrange age 0 -1
+在指定index开始覆盖字符串
+    SETRANGE email 1 abc
+一次设置多个键值对
+    MSET k1 v1 k2 v2
+一次获取多个键值对
+    MGET k1 k2
+一次设置多个键值对，若设置的key中存在已存在的key，则整个操作都会撤销
+    MSETNX k2 v2 k3 v3
+redis默认有16个数据库，在redis.conf配置文件中配置databases 16
+使用命令select ${dbIndex}来切换库，可在不同的项目中使用不同的库
+清除当前库的所有数据
+    flushdb
+清除所有库的所有数据
+    flushall
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
