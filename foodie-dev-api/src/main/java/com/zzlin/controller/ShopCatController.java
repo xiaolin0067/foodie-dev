@@ -1,5 +1,6 @@
 package com.zzlin.controller;
 
+import com.zzlin.enums.CacheKey;
 import com.zzlin.pojo.bo.ShopCartBO;
 import com.zzlin.utils.JsonUtils;
 import com.zzlin.utils.RedisOperator;
@@ -10,6 +11,7 @@ import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -54,7 +56,7 @@ public class ShopCatController extends BaseController {
         LOGGER.info("添加商品到购物车 userId：{}, shopCartBO：{}", userId, reqShopCartJson);
 
         // 在用户登录的情况下，需要同步购物车到Redis,若当前购物中存在该商品，则数量累加
-        String shopCartKey = SHOP_CART + ":" + userId;
+        String shopCartKey = CacheKey.SHOP_CART.append(userId);
         String shopCartJson = redisOperator.get(shopCartKey);
         List<ShopCartBO> shopCartList;
         if (StringUtils.isNotBlank(shopCartJson)) {
@@ -101,8 +103,18 @@ public class ShopCatController extends BaseController {
 
         LOGGER.info("删除购物车商品 userId：{}, itemSpecId：{}", userId, itemSpecId);
 
-        // TODO 在用户登录的情况下，需要同步购物车到Redis
-
+        // 在用户登录的情况下，需要同步购物车到Redis
+        String shopCartKey = CacheKey.SHOP_CART.append(userId);
+        String shopCartJson = redisOperator.get(shopCartKey);
+        if (StringUtils.isBlank(shopCartJson)) {
+            return Result.ok();
+        }
+        List<ShopCartBO> shopCartList = JsonUtils.jsonToList(shopCartJson, ShopCartBO.class);
+        if (CollectionUtils.isEmpty(shopCartList)) {
+            return Result.ok();
+        }
+        shopCartList.removeIf(shopCart -> itemSpecId.equals(shopCart.getSpecId()));
+        redisOperator.set(shopCartKey, JsonUtils.objectToJson(shopCartList));
         return Result.ok();
     }
 }

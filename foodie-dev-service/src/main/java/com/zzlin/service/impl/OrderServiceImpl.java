@@ -1,25 +1,36 @@
 package com.zzlin.service.impl;
 
+import com.zzlin.enums.CacheKey;
 import com.zzlin.enums.OrderStatusEnum;
 import com.zzlin.enums.YesOrNo;
 import com.zzlin.mapper.OrderItemsMapper;
 import com.zzlin.mapper.OrderStatusMapper;
 import com.zzlin.mapper.OrdersMapper;
 import com.zzlin.pojo.*;
+import com.zzlin.pojo.bo.ShopCartBO;
 import com.zzlin.pojo.bo.SubmitOrderBO;
 import com.zzlin.pojo.vo.MerchantOrdersVO;
 import com.zzlin.pojo.vo.OrderVO;
 import com.zzlin.service.AddressService;
 import com.zzlin.service.ItemService;
 import com.zzlin.service.OrderService;
+import com.zzlin.utils.JsonUtils;
+import com.zzlin.utils.RedisOperator;
+import org.apache.commons.lang3.StringUtils;
 import org.n3r.idworker.Sid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author zlin
@@ -27,6 +38,8 @@ import java.util.List;
  */
 @Service
 public class OrderServiceImpl implements OrderService {
+
+    private final static Logger LOGGER = LoggerFactory.getLogger(OrderServiceImpl.class);
 
     @Resource
     private AddressService addressService;
@@ -42,6 +55,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Resource
     private OrderStatusMapper orderStatusMapper;
+
+    @Resource
+    private RedisOperator redisOperator;
 
     @Resource
     private Sid sid;
@@ -61,7 +77,7 @@ public class OrderServiceImpl implements OrderService {
         Integer payMethod = submitOrderBO.getPayMethod();
         String leftMsg = submitOrderBO.getLeftMsg();
         // 包邮费用设置为0
-        Integer postAmount = 0;
+        int postAmount = 0;
         String orderId = sid.nextShort();
         UserAddress address = addressService.queryUserAddress(userId, addressId);
 
@@ -84,12 +100,13 @@ public class OrderServiceImpl implements OrderService {
         newOrder.setUpdatedTime(new Date());
 
         // 2. 根据itemSpecIds保存订单商品信息表
-        Integer totalAmount = 0;
-        Integer realPayAmount = 0;
-        // TODO 整合redis后，商品购买的数量重新从redis的购物车中获取
-        Integer buyCounts = 1;
+        int totalAmount = 0;
+        int realPayAmount = 0;
+        // 商品购买的数量重新从redis的购物车中获取
+        Map<String, ShopCartBO> userShopCartMap = getUserShopCartMap(userId);
         List<ItemsSpec> itemsSpecList = itemService.queryItemSpecListByIds(itemSpecIds);
         for (ItemsSpec itemsSpec : itemsSpecList) {
+            Integer buyCounts = userShopCartMap.get(itemsSpec.getId()).getBuyCounts();
             // 2.1 根据商品规格计算总价与折扣价
             totalAmount += itemsSpec.getPriceNormal() * buyCounts;
             realPayAmount += itemsSpec.getPriceDiscount() * buyCounts;
@@ -136,6 +153,26 @@ public class OrderServiceImpl implements OrderService {
         orderVO.setOrderId(orderId);
         orderVO.setMerchantOrdersVO(merchantOrders);
         return orderVO;
+    }
+
+    private Map<String, ShopCartBO> getUserShopCartMap(String userId) {
+        Map<String, ShopCartBO> result = new HashMap<>();
+        String shopCartJson = redisOperator.get(CacheKey.SHOP_CART.append(userId));
+        if (StringUtils.isBlank(shopCartJson)) {
+            return result;
+        }
+        List<ShopCartBO> shopCartList = JsonUtils.jsonToList(shopCartJson, ShopCartBO.class);
+        if (CollectionUtils.isEmpty(shopCartList)) {
+            return result;
+        }
+        try {
+            // 一个SpecId应该只对应一个ShopCartBO
+            result = shopCartList.stream()
+                    .collect(Collectors.toMap(ShopCartBO::getSpecId, shopCart -> shopCart));
+        }catch (Exception e) {
+            LOGGER.error("用户购物车列表转Map异常", e);
+        }
+        return result;
     }
 
     /**
