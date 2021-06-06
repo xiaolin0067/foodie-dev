@@ -116,8 +116,30 @@ redis默认有16个数据库，在redis.conf配置文件中配置databases 16
 清除所有库的所有数据
     flushall
 
-
-
+hash类型
+类似与将一个map存入value中，可以将结构化数据存入redis
+    hset user name testName
+    hget user name
+同时设置多个值
+    hmset user age 18 sex man
+同时获取多个值
+    hmget user name age sex
+获取对象所有键值对
+    hgetall user
+获取对象属性字段数量
+    hlen user
+打印对象所有的key
+    hkeys user
+打印对象所有的value
+    hvals user
+对象数字属性值增加，指定增加值
+    HINCRBY user age 2
+对象数字属性值增加，指定增加值为浮点数
+    HINCRBYFLOAT user age 3.2
+对象属性是否存在
+    HEXISTS user age
+删除对象属性
+    HDEL user name
 
 
 
