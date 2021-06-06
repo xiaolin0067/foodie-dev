@@ -141,7 +141,31 @@ hash类型
 删除对象属性
     HDEL user name
 
-
+list类型，列表、数组
+从左边添加元素
+    LPUSH list1 a b c d e
+查看所有元素
+    LRANGE list1 0 -1
+从右边添加元素
+    RPUSH test2 a b c d e
+从左边取出元素
+    LPOP list1
+从右边取出元素
+    RPOP test2
+查看数组长度
+    llen list1
+查看index位置的元素，index不存在时会提示不存在
+    LINDEX list1 2
+给index元素设值，index不存在时会提示不存在
+    lset list1 1 888
+在指定元素之前插入值，若存在多个指定元素，则只会在index最小的前插入
+    LINSERT list1 before b aaa
+删除指定元素，指定删除个数
+    lrem list1 99999 666
+截取列表，列表只保留截取index的元素，其余元素会被删除
+    LTRIM list1 4 6
+删除列表
+    del list1
 
 
 
