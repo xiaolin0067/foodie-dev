@@ -1,6 +1,5 @@
 package com.zzlin.service.impl;
 
-import com.zzlin.enums.CacheKey;
 import com.zzlin.enums.OrderStatusEnum;
 import com.zzlin.enums.YesOrNo;
 import com.zzlin.mapper.OrderItemsMapper;
@@ -14,9 +13,6 @@ import com.zzlin.pojo.vo.OrderVO;
 import com.zzlin.service.AddressService;
 import com.zzlin.service.ItemService;
 import com.zzlin.service.OrderService;
-import com.zzlin.utils.JsonUtils;
-import com.zzlin.utils.RedisOperator;
-import org.apache.commons.lang3.StringUtils;
 import org.n3r.idworker.Sid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,9 +53,6 @@ public class OrderServiceImpl implements OrderService {
     private OrderStatusMapper orderStatusMapper;
 
     @Resource
-    private RedisOperator redisOperator;
-
-    @Resource
     private Sid sid;
 
     /**
@@ -70,7 +63,7 @@ public class OrderServiceImpl implements OrderService {
      */
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
-    public OrderVO createOrder(SubmitOrderBO submitOrderBO) {
+    public OrderVO createOrder(List<ShopCartBO> shopCartList, SubmitOrderBO submitOrderBO) {
         String userId = submitOrderBO.getUserId();
         String addressId = submitOrderBO.getAddressId();
         String itemSpecIds = submitOrderBO.getItemSpecIds();
@@ -103,9 +96,10 @@ public class OrderServiceImpl implements OrderService {
         int totalAmount = 0;
         int realPayAmount = 0;
         // 商品购买的数量重新从redis的购物车中获取
-        Map<String, ShopCartBO> userShopCartMap = getUserShopCartMap(userId);
+        Map<String, ShopCartBO> userShopCartMap = getUserShopCartMap(shopCartList);
         List<ItemsSpec> itemsSpecList = itemService.queryItemSpecListByIds(itemSpecIds);
         for (ItemsSpec itemsSpec : itemsSpecList) {
+            // TODO 此处暂未考虑下单的规格ID在购物车中不存在的情况，后续可自定义异常优化
             Integer buyCounts = userShopCartMap.get(itemsSpec.getId()).getBuyCounts();
             // 2.1 根据商品规格计算总价与折扣价
             totalAmount += itemsSpec.getPriceNormal() * buyCounts;
@@ -155,13 +149,8 @@ public class OrderServiceImpl implements OrderService {
         return orderVO;
     }
 
-    private Map<String, ShopCartBO> getUserShopCartMap(String userId) {
+    private Map<String, ShopCartBO> getUserShopCartMap(List<ShopCartBO> shopCartList) {
         Map<String, ShopCartBO> result = new HashMap<>();
-        String shopCartJson = redisOperator.get(CacheKey.SHOP_CART.append(userId));
-        if (StringUtils.isBlank(shopCartJson)) {
-            return result;
-        }
-        List<ShopCartBO> shopCartList = JsonUtils.jsonToList(shopCartJson, ShopCartBO.class);
         if (CollectionUtils.isEmpty(shopCartList)) {
             return result;
         }

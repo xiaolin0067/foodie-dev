@@ -1,10 +1,8 @@
 package com.zzlin.service;
 
-import com.zzlin.pojo.Category;
 import com.zzlin.pojo.OrderStatus;
+import com.zzlin.pojo.bo.ShopCartBO;
 import com.zzlin.pojo.bo.SubmitOrderBO;
-import com.zzlin.pojo.vo.CatNewItemsVO;
-import com.zzlin.pojo.vo.CategoryVO;
 import com.zzlin.pojo.vo.OrderVO;
 
 import java.util.List;
@@ -17,10 +15,11 @@ public interface OrderService {
 
     /**
      * 用于创建订单相关信息
+     * @param shopCartList 用户购物车列表
      * @param submitOrderBO 创建订单BO
      * @return 订单VO
      */
-    OrderVO createOrder(SubmitOrderBO submitOrderBO);
+    OrderVO createOrder(List<ShopCartBO> shopCartList, SubmitOrderBO submitOrderBO);
 
     /**
      * 修改订单状态
