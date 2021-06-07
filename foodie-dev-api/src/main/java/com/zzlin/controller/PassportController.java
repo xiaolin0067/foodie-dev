@@ -1,10 +1,13 @@
 package com.zzlin.controller;
 
+import com.zzlin.enums.CacheKey;
 import com.zzlin.pojo.Users;
+import com.zzlin.pojo.bo.ShopCartBO;
 import com.zzlin.pojo.bo.UserBO;
 import com.zzlin.service.UserService;
 import com.zzlin.utils.CookieUtils;
 import com.zzlin.utils.JsonUtils;
+import com.zzlin.utils.RedisOperator;
 import com.zzlin.utils.Result;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -13,11 +16,14 @@ import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author zlin
@@ -32,6 +38,9 @@ public class PassportController {
 
     @Resource
     UserService userService;
+
+    @Resource
+    private RedisOperator redisOperator;
 
     /**
      * 检查用户名是否存在
@@ -90,6 +99,7 @@ public class PassportController {
         CookieUtils.setCookie(request, response, "user", JsonUtils.objectToJson(user), true);
 
         // TODO 1、生成用户TOKEN存入Redis，2、同步购物车
+        syncShopCart(request, response, user.getId());
 
         return Result.ok();
     }
@@ -121,8 +131,48 @@ public class PassportController {
         CookieUtils.setCookie(request, response, "user", JsonUtils.objectToJson(user), true);
 
         // TODO 1、生成用户TOKEN存入Redis，2、同步购物车
+        syncShopCart(request, response, user.getId());
 
         return Result.ok(user);
+    }
+
+    /**
+     * 同步缓存与cookie中的购物车列表
+     * @param request request
+     * @param response response
+     * @param userId 用户ID
+     */
+    public void syncShopCart(HttpServletRequest request, HttpServletResponse response, String userId){
+        String shopCartCacheKey = CacheKey.SHOP_CART.append(userId);
+        // 获取当前缓存和cookie中的购物车json字符串
+        String cacheJson = redisOperator.get(shopCartCacheKey);
+        String cookieJson = CookieUtils.getCookieValue(request, CacheKey.SHOP_CART.value, true);
+        // 转换为列表
+        List<ShopCartBO> cacheList = StringUtils.isBlank(cacheJson) ?
+                null : JsonUtils.jsonToList(cacheJson, ShopCartBO.class);
+        List<ShopCartBO> cookieList = StringUtils.isBlank(cookieJson) ?
+                null : JsonUtils.jsonToList(cookieJson, ShopCartBO.class);
+        // 缓存与cookie中购物车列表是否有商品
+        boolean itemInCache = !CollectionUtils.isEmpty(cacheList);
+        boolean itemInCookie = !CollectionUtils.isEmpty(cookieList);
+
+        if (itemInCache && itemInCookie){
+            // 缓存与cookie购物车列表都有商品，删除缓存中规格ID在cookie中存在的商品，以cookie中的商品为准
+            List<String> cookieSpecIds = cookieList.stream().map(ShopCartBO::getSpecId).collect(Collectors.toList());
+            cacheList.removeIf(shopCart -> cookieSpecIds.contains(shopCart.getSpecId()));
+            // 合并购物车列表
+            cacheList.addAll(cookieList);
+            String mergeJson = JsonUtils.objectToJson(cacheList);
+            CookieUtils.setCookie(request, response, CacheKey.SHOP_CART.value, mergeJson, true);
+            redisOperator.set(shopCartCacheKey, mergeJson);
+        }else if (itemInCache) {
+            // 缓存中有商品而cookie中没有商品
+            CookieUtils.setCookie(request, response, CacheKey.SHOP_CART.value, cacheJson, true);
+        }else if (itemInCookie) {
+            // cookie中有商品而缓存中没有商品
+            redisOperator.set(shopCartCacheKey, cookieJson);
+        }
+        // cookie与缓存中都没有商品，无需处理
     }
 
     @PostMapping("/logout")

@@ -83,7 +83,7 @@ public class OrdersController extends BaseController {
         shopCartList.removeIf(shopCart -> submitOrderBO.getItemSpecIds().contains(shopCart.getSpecId()));
         String currentShopCartJson = JsonUtils.objectToJson(shopCartList);
         redisOperator.set(userShopCartCacheKey, currentShopCartJson);
-        CookieUtils.setCookie(request, response, SHOP_CART, currentShopCartJson, true);
+        CookieUtils.setCookie(request, response, CacheKey.SHOP_CART.value, currentShopCartJson, true);
 
         // 3、向支付中心发送当前订单，用于保存支付中心的订单数据
         MerchantOrdersVO merchantOrdersVO = order.getMerchantOrdersVO();

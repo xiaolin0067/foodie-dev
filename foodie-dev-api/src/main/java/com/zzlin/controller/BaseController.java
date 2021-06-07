@@ -18,8 +18,6 @@ public class BaseController {
     public static final Integer COMMENT_PAGE_SIZE = 10;
     public static final Integer PAGE_SIZE = 20;
 
-    static final String SHOP_CART = "shopcart";
-
     /**
      * 微信支付成功 -> 支付中心 -> 天天吃货平台
      *                      |-> 回调通知的url
