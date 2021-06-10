@@ -182,6 +182,7 @@ public class PassportController {
         CookieUtils.deleteCookie(request, response, "user");
 
         // 用户退出登录，需要清空购物车
+        CookieUtils.deleteCookie(request, response, CacheKey.SHOP_CART.value);
         // 分布式会话中需要清除用户数据
 
         return Result.ok();
