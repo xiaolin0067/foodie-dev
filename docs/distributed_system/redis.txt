@@ -220,6 +220,17 @@ zset类型
 
 Redis命令网址：http://redisdoc.com/
 
+redis-cli查看中文value，登录时指定参数--raw，即：redis-cli --raw
+
+Redis的发布与订阅
+1、订阅channel(通道/频道)
+SUBSCRIBE channel_1 channel_2 channel_3
+2、发布者向channel发布消息
+PUBLISH channel_1 channel_1-message1
+
+指定通配符批量订阅
+PSUBSCRIBE channel_*
+
 
 
 
