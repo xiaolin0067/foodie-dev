@@ -231,6 +231,21 @@ PUBLISH channel_1 channel_1-message1
 指定通配符批量订阅
 PSUBSCRIBE channel_*
 
+redis持久化机制
+RDB：redis database；适合大量数据的恢复，最后一次的数据可能会丢失。冷备份。
+每隔一段时间进行全量备份，配置位于redis.conf中
+dir为备份文件路径，dbfilename为文件名
+save <seconds> <changes> 保存规则及时间，<changes>个key发生改变后，将会在<seconds>秒后保存
+AOF: append only mode，热备份。
+以日志的形式存在，将每次写操作追加记录到AOF日志文件中。可能导致AOF文件过大，可以通过重写机制调整。
+可使用redis-check-aof处理AOF文件
+开启AOF：appendonly改为yes
+appendfsync同步策略：每次写操作、每秒、关闭
+注意：若使用AOF进行恢复数据时，若在redis中最后一个命令是flushdb/flushall，那么在恢复时仍会执行该命令。
+在恢复数据时将AOF文件中该条命令删除后即可。
+重启redis会自动执行AOF文件恢复数据，先加载AOF，若产生问题可移走AOF文件使用RDB恢复。
+
+
 
 
 
