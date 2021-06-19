@@ -12,8 +12,12 @@ Redis安装
 https://redis.io
 解压安装包，进入解压后的目录，安装gcc-c++
 yum install -y gcc-c++
+yum install -y tcl
 编译与安装
 make && make install
+拷贝配置文件
+mkdir -p /usr/local/redis
+cp redis.conf /usr/local/redis
 复制Redis启动文件到/etc/init.d/
 cp utils/redis_init_script /etc/init.d/
 配置Redis
@@ -39,13 +43,21 @@ mkdir working
     cd /etc/init.d
     vim redis_init_script
     修改配置文件
-    CONF="/use/local/redis/redis.conf"
+    CONF="/usr/local/redis/redis.conf"
+    $CLIEXEC -a 123456 -p $REDISPORT shutdown
     修改脚本权限
     chmod +x redis_init_script
     启动Redis
     ./redis_init_script start
     开机自启动
     chkconfig redis_init_script on
+
+停止Redis
+1.直接kill Redis pid
+2.修改redis_init_script脚本，增加密码
+$CLIEXEC -a 123456 -p $REDISPORT shutdown
+保存退出后执行
+./redis_init_script stop
 
 redisl-cli使用
 登录
@@ -60,13 +72,6 @@ redisl-cli使用
 直接在命令行使用命令
     redis-cli -a 123456 get name
     redis-cli -a 123456 ping
-
-停止Redis
-1.直接kill Redis pid
-2.修改redis_init_script脚本，增加密码
-$CLIEXEC -a 123456 -p $REDISPORT shutdown
-保存退出后执行
-./redis_init_script stop
 
 Redis的数据类型
 string类型
@@ -245,7 +250,22 @@ appendfsync同步策略：每次写操作、每秒、关闭
 在恢复数据时将AOF文件中该条命令删除后即可。
 重启redis会自动执行AOF文件恢复数据，先加载AOF，若产生问题可移走AOF文件使用RDB恢复。
 
+单机Redis并发大约5~6w，优化后可达十几万
+主从架构-主从复制-读写分离
+主Master-用于写，从Slave-用于读
+必须要开启master的持久化机制，否则master挂掉重启之后会同时将其他slave节点的数据清空
+一般使用一主二从，若从节点过多会导致主从之间频繁同步数据占用带宽与资源。从节点也可使用一主二从，树状部署。
 
+一主二从搭建服务器部署信息：192.168.3.26(master),192.168.3.17(slave),192.168.3.27(slave)
+查看主从复制信息
+info replication
+
+在从节点修改redis.conf配置
+# master地址
+replicaof 192.168.3.26 6379
+# master密码
+masterauth 123456
+# 从节点默认只读，replica-read-only yes
 
 
 
