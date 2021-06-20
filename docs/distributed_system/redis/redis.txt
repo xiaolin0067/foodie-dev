@@ -289,8 +289,10 @@ allkeys-lfu：达到最大内存时，清理最少用到的老的缓存。（最
 Redis哨兵模式
 Sentinel(哨兵)是用于监控Redis集群中Master状态的工具，是Redis高可用解决方案，哨兵可以监视一个或者多个redis master服务，以及这些master服务的所有slave服务
 某个master服务宕机后，会把这个master下的某个从服务升级为master来替代已宕机的master继续工作。
-
-启动：redis-sentinel sentinel.conf
+在所有节点上执行如下操作
+    在/usr/local/redis下创建配置文件sentinel.conf
+    创建日志与工作目录/usr/local/redis/sentinel
+    启动：redis-sentinel sentinel.conf
 
 
 
