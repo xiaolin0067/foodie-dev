@@ -255,17 +255,16 @@ appendfsync同步策略：每次写操作、每秒、关闭
 主Master-用于写，从Slave-用于读
 必须要开启master的持久化机制，否则master挂掉重启之后会同时将其他slave节点的数据清空
 一般使用一主二从，若从节点过多会导致主从之间频繁同步数据占用带宽与资源。从节点也可使用一主二从，树状部署。
-
 一主二从搭建服务器部署信息：192.168.3.26(master),192.168.3.17(slave),192.168.3.27(slave)
 查看主从复制信息
 info replication
-
 在从节点修改redis.conf配置
 # master地址
 replicaof 192.168.3.26 6379
 # master密码
 masterauth 123456
 # 从节点默认只读，replica-read-only yes
+注意：该部署方式存在如下问题，若主节点挂掉只有子节点存在时，那么将不可写入数据只可以读取。
 
 Redis无磁盘化复制 diskless
 Redis主从同步数据的同步策略有：磁盘、网络
@@ -287,6 +286,11 @@ maxmemory-policy noeviction
 noeviction：达到最大内存时，不清理内存，若还有新增的key直接报错
 allkeys-lfu：达到最大内存时，清理最少用到的老的缓存。（最常用到）
 
+Redis哨兵模式
+Sentinel(哨兵)是用于监控Redis集群中Master状态的工具，是Redis高可用解决方案，哨兵可以监视一个或者多个redis master服务，以及这些master服务的所有slave服务
+某个master服务宕机后，会把这个master下的某个从服务升级为master来替代已宕机的master继续工作。
+
+启动：redis-sentinel sentinel.conf
 
 
 
