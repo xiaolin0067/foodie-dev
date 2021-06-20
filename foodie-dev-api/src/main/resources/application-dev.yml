@@ -8,11 +8,20 @@ spring:
     username: root
     password: 123456
   redis:
+    # 单节点配置方式
     # database设置使用哪个数据库，在redis-cli中使用命令select 1来使用该库
+#    database: 1
+#    host: 192.168.3.26
+#    port: 6379
+#    password: 123456
+
+    # sentinel配置方式
     database: 1
-    host: 192.168.3.26
-    port: 6379
     password: 123456
+    sentinel:
+      master: mymaster-nick-name
+      # 注意端口为哨兵进程的端口
+      nodes: 192.168.3.26:26379,192.168.3.17:26379,192.168.3.27:26379
 
 mybatis:
   configuration:
