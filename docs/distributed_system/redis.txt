@@ -267,6 +267,26 @@ replicaof 192.168.3.26 6379
 masterauth 123456
 # 从节点默认只读，replica-read-only yes
 
+Redis无磁盘化复制 diskless
+Redis主从同步数据的同步策略有：磁盘、网络
+repl-diskless-sync yes
+
+Redis缓存过期机制（针对设置过expire过期时间的key，当key过期后，虽然无法读取但仍存储在内存不会立马清除）
+主动删除-定期删除：10次/s（可配置），定时随机抽查key，若过期则删除
+每秒随机抽查10个key
+hz 10
+被动删除-惰性删除：client请求key时，若key已过期，将其删除
+
+Redis内存淘汰管理机制，当机器内存达到阈值后执行清理内存的机制
+MEMORY MANAGEMENT
+开启最大内存限制
+maxmemory <bytes>
+管理策略
+maxmemory-policy noeviction
+
+noeviction：达到最大内存时，不清理内存，若还有新增的key直接报错
+allkeys-lfu：达到最大内存时，清理最少用到的老的缓存。（最常用到）
+
 
 
 
