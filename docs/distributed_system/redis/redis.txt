@@ -222,9 +222,7 @@ zset类型
     ZRANGEBYSCORE zset1 (10 (30
 删除指定元素
     zrem zset1 a
-
 Redis命令网址：http://redisdoc.com/
-
 redis-cli查看中文value，登录时指定参数--raw，即：redis-cli --raw
 
 Redis的发布与订阅
@@ -232,7 +230,6 @@ Redis的发布与订阅
 SUBSCRIBE channel_1 channel_2 channel_3
 2、发布者向channel发布消息
 PUBLISH channel_1 channel_1-message1
-
 指定通配符批量订阅
 PSUBSCRIBE channel_*
 
@@ -250,9 +247,9 @@ appendfsync同步策略：每次写操作、每秒、关闭
 在恢复数据时将AOF文件中该条命令删除后即可。
 重启redis会自动执行AOF文件恢复数据，先加载AOF，若产生问题可移走AOF文件使用RDB恢复。
 
-单机Redis并发大约5~6w，优化后可达十几万
-主从架构-主从复制-读写分离
+Redis主从架构（主从复制/读写分离）
 主Master-用于写，从Slave-用于读
+单机Redis并发大约5~6w，优化后可达十几万
 必须要开启master的持久化机制，否则master挂掉重启之后会同时将其他slave节点的数据清空
 一般使用一主二从，若从节点过多会导致主从之间频繁同步数据占用带宽与资源。从节点也可使用一主二从，树状部署。
 一主二从搭建服务器部署信息：192.168.3.26(master),192.168.3.17(slave),192.168.3.27(slave)
@@ -282,7 +279,6 @@ MEMORY MANAGEMENT
 maxmemory <bytes>
 管理策略
 maxmemory-policy noeviction
-
 noeviction：达到最大内存时，不清理内存，若还有新增的key直接报错
 allkeys-lfu：达到最大内存时，清理最少用到的老的缓存。（最常用到）
 
@@ -294,9 +290,42 @@ Sentinel(哨兵)是用于监控Redis集群中Master状态的工具，是Redis高
     创建日志与工作目录/usr/local/redis/sentinel
     启动：redis-sentinel sentinel.conf
 
-
-
-
+Redis-cluster集群（多主多从）
+在Redis的主从架构和哨兵模式下，master还是只有一个，增加了slave，提高了读的并发，但是单个master仍会存在瓶颈。master在向slave同步数据时可能master会挂掉，则此数据会丢失。
+redis集群的部署方式为：多主多从；经典部署方式：三主三从
+一、部署redis集群
+在每个节点修改redis.conf配置
+1、开启AOF
+appendonly yes
+2、开启cluster
+cluster-enabled yes
+cluster-config-file nodes-6379.conf
+cluster-node-timeout 5000
+停止redis服务
+/etc/init.d/redis_init_script stop
+删除rdb文件后启动redis服务
+/etc/init.d/redis_init_script start
+二、配置redis集群
+早期的版本使用ruby脚本进行配置，脚本位于redis安装包解压目录下src/redis-trib.rb
+这里使用redis-cli配置集群
+帮助文档
+redis-cli --cluster help
+创建集群，--cluster-replicas为master：slave的比例，集群至少需要3台主节点，配置为0代表没有从节点，配置为1代表三主三从
+机器跑不动太多虚拟机，此处直接使用4主无从测试
+redis-cli -a 123456 --cluster create 192.168.3.16:6379 192.168.3.17:6379 192.168.3.26:6379 192.168.3.27:6379 --cluster-replicas 0
+查看节点状态，使用任意节点的返回信息都是一致的
+redis-cli -a 123456 --cluster check 192.168.3.16:6379
+登录集群，注意：必须携带参数 -c -a，即使用集群模式与携带密码，若不带-c设置值时报错"(error) MOVED"，不带-a时"(error) NOAUTH Authentication required."
+redis-cli -c -a 123456
+查看集群信息
+cluster info
+查看节点信息
+cluster nodes
+设置值时提示
+Redirected to slot [741] located at 192.168.3.16:6379
+其中slot代表"槽"，使用集群模式时，向redis中设置值时会将key-value存储于不同的master中
+slot = hash(key) % 16384
+在搭建集群模式时对每个master都划分了一段slot的范围，设置值时使用key计算得到slot，然后重定向到该slot对应的master节点进行设置值
 
 
 
