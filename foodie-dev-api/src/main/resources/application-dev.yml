@@ -15,13 +15,17 @@ spring:
 #    port: 6379
 #    password: 123456
 
-    # sentinel配置方式
-    database: 1
-    password: 123456
-    sentinel:
-      master: mymaster-nick-name
+    # sentinel 哨兵配置方式
+#    database: 1
+#    password: 123456
+#    sentinel:
+#      master: mymaster-nick-name
       # 注意端口为哨兵进程的端口
-      nodes: 192.168.3.26:26379,192.168.3.17:26379,192.168.3.27:26379
+#      nodes: 192.168.3.26:26379,192.168.3.17:26379,192.168.3.27:26379
+    # cluster 集群配置方式
+    password: 123456
+    cluster:
+      nodes: 192.168.3.16:6379,192.168.3.17:6379,192.168.3.26:6379,192.168.3.27:6379
 
 mybatis:
   configuration:
