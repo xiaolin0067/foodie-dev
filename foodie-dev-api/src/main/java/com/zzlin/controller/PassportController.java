@@ -4,6 +4,7 @@ import com.zzlin.enums.CacheKey;
 import com.zzlin.pojo.Users;
 import com.zzlin.pojo.bo.ShopCartBO;
 import com.zzlin.pojo.bo.UserBO;
+import com.zzlin.pojo.vo.UsersVO;
 import com.zzlin.service.UserService;
 import com.zzlin.utils.CookieUtils;
 import com.zzlin.utils.JsonUtils;
@@ -16,6 +17,7 @@ import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,6 +25,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -94,11 +97,14 @@ public class PassportController {
         // 注册
         Users user = userService.createUser(userBO);
         // 登录信息脱敏
-        setNullProperty(user);
-        //登录信息缓存
-        CookieUtils.setCookie(request, response, "user", JsonUtils.objectToJson(user), true);
+//        setNullProperty(user);
 
-        // TODO 1、生成用户TOKEN存入Redis，2、同步购物车
+        // 缓存会话token，得到VO
+        UsersVO usersVO = cacheTokenAndConvertVO(user);
+        //登录信息缓存
+        CookieUtils.setCookie(request, response, CacheKey.USER.value, JsonUtils.objectToJson(usersVO), true);
+
+        // 同步购物车
         syncShopCart(request, response, user.getId());
 
         return Result.ok();
@@ -126,14 +132,24 @@ public class PassportController {
             return Result.errorMsg("用户名或密码错误");
         }
         // 登录信息脱敏
-        setNullProperty(user);
-        // 登录信息缓存
-        CookieUtils.setCookie(request, response, "user", JsonUtils.objectToJson(user), true);
+//        setNullProperty(user);
+        UsersVO usersVO = cacheTokenAndConvertVO(user);
 
-        // TODO 1、生成用户TOKEN存入Redis，2、同步购物车
+        // 登录信息缓存
+        CookieUtils.setCookie(request, response, CacheKey.USER.value, JsonUtils.objectToJson(usersVO), true);
+        // 同步购物车
         syncShopCart(request, response, user.getId());
 
         return Result.ok(user);
+    }
+
+    private UsersVO cacheTokenAndConvertVO(Users user) {
+        String uniqueToken = UUID.randomUUID().toString().trim();
+        redisOperator.set(CacheKey.USER_TOKEN.append(user.getId()), uniqueToken);
+        UsersVO usersVO = new UsersVO();
+        BeanUtils.copyProperties(user,usersVO);
+        usersVO.setUserUniqueToken(uniqueToken);
+        return usersVO;
     }
 
     /**
@@ -179,15 +195,17 @@ public class PassportController {
     @ApiOperation(value = "用户退出登陆", notes = "用户退出登陆", httpMethod = "POST")
     public Result logout(String userId, HttpServletRequest request, HttpServletResponse response) {
         // 清除用户相关cookie
-        CookieUtils.deleteCookie(request, response, "user");
-
-        // 用户退出登录，需要清空购物车
+        CookieUtils.deleteCookie(request, response, CacheKey.USER.value);
+        // 用户退出登录，需要清空购物车cookie
         CookieUtils.deleteCookie(request, response, CacheKey.SHOP_CART.value);
-        // 分布式会话中需要清除用户数据
-
+        // 分布式会话中需要清除用户redis缓存数据
+        redisOperator.del(CacheKey.USER_TOKEN.append(userId));
         return Result.ok();
     }
 
+    /**
+     * 用户信息脱敏
+     */
     private void setNullProperty(Users userResult) {
         userResult.setPassword(null);
         userResult.setMobile(null);

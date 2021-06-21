@@ -25,7 +25,15 @@ public enum CacheKey {
     /**
      * 购物车
      */
-    SHOP_CART("shopcart")
+    SHOP_CART("shopcart"),
+    /**
+     * 用户
+     */
+    USER("user"),
+    /**
+     * 用户Token
+     */
+    USER_TOKEN("user:token")
     ;
 
     public final String value;
