@@ -333,6 +333,7 @@ Redirected to slot [741] located at 192.168.3.16:6379
 slot = hash(key) % 16384
 在搭建集群模式时对每个master都划分了一段slot的范围，设置值时使用key计算得到slot，然后重定向到该slot对应的master节点进行设置值
 
+缓存穿透：请求不经过redis缓存，直接请求数据库
 
 
 

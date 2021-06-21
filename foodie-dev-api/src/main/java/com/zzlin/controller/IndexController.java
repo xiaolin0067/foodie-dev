@@ -86,6 +86,7 @@ public class IndexController {
             return Result.ok(JsonUtils.jsonToList(categoriesJson, CategoryVO.class));
         }
         List<CategoryVO> categories = categoryService.getSubCatList(rootCatId);
+        // 对于请求不存在的分类ID，也给他设置一个空的数据进redis缓存，可保证下次请求时不经过数据库，避免缓存穿透
         redisOperator.set(categoriesKey, JsonUtils.objectToJson(categories));
         return Result.ok(categories);
     }
