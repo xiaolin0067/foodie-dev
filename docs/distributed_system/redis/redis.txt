@@ -289,6 +289,12 @@ Sentinel(哨兵)是用于监控Redis集群中Master状态的工具，是Redis高
     在/usr/local/redis下创建配置文件sentinel.conf
     创建日志与工作目录/usr/local/redis/sentinel
     启动：redis-sentinel sentinel.conf
+# 查看imooc-master下的master节点信息
+sentinel master imooc-master
+# 查看imooc-master下的slaves节点信息
+sentinel slaves imooc-master
+# 查看imooc-master下的哨兵节点信息
+sentinel sentinels imooc-master
 
 Redis-cluster集群（多主多从）
 在Redis的主从架构和哨兵模式下，master还是只有一个，增加了slave，提高了读的并发，但是单个master仍会存在瓶颈。master在向slave同步数据时可能master会挂掉，则此数据会丢失。
