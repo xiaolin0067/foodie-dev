@@ -2,9 +2,11 @@ package com.zzlin.controller.center;
 
 import com.zzlin.config.Config;
 import com.zzlin.controller.BaseController;
+import com.zzlin.enums.CacheKey;
 import com.zzlin.enums.ImageFileSuffix;
 import com.zzlin.pojo.Users;
 import com.zzlin.pojo.bo.center.CenterUserBO;
+import com.zzlin.pojo.vo.UsersVO;
 import com.zzlin.service.center.CenterUserService;
 import com.zzlin.utils.CookieUtils;
 import com.zzlin.utils.DateUtil;
@@ -90,9 +92,10 @@ public class CentUserController extends BaseController {
         // 由于浏览器可能存在缓存导致不能及时刷新，在这里加上时间来保证更新后的图片可以及时刷新
         faceUrl += ("?t=" + DateUtil.getCurrentDateString(DateUtil.DATE_PATTERN));
         Users user = centerUserService.updateUserFace(userId, faceUrl);
-        setNullProperty(user);
-        CookieUtils.setCookie(request, response, "user", JsonUtils.objectToJson(user), true);
-        // TODO 后续整合进redis
+//        setNullProperty(user);
+        // 缓存会话token，得到VO
+        UsersVO usersVO = cacheTokenAndConvertVO(user);
+        CookieUtils.setCookie(request, response, CacheKey.USER.value, JsonUtils.objectToJson(usersVO), true);
         return Result.ok();
     }
 
@@ -112,10 +115,11 @@ public class CentUserController extends BaseController {
             return Result.errorMap(errorMap);
         }
 
-        Users userResult = centerUserService.updateUserInfo(userId, centerUserBO);
-        setNullProperty(userResult);
-        CookieUtils.setCookie(request, response, "user", JsonUtils.objectToJson(userResult), true);
-        // TODO 后续整合进redis
+        Users user = centerUserService.updateUserInfo(userId, centerUserBO);
+//        setNullProperty(userResult);
+        // 缓存会话token，得到VO
+        UsersVO usersVO = cacheTokenAndConvertVO(user);
+        CookieUtils.setCookie(request, response, CacheKey.USER.value, JsonUtils.objectToJson(usersVO), true);
         return Result.ok();
     }
 

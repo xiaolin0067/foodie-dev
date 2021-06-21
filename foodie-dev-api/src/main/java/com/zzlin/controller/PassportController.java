@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 @Api(value = "注册登录", tags = {"用于注册登录的相关接口"})
 @RestController
 @RequestMapping("passport")
-public class PassportController {
+public class PassportController extends BaseController {
 
     final static Logger logger = LoggerFactory.getLogger(PassportController.class);
 
@@ -133,6 +133,7 @@ public class PassportController {
         }
         // 登录信息脱敏
 //        setNullProperty(user);
+        // 缓存会话token，得到VO
         UsersVO usersVO = cacheTokenAndConvertVO(user);
 
         // 登录信息缓存
@@ -141,15 +142,6 @@ public class PassportController {
         syncShopCart(request, response, user.getId());
 
         return Result.ok(user);
-    }
-
-    private UsersVO cacheTokenAndConvertVO(Users user) {
-        String uniqueToken = UUID.randomUUID().toString().trim();
-        redisOperator.set(CacheKey.USER_TOKEN.append(user.getId()), uniqueToken);
-        UsersVO usersVO = new UsersVO();
-        BeanUtils.copyProperties(user,usersVO);
-        usersVO.setUserUniqueToken(uniqueToken);
-        return usersVO;
     }
 
     /**

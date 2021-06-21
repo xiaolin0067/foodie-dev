@@ -1,12 +1,19 @@
 package com.zzlin.controller;
 
+import com.zzlin.enums.CacheKey;
 import com.zzlin.pojo.Orders;
+import com.zzlin.pojo.Users;
+import com.zzlin.pojo.vo.UsersVO;
 import com.zzlin.service.center.MyOrderService;
+import com.zzlin.utils.RedisOperator;
 import com.zzlin.utils.Result;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
 import javax.annotation.Resource;
 import java.io.File;
+import java.util.UUID;
 
 /**
  * @author zlin
@@ -14,6 +21,9 @@ import java.io.File;
  */
 @Controller
 public class BaseController {
+
+    @Autowired
+    private RedisOperator redisOperator;
 
     public static final Integer COMMENT_PAGE_SIZE = 10;
     public static final Integer PAGE_SIZE = 20;
@@ -52,5 +62,19 @@ public class BaseController {
             return Result.errorMsg("订单不存在!");
         }
         return Result.ok(orders);
+    }
+
+    /**
+     * 缓存用户会话token并转换为VO
+     * @param user 用户
+     * @return 用户VO
+     */
+    public UsersVO cacheTokenAndConvertVO(Users user) {
+        String uniqueToken = UUID.randomUUID().toString().trim();
+        redisOperator.set(CacheKey.USER_TOKEN.append(user.getId()), uniqueToken);
+        UsersVO usersVO = new UsersVO();
+        BeanUtils.copyProperties(user,usersVO);
+        usersVO.setUserUniqueToken(uniqueToken);
+        return usersVO;
     }
 }
