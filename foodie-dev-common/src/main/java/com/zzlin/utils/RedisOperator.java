@@ -120,22 +120,17 @@ public class RedisOperator {
 	 */
 	public List<Object> batchGet(List<String> keys) {
 
+//		使用长链接方式批量查询，类似Nginx中的keepalive
 //		nginx -> keepalive
 //		redis -> pipeline
-
-		List<Object> result = redisTemplate.executePipelined(new RedisCallback<String>() {
-			@Override
-			public String doInRedis(RedisConnection connection) throws DataAccessException {
-				StringRedisConnection src = (StringRedisConnection)connection;
-
-				for (String k : keys) {
-					src.get(k);
-				}
-				return null;
+//		使用pipeline可支持更加丰富的批量操作，同时可插入修改以及对key对value进行处理，而mget只支持字符串的批量查询
+		return redisTemplate.executePipelined((RedisCallback<String>) redisConnection -> {
+			StringRedisConnection src = (StringRedisConnection) redisConnection;
+			for (String key : keys) {
+				src.get(key);
 			}
+			return null;
 		});
-
-		return result;
 	}
 
 

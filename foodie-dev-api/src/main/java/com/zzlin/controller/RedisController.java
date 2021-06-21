@@ -52,4 +52,13 @@ public class RedisController {
         return redisOperator.mget(Arrays.asList(keys));
     }
 
+    /**
+     * 批量查询-使用redis pipeline
+     * 使用pipeline可支持更加丰富的批量操作，同时可插入修改以及对key对value进行处理，而mget只支持字符串的批量查询
+     */
+    @GetMapping("/batchGet")
+    public Object batchGet(String... keys) {
+        return redisOperator.batchGet(Arrays.asList(keys));
+    }
+
 }
