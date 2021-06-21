@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
 
 /**
  * @author zlin
@@ -44,6 +45,11 @@ public class RedisController {
 //        redisTemplate.delete(key);
         redisOperator.del(key);
         return "OK";
+    }
+
+    @GetMapping("/mget")
+    public Object mget(String... keys) {
+        return redisOperator.mget(Arrays.asList(keys));
     }
 
 }
