@@ -15,6 +15,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -87,7 +88,12 @@ public class IndexController {
         }
         List<CategoryVO> categories = categoryService.getSubCatList(rootCatId);
         // 对于请求不存在的分类ID，也给他设置一个空的数据进redis缓存，可保证下次请求时不经过数据库，避免缓存穿透
-        redisOperator.set(categoriesKey, JsonUtils.objectToJson(categories));
+        if (CollectionUtils.isEmpty(categories)) {
+            // ID后面可能存在有数据，此处设置过期时间
+            redisOperator.set(categoriesKey, JsonUtils.objectToJson(categories), 5*60);
+        }else {
+            redisOperator.set(categoriesKey, JsonUtils.objectToJson(categories));
+        }
         return Result.ok(categories);
     }
 
