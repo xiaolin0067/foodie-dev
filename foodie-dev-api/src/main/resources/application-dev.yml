@@ -14,7 +14,6 @@ spring:
     host: 192.168.3.26
     port: 6379
     password: 123456
-
     # sentinel 哨兵配置方式
 #    database: 1
 #    password: 123456
@@ -26,6 +25,9 @@ spring:
 #    password: 123456
 #    cluster:
 #      nodes: 192.168.3.16:6379,192.168.3.17:6379,192.168.3.26:6379,192.168.3.27:6379
+  # springboot session 配置
+  session:
+    store-type: redis
 
 mybatis:
   configuration:
