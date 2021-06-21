@@ -41,7 +41,11 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(userTokenInterceptor()).addPathPatterns("/hello");
+        registry.addInterceptor(userTokenInterceptor())
+                .addPathPatterns("/**")
+                .excludePathPatterns("/passport/**")
+                .excludePathPatterns("/myorders/deliver")
+                .excludePathPatterns("/orders/notifyMerchantOrderPaid");
         WebMvcConfigurer.super.addInterceptors(registry);
     }
 }
