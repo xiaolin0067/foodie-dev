@@ -33,7 +33,19 @@ public enum CacheKey {
     /**
      * 用户Token
      */
-    USER_TOKEN("user:token")
+    USER_TOKEN("user:token"),
+    /**
+     * 用户全局门票
+     */
+    USER_TICKET("user:ticket"),
+    /**
+     * 临时门票
+     */
+    USER_TMP_TICKET("user:tmp:ticket"),
+    /**
+     * 用户全局门票cookie的key
+     */
+    USER_TICKET_COOKIE("user_ticket")
     ;
 
     public final String value;
