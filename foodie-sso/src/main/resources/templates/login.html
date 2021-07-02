@@ -12,6 +12,6 @@
     <input type="hidden" name="returnUrl" th:value="${returnUrl}"/>
     <input type="submit" value="提交登录"/>
 </form>
-<span style="color: red" th:value="${errMsg}"></span>
+<span style="color: red" th:text="${errMsg}"></span>
 </body>
 </html>

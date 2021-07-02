@@ -17,7 +17,6 @@ import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,7 +24,6 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -37,7 +35,7 @@ import java.util.stream.Collectors;
 @RequestMapping("passport")
 public class PassportController extends BaseController {
 
-    final static Logger logger = LoggerFactory.getLogger(PassportController.class);
+    private final static Logger logger = LoggerFactory.getLogger(PassportController.class);
 
     @Resource
     UserService userService;
