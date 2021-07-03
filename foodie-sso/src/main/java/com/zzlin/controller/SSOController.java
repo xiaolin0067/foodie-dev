@@ -149,6 +149,20 @@ public class SSOController {
         return Result.ok(JsonUtils.jsonToPojo(userVoJson, UsersVO.class));
     }
 
+    @PostMapping("/logout")
+    @ResponseBody
+    public Result logout(String userId, HttpServletRequest request, HttpServletResponse response) {
+
+        // 移除缓存与cookie中的ticket
+        String cookieTicket = CookieUtils.getCookieValue(request, CacheKey.USER_TICKET_COOKIE.value);
+        redisOperator.del(CacheKey.USER_TICKET.append(cookieTicket));
+        setCookie(CacheKey.USER_TICKET_COOKIE.value, null, 0, response);
+        // 移除回话
+        redisOperator.del(CacheKey.USER_SESSION.append(userId));
+
+        return Result.ok();
+    }
+
     /**
      * 创建并缓存临时门票
      * @return 临时门票
@@ -161,9 +175,14 @@ public class SSOController {
     }
 
     private void setCookie(String key, String val, HttpServletResponse response) {
+        setCookie(key, val, 7 * 24 * 60 * 60, response);
+    }
+
+    private void setCookie(String key, String val, int expiry, HttpServletResponse response) {
         Cookie cookie = new Cookie(key, val);
         cookie.setDomain("sso.com");
         cookie.setPath("/");
+        cookie.setMaxAge(expiry);
         response.addCookie(cookie);
     }
 }
