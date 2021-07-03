@@ -45,14 +45,38 @@ public class SSOController {
 
     @GetMapping("/login")
     public String login(String returnUrl, Model model,
-                        HttpServletRequest request, HttpServletResponse response) {
+                        HttpServletRequest request) throws NoSuchAlgorithmException {
         model.addAttribute("returnUrl", returnUrl);
         model.addAttribute("errMsg", "");
 
-        // TODO 后续完善校验是否登录
-
-        //  用户从未登录，跳转到CAS统一登录页面
+        String cookieTicket = CookieUtils.getCookieValue(request, CacheKey.USER_TICKET_COOKIE.value);
+        if (verifyTicket(cookieTicket)) {
+            // 生成临时票据回跳到调用端网站，时CAS端签发的一个一次性ticket，后续验证此tmpTicket，验证通过说明cookie存在全局Ticket
+            String tmpTicket = createAndCacheTmpTicket();
+            return "redirect:" + returnUrl + "?tmpTicket=" + tmpTicket;
+        }
+        //  用户未登录，跳转到CAS统一登录页面
         return "login";
+    }
+
+    /**
+     * 校验ticket是否合法
+     */
+    private boolean verifyTicket(String cookieTicket) {
+        if (StringUtils.isBlank(cookieTicket)) {
+            return false;
+        }
+        String cacheUserId = redisOperator.get(CacheKey.USER_TICKET.append(cookieTicket));
+        if (StringUtils.isBlank(cacheUserId)) {
+            logger.debug("ticket在缓存中找不到, cookieTicket: {}", cookieTicket);
+            return false;
+        }
+        String userVoJson = redisOperator.get(CacheKey.USER_SESSION.append(cacheUserId));
+        if (StringUtils.isBlank(userVoJson)) {
+            logger.debug("通过userId在缓存中找不到用户会话, userId: {}", cacheUserId);
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -109,7 +133,7 @@ public class SSOController {
         redisOperator.del(CacheKey.USER_TMP_TICKET.append(tmpTicket));
         String cookieTicket = CookieUtils.getCookieValue(request, CacheKey.USER_TICKET_COOKIE.value);
         if (StringUtils.isBlank(cookieTicket)) {
-            logger.debug("在cookies中找不到ticket, cookies: {}", JsonUtils.objectToJson(request.getCookies()));
+            logger.debug("验证TmpTicket 在cookies中找不到ticket, cookies: {}", JsonUtils.objectToJson(request.getCookies()));
             return Result.errorUserTicket("用户票据异常");
         }
         String cacheUserId = redisOperator.get(CacheKey.USER_TICKET.append(cookieTicket));
