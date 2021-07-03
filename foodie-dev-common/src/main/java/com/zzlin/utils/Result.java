@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * 				502：拦截器拦截到用户token出错
  * 				555：异常抛出信息
  * 				556: 用户qq校验异常
+ * 			    557: 用户ticket校验异常
  * @author zlin
  * @date 20201219
  * @version V1.0
@@ -53,6 +54,10 @@ public class Result {
     
     public static Result errorMsg(String msg) {
         return new Result(500, msg, null);
+    }
+
+    public static Result errorUserTicket(String msg) {
+        return new Result(557, msg, null);
     }
     
     public static Result errorMap(Object data) {

@@ -63,15 +63,12 @@ public class SSOController {
      */
     @PostMapping("/doLogin")
     public String doLogin(String username, String password, String returnUrl, Model model,
-                          HttpServletRequest request, HttpServletResponse response) {
-        model.addAttribute("returnUrl", returnUrl);
-
+                          HttpServletResponse response) throws NoSuchAlgorithmException {
         // 用户名和密码不能为空
         if (StringUtils.isBlank(username) || StringUtils.isBlank(password)) {
             model.addAttribute("errMsg", "用户名和密码不能为空");
             return "login";
         }
-
         // 1.登录
         Users user = userService.queryUserForLogin(username, password);
         if (user == null) {
@@ -83,33 +80,59 @@ public class SSOController {
         UsersVO usersVO = new UsersVO();
         BeanUtils.copyProperties(user,usersVO);
         usersVO.setUserUniqueToken(uniqueToken);
-        redisOperator.set(CacheKey.USER_TOKEN.append(user.getId()), JsonUtils.objectToJson(usersVO));
-
+        redisOperator.set(CacheKey.USER_SESSION.append(user.getId()), JsonUtils.objectToJson(usersVO));
         // 3.生成全局门票ticket，代表用户在CAS平台登陆过，并存放在cookie中
         String userTicket = UUID.randomUUID().toString().trim();
         setCookie(CacheKey.USER_TICKET_COOKIE.value, userTicket, response);
-
         // 4.userTicket关联用户ID放入缓存，用户有全局门票了
         redisOperator.set(CacheKey.USER_TICKET.append(userTicket), user.getId());
-
-        // 5.生成临时票据回跳到调用端网站，时CAS端签发的一个一次性ticket
+        // 5.生成临时票据回跳到调用端网站，时CAS端签发的一个一次性ticket，后续验证此tmpTicket，验证通过说明cookie存在全局Ticket
         String tmpTicket = createAndCacheTmpTicket();
+        return "redirect:" + returnUrl + "?tmpTicket=" + tmpTicket;
+    }
 
-        return "login";
-//        return "redirect:" + returnUrl + "?tmpTicket=" + tmpTicket;
+    /**
+     * 新版Chrome浏览器在跨域请求时不携带cookie导致获取cookie中的ticket失败，通过Firefox验证通过
+     */
+    @PostMapping("/verifyTmpTicket")
+    @ResponseBody
+    public Result verifyTmpTicket(String tmpTicket, HttpServletRequest request) throws NoSuchAlgorithmException {
+        if (StringUtils.isBlank(tmpTicket)) {
+            logger.debug("tmpTicket为空");
+            return Result.errorUserTicket("用户票据异常");
+        }
+        String cacheTmpTicket = redisOperator.get(CacheKey.USER_TMP_TICKET.append(tmpTicket));
+        if (StringUtils.isBlank(cacheTmpTicket) || !cacheTmpTicket.equals(MD5Utils.getMd5Str(tmpTicket))) {
+            logger.debug("缓存中找不到请求的tmpTicket或验证失败 tmpTicket {},cacheTmpTicket {}", tmpTicket, cacheTmpTicket);
+            return Result.errorUserTicket("用户票据异常");
+        }
+        redisOperator.del(CacheKey.USER_TMP_TICKET.append(tmpTicket));
+        String cookieTicket = CookieUtils.getCookieValue(request, CacheKey.USER_TICKET_COOKIE.value);
+        if (StringUtils.isBlank(cookieTicket)) {
+            logger.debug("在cookies中找不到ticket, cookies: {}", JsonUtils.objectToJson(request.getCookies()));
+            return Result.errorUserTicket("用户票据异常");
+        }
+        String cacheUserId = redisOperator.get(CacheKey.USER_TICKET.append(cookieTicket));
+        if (StringUtils.isBlank(cacheUserId)) {
+            logger.debug("ticket在缓存中找不到, cookieTicket: {}", cookieTicket);
+            return Result.errorUserTicket("用户票据异常");
+        }
+        String userVoJson = redisOperator.get(CacheKey.USER_SESSION.append(cacheUserId));
+        if (StringUtils.isBlank(userVoJson)) {
+            logger.debug("通过userId在缓存中找不到用户会话, userId: {}", cacheUserId);
+            return Result.errorUserTicket("用户票据异常");
+        }
+        return Result.ok(JsonUtils.jsonToPojo(userVoJson, UsersVO.class));
     }
 
     /**
      * 创建并缓存临时门票
      * @return 临时门票
      */
-    private String createAndCacheTmpTicket() {
+    private String createAndCacheTmpTicket() throws NoSuchAlgorithmException {
         String tmpTicket = UUID.randomUUID().toString().trim();
-        try {
-            redisOperator.set(CacheKey.USER_TMP_TICKET.append(tmpTicket), MD5Utils.getMd5Str(tmpTicket), 600);
-        } catch (NoSuchAlgorithmException e) {
-            logger.error("", e);
-        }
+        String md5TmpTicket = MD5Utils.getMd5Str(tmpTicket);
+        redisOperator.set(CacheKey.USER_TMP_TICKET.append(tmpTicket), md5TmpTicket, 600);
         return tmpTicket;
     }
 

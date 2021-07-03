@@ -35,6 +35,10 @@ public enum CacheKey {
      */
     USER_TOKEN("user:token"),
     /**
+     * 用户会话
+     */
+    USER_SESSION("user:session"),
+    /**
      * 用户全局门票
      */
     USER_TICKET("user:ticket"),

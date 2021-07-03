@@ -47,6 +47,7 @@ public final class CookieUtils {
      */
     public static String getCookieValue(HttpServletRequest request, String cookieName, boolean isDecoder) {
         Cookie[] cookieList = request.getCookies();
+        logger.debug("request cookies: {}", JsonUtils.objectToJson(cookieList));
         if (cookieList == null || cookieName == null) {
             return null;
         }
