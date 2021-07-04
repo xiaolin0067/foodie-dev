@@ -82,9 +82,32 @@ vim elasticsearch.yml
 在Network部分添加如下配置
 http.cors.enabled: true
 http.cors.allow-origin: "*"
+浏览器访问ES-header
+http://localhost:9100/
+查看ES信息
+GET http://192.168.3.26:9200
 
-
-
+查看集群健康状态
+GET http://192.168.3.26:9200/_cluster/health
+删除index
+DELETE http://192.168.3.26:9200/{indexName}
+添加index
+PUT http://192.168.3.26:9200/{indexName}
+body json:
+{
+    "settings": {
+        "index": {
+            "number_of_shards": "3",
+            "number_of_replicas": "0"
+        }
+    }
+}
+查看index详情
+GET http://192.168.3.26:9200/{indexName}
+查看所有index
+GET http://192.168.3.26:9200/_cat/indices
+查看所有index带上表头
+http://192.168.3.26:9200/_cat/indices?v
 
 
 
