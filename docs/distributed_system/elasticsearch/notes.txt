@@ -1,0 +1,80 @@
+Lucene：全文搜索的Java类库，就是一个jar包
+Solr：基于Lucene进行封装，国外大厂在用
+elasticsearch：基于Lucene进行封装，扩展性高
+
+ES核心术语
+索引index：相当于一张表
+类型type：index的逻辑类型，7.*版本后弃用
+文档document：相当于表记录，每一行记录
+字段fields：列
+映射mapping：结构定义
+近实时NRT：near real time
+节点node：每一个服务器
+share：分片，存储数据
+replica：分片的备份
+
+倒排索引：根据属性来确定记录位置，称之为倒排索引。
+索引表包含：属性值，属性值所在记录地址，属性词频与属性在记录中的位置
+
+ES安装
+tar -zxf elasticsearch-7.4.2-linux-x86_64.tar.gz
+mv elasticsearch-7.4.2 /usr/local/
+cd /usr/local/elasticsearch-7.4.2/
+mkdir data
+cd config
+调整ES配置
+vim elasticsearch.yml
+  # 自定义集群名称
+  cluster.name: my-es-cluster
+  # 自定义节点名称
+  node.name: es-node1
+  # 修改数据存储目录
+  path.data: /usr/local/elasticsearch-7.4.2/data
+  # 修改诶之存储目录
+  path.logs: /usr/local/elasticsearch-7.4.2/logs
+  # 关闭访问限制
+  network.host: 0.0.0.0
+  # 发现节点
+  cluster.initial_master_nodes: ["es-node1"]
+vim jvm.options
+  # 虚拟机内存不足，调小为128MB
+  -Xms128m
+  -Xmx128m
+注意：ES不可使用root用户启动，需要创建一个其他用户进行启动
+useradd esuser
+chown -R esuser:esuser elasticsearch-7.4.2/
+切换为esuser启动发现报错：
+[1]: max file descriptors [4096] for elasticsearch process is too low, increase to at least [65535]
+[2]: max virtual memory areas vm.max_map_count [65530] is too low, increase to at least [262144]
+需要进行如下配置
+vim /etc/security/limits.conf
+插入如下代码：
+* soft nofile 65536
+* hard nofile 131072
+* soft nproc 2048
+* soft nproc 4096
+编辑系统文件
+vim /etc/sysctl.conf
+插入配置
+vm.max_map_count=262145
+刷新配置
+sysctl -p
+启动：
+cd /usr/local/elasticsearch-7.4.2/bin/
+su esuser
+前台启动
+./elasticsearch
+后台启动
+./elasticsearch -d
+
+
+
+
+
+
+
+
+
+
+
+
