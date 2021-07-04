@@ -1,6 +1,6 @@
 Lucene：全文搜索的Java类库，就是一个jar包
 Solr：基于Lucene进行封装，国外大厂在用
-elasticsearch：基于Lucene进行封装，扩展性高
+elasticsearch：基于Lucene进行封装，提供restful风格json接口，扩展性高
 
 ES核心术语
 索引index：相当于一张表
@@ -66,6 +66,22 @@ su esuser
 ./elasticsearch
 后台启动
 ./elasticsearch -d
+
+elasticsearch图形化管理工具：elasticsearch-header
+安装方式：
+1、科学上网，谷歌商店搜索elasticsearch安装
+2、下载源码运行
+https://github.com/mobz/elasticsearch-head
+安装node
+解压源码压缩包
+cmd进入解压目录
+npm install
+npm run start
+修改elasticsearch取消跨域限制的配置
+vim elasticsearch.yml
+在Network部分添加如下配置
+http.cors.enabled: true
+http.cors.allow-origin: "*"
 
 
 
