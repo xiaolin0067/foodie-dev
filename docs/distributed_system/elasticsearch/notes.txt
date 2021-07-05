@@ -131,7 +131,7 @@ body json:
     }
 }
 字段属性：
-"type"：字段类型；text-会分词进行倒排索引，适合长文本。keyword-不会被分词，精确匹配字段内容就当做一个关键字。
+"type"：字段类型；text-会分词进行倒排索引，适合长文本。keyword-不会被分词，精确匹配字段内容就当做一个关键字，用于聚合和排序。
 "index": 是否索引，默认为true，若设置为false，则该字段不可被检索到。一般保持默认，敏感信息必须设置为false不可被检索
 
 analyze分词分析
@@ -164,5 +164,20 @@ date
 object
 数组只能包含统一数据类型的值，需保证类型一致
 
-
-
+document文档的基本操作
+添加文档与自动映射
+POST http://192.168.3.26:9200/my_doc/_doc/1
+{
+    "id": 1001,
+    "name": "wangdachui-1",
+    "desc": "happy every day!",
+    "create_date": "2021-07-05"
+}
+URL中最后的1为es中的ID，也可去掉，ES会自动生成随机字符串作为ID
+添加文档后会自动添加index的映射mapping，对于text类型字段，还会追加如下的mapping映射配置
+"fields": {
+    "keyword": {
+    "ignore_above": 256,
+    "type": "keyword"
+}
+该配置的作用为是的该字段既可以有text的分词匹配搜索，也可以使用keyword的聚合和排序，但是长度超过ignore_above的限制后就会失效
