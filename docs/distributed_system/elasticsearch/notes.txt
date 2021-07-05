@@ -114,8 +114,8 @@ http://192.168.3.26:9200/_cat/indices?v
 mapping基础操作
 定义index的数据结构，相当于定义表结构
 创建索引并指定mapping
-POST http://10.30.25.76:9200/index_mapping
-body json
+PUT http://10.30.25.76:9200/index_mapping
+body json:
 {
     "mappings": {
         "properties": {
@@ -134,8 +134,35 @@ body json
 "type"：字段类型；text-会分词进行倒排索引，适合长文本。keyword-不会被分词，精确匹配字段内容就当做一个关键字。
 "index": 是否索引，默认为true，若设置为false，则该字段不可被检索到。一般保持默认，敏感信息必须设置为false不可被检索
 
+analyze分词分析
+GET http://192.168.3.26:9200/index_mapping/_analyze
+body json:
+{
+    "field": "realname",
+    "text": "wangdachui is very good!"
+}
+默认支持英文，中文另需扩展，realname可进行分词，有多个token，username则只有一个token
 
-
+index已添加属性的类型设置后无法修改，除非删除字段，也可添加新字段以设置类型
+POST http://192.168.3.26:9200/index_mapping/_mapping
+{
+    "properties": {
+            "id": {
+                "type": "long"
+            },
+            "age": {
+                "type": "integer"
+            }
+        }
+}
+数据类型：
+text,keyword
+long,integer,short,byte
+double,float
+boolean
+date
+object
+数组只能包含统一数据类型的值，需保证类型一致
 
 
 
