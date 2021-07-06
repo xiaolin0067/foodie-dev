@@ -181,3 +181,45 @@ URL中最后的1为es中的ID，也可去掉，ES会自动生成随机字符串�
     "type": "keyword"
 }
 该配置的作用为是的该字段既可以有text的分词匹配搜索，也可以使用keyword的聚合和排序，但是长度超过ignore_above的限制后就会失效
+
+删除文档
+DELETE http://192.168.3.26:9200/my_doc/_doc/1yUud3oBQWvv7NbxJwiN
+url最后的是文档ID，删除是逻辑删除，只有当数据在磁盘中存储到一定程度后才会进行物理删除释放磁盘空间
+
+更新文档指定字段的值
+POST http://192.168.3.26:9200/my_doc/_doc/1/_update
+body json:
+{
+    "doc": {
+        "name": "更新的名字"
+    }
+}
+全量更新文档
+PUT http://192.168.3.26:9200/my_doc/_doc/1
+body json:
+{
+    "id": 5551,
+    "name": "id1 uodate name",
+    "desc": "hello beauty!",
+    "create_date": "2021-04-12"
+}
+修改删除_version都会累加
+
+查询指定文档ID的文档信息
+GET http://192.168.3.26:9200/my_doc/_doc/1
+
+查询指定文档ID的文档信息，指定返回字段
+GET http://192.168.3.26:9200/my_doc/_doc/1?_source=id,name
+
+查询index下的所有文档
+GET http://192.168.3.26:9200/my_doc/_doc/_search
+其中took代表耗时，hits代表命中的记录数，max_score匹配度相关性分数，_source文档数据内容
+
+查询index下的所有文档，指定返回字段
+GET http://192.168.3.26:9200/my_doc/_doc/_search?_source=id,name
+
+查询文档ID是否存在
+HEAD http://192.168.3.26:9200/my_doc/_doc/1
+
+
+
