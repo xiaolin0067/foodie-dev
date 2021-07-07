@@ -90,7 +90,7 @@ GET http://192.168.3.26:9200
 查看集群健康状态
 GET http://192.168.3.26:9200/_cluster/health
 
-index索引基础操作
+-- index索引基础操作
 删除index
 DELETE http://192.168.3.26:9200/{indexName}
 添加index
@@ -111,7 +111,7 @@ GET http://192.168.3.26:9200/_cat/indices
 查看所有index带上表头
 http://192.168.3.26:9200/_cat/indices?v
 
-mapping基础操作
+-- mapping基础操作
 定义index的数据结构，相当于定义表结构
 创建索引并指定mapping
 PUT http://10.30.25.76:9200/index_mapping
@@ -164,7 +164,7 @@ date
 object
 数组只能包含统一数据类型的值，需保证类型一致
 
-document文档的基本操作
+-- document文档的基本操作
 添加文档与自动映射
 POST http://192.168.3.26:9200/my_doc/_doc/1
 {
@@ -220,6 +220,27 @@ GET http://192.168.3.26:9200/my_doc/_doc/_search?_source=id,name
 
 查询文档ID是否存在
 HEAD http://192.168.3.26:9200/my_doc/_doc/1
+
+-- 乐观锁
+版本控制，如果更新的请求版本与实际版本不匹配，那么将拒绝更新
+POST http://192.168.3.26:9200/my_doc/_doc/6/_update?if_seq_no=14&if_primary_term=5
+_seq_no，与version类似，变更后累加
+_primary_term，文档所在分片位置
+
+-- 分词
+将一段文字内容切分分析，把词汇单词切分出来
+POST http://192.168.3.26:9200/_analyze
+{
+    "analyzer": "standard",
+    "text": "I have strong muscles"
+}
+大写的内容分词后将转换为小写
+指定index字段进行分词在前面的analyze分词分析已提到
+分词器：
+simple：按照非字母进行分词，也会将大写转换为小写，不是字母将会被去除
+whitespace：根据空格进行分词，大写与标点会被保留
+stop：去除is the a等词汇
+keyword：将整段文本作为关键字
 
 
 
