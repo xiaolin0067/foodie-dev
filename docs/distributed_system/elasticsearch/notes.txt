@@ -242,5 +242,38 @@ whitespace：根据空格进行分词，大写与标点会被保留
 stop：去除is the a等词汇
 keyword：将整段文本作为关键字
 
+--中文分词器
+https://github.com/medcl/elasticsearch-analysis-ik
+安装ik中文分词器
+unzip elasticsearch-analysis-ik-7.4.2.zip -d /usr/local/elasticsearch-7.4.2/plugins/ik
+重启ES
+分词器：
+ik_max_word：将文本做最细粒度的拆分
+ik_smart：将文本做最粗粒度的拆分
+若文本未被分词，则搜索时无法匹配到，也就搜不到
+
+--自定义词典
+vim /usr/local/elasticsearch-7.4.2/plugins/ik/config/IKAnalyzer.cfg.xml
+编辑配置：<entry key="ext_dict">custom.dic</entry>保存退出
+统计目录创建词典文件：custom.dic，输入内容
+骚年
+柳叔
+重启ES即可
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
