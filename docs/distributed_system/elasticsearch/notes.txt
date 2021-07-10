@@ -213,7 +213,7 @@ GET http://192.168.3.26:9200/my_doc/_doc/1?_source=id,name
 
 查询index下的所有文档
 GET http://192.168.3.26:9200/my_doc/_doc/_search
-其中took代表耗时，hits代表命中的记录数，max_score匹配度相关性分数，_source文档数据内容
+其中took代表耗时，hits代表命中的记录数，max_score匹配度相关性分数，_source文档数据内容，GET请求Body需为none
 
 查询index下的所有文档，指定返回字段
 GET http://192.168.3.26:9200/my_doc/_doc/_search?_source=id,name
@@ -260,14 +260,93 @@ vim /usr/local/elasticsearch-7.4.2/plugins/ik/config/IKAnalyzer.cfg.xml
 柳叔
 重启ES即可
 
+-- DSL搜索
+创建名为shop的index，mapping为如下内容：
+{
+    "properties":{
+        "id":{
+            "type":"long"
+        },
+        "age":{
+            "type":"integer"
+        },
+        "username":{
+            "type":"keyword"
+        },
+        "nickname":{
+            "type":"text",
+            "analyzer":"ik_max_word"
+        },
+        "money":{
+            "type":"float"
+        },
+        "desc":{
+            "type":"text",
+            "analyzer":"ik_max_word"
+        },
+        "sex":{
+            "type":"byte"
+        },
+        "birthday":{
+            "type":"date"
+        },
+        "face":{
+            "type":"text",
+            "index": false
+        }
+    }
+}
 
+-- 查询
+QueryString方式查询：复杂查询不方便，适用于简单查询，使用频率较少
+GET http://192.168.3.26:9200/shop/_doc/_search?q=desc:不可怕&q=age:33
+对于keyword类型，只搜索部分内容时搜索不到
+GET http://192.168.3.26:9200/shop/_doc/_search?q=username:剪
 
-
-
-
-
-
-
+DSL查询：企业常用，JSON格式
+POST http://192.168.3.26:9200/shop/_doc/_search
+字段匹配搜索 query-match
+{
+    "query": {
+        "match": {
+            "desc": "不可怕"
+        }
+    }
+}
+搜索index中包含某一字段的文档 query-exists
+{
+    "query": {
+        "exists": {
+            "field": "username"
+        }
+    }
+}
+查询所有文档 query-match_all
+{
+    "query": {
+        "match_all": {}
+    }
+}
+指定文档返回的字段
+{
+    "query": {
+        "match_all": {}
+    },
+    "_source": [
+        "id","nickname","age"
+    ]
+}
+分页查询，form-从第几条数据开始，size-展示多少条数据
+{
+    "query": {
+        "match_all": {}
+    },
+    "_source": [
+        "id","nickname","age"
+    ],
+    "from": 24,
+    "size": 10
+}
 
 
 
