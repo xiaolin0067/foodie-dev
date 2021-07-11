@@ -303,6 +303,19 @@ GET http://192.168.3.26:9200/shop/_doc/_search?q=desc:不可怕&q=age:33
 对于keyword类型，只搜索部分内容时搜索不到
 GET http://192.168.3.26:9200/shop/_doc/_search?q=username:剪
 
-
-
+搭建ES集群
+修改集群名称为自定义
+cluster.name: my-es-cluster
+修改节点名称
+node.name: es-node3-26
+在network下添加配置
+# 节点可成为master
+node.master: true
+# 节点可成为数据节点
+node.data: true
+配置集群节点IP
+discovery.seed_hosts: ["192.168.3.17", "192.168.3.26", "192.168.3.27"]
+配置主节点名
+cluster.initial_master_nodes: ["es-node3-17"]
+三台ES都进行如上配置，但是node.name需要修改为不一样的
 
