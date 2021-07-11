@@ -30,7 +30,7 @@ vim elasticsearch.yml
   node.name: es-node1
   # 修改数据存储目录
   path.data: /usr/local/elasticsearch-7.4.2/data
-  # 修改诶之存储目录
+  # 修改日志存储目录
   path.logs: /usr/local/elasticsearch-7.4.2/logs
   # 关闭访问限制
   network.host: 0.0.0.0
@@ -302,56 +302,6 @@ QueryString方式查询：复杂查询不方便，适用于简单查询，使用
 GET http://192.168.3.26:9200/shop/_doc/_search?q=desc:不可怕&q=age:33
 对于keyword类型，只搜索部分内容时搜索不到
 GET http://192.168.3.26:9200/shop/_doc/_search?q=username:剪
-
-DSL查询：企业常用，JSON格式
-POST http://192.168.3.26:9200/shop/_doc/_search
-字段匹配搜索 query-match
-{
-    "query": {
-        "match": {
-            "desc": "不可怕"
-        }
-    }
-}
-搜索index中包含某一字段的文档 query-exists
-{
-    "query": {
-        "exists": {
-            "field": "username"
-        }
-    }
-}
-查询所有文档 query-match_all
-{
-    "query": {
-        "match_all": {}
-    }
-}
-指定文档返回的字段
-{
-    "query": {
-        "match_all": {}
-    },
-    "_source": [
-        "id","nickname","age"
-    ]
-}
-分页查询，form-从第几条数据开始，size-展示多少条数据
-{
-    "query": {
-        "match_all": {}
-    },
-    "_source": [
-        "id","nickname","age"
-    ],
-    "from": 24,
-    "size": 10
-}
-
-
-
-
-
 
 
 

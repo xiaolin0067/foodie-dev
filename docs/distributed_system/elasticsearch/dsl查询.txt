@@ -1,0 +1,238 @@
+DSL查询：企业常用，JSON格式
+POST http://192.168.3.26:9200/shop/_doc/_search
+字段匹配搜索 query-match
+{
+    "query": {
+        "match": {
+            "desc": "不可怕"
+        }
+    }
+}
+搜索index中包含某一字段的文档 query-exists
+{
+    "query": {
+        "exists": {
+            "field": "username"
+        }
+    }
+}
+查询所有文档 query-match_all
+{
+    "query": {
+        "match_all": {}
+    }
+}
+指定文档返回的字段
+{
+    "query": {
+        "match_all": {}
+    },
+    "_source": [
+        "id","nickname","age"
+    ]
+}
+分页查询，form-从第几条数据开始，size-展示多少条数据
+{
+    "query": {
+        "match_all": {}
+    },
+    "_source": [
+        "id","nickname","age"
+    ],
+    "from": 24,
+    "size": 10
+}
+查询内容为关键字，不在分词拆分搜索，document字段中必须完整包含查询关键字，query-term
+{
+    "query": {
+        "term": {
+            "desc": "人生"
+        }
+    }
+}
+一次性搜索多个关键字，document的该字段中包含任意一个关键字即可被检索到，query-terms
+{
+    "query": {
+        "terms": {
+            "desc": ["人","过去"]
+        }
+    }
+}
+按关键字顺序搜索，可以指定可跳过的最大字符数，query-match_phrase
+{
+    "query": {
+        "match_phrase": {
+            "desc": {
+                "query": "柳叔 喝茶",
+                "slop": 100
+            }
+        }
+    }
+}
+匹配关键字，需要包含所有关键字，match-operator-and
+{
+    "query": {
+        "match": {
+            "desc": {
+                "query": "人生光阴",
+                "operator": "and"
+            }
+        }
+    },
+}
+operator-or（默认）：值需要匹配到一个分词
+operator-and：需要包含所有关键字
+搜索内容的分词数最少需要与document中字段数据匹配的百分比或分词个数，minimum_should_match
+{
+    "query": {
+        "match": {
+            "desc": {
+                "query": "人生光阴",
+                "minimum_should_match": "60%"
+            }
+        }
+    }
+}
+query中的分词数至少要有60%个在搜索结果中的字段中存在
+{
+    "query": {
+        "match": {
+            "desc": {
+                "query": "人生光阴",
+                "minimum_should_match": "2"
+            }
+        }
+    }
+}
+query中的分词数至少要有2个在搜索结果中的字段中存在
+根据docId精确搜索
+{
+    "query": {
+        "ids": {
+            "type": "_doc",
+            "values": ["1001","1002","1003"]
+        }
+    }
+}
+在多个字段中搜索指定内容，multi_match-fields
+{
+    "query": {
+        "multi_match": {
+            "query": "王大锤",
+            "fields": ["desc", "nickname"]
+        }
+    }
+}
+boost加权：提升字段所占分数："fields": ["desc", "nickname^10"]
+-- 布尔查询
+bool-must：相当于and，所有条件必须满足
+bool-must_not：相当于非，一个都不能满足，查询一个都不满足的结果
+bool-should：相当于or，需满足一个条件
+{
+    "query": {
+        "bool": {
+            "must": [
+                {
+                    "match": {
+                        "desc": {
+                            "query": "柳叔",
+                            "boost": 1000
+                        }
+                    }
+                }
+            ],
+            "should": [
+                {
+                    "match": {
+                        "username": "锤"
+                    }
+                }
+            ],
+            "must_not": [
+                {
+                    "match": {
+                        "sex": 0
+                    }
+                }
+            ]
+        }
+    }
+}
+-- 过滤器 post_filter
+也可使用post_filter-term来精确过滤
+{
+    "query": {
+        "match": {
+            "desc": "人生"
+        }
+    },
+    "post_filter": {
+        "range": {
+            "age": {
+                "gte": 20,
+                "lte": 30
+            }
+        }
+    }
+}
+-- 排序
+{
+    "query": {
+        "match": {
+            "desc": "人生"
+        }
+    },
+    "sort": [
+        {
+            "age": "desc"
+        },
+        {
+            "id": "asc"
+        }
+    ]
+}
+text类型不可被培训，keyword可以排序
+实现text类型的排序（一般来说不对text进行排序），字段定义：
+{
+    "properties": {
+        "id": {
+            "type": "long"
+        },
+        "nickname": {
+            "type": "text",
+            "analyzer": "ik_max_word",
+            "fields": {
+                "keyword": {
+                    "type": "keyword"
+                }
+            }
+        }
+    }
+}
+body json
+{
+    "sort": [
+        {
+            "nickname.keyword": "desc"
+        }
+    ]
+}
+搜索结果高亮显示与自定义高亮标签
+{
+    "query": {
+        "match": {
+            "desc": "人生"
+        }
+    },
+    "highlight": {
+        "pre_tags": ["<span>"],
+        "post_tags": ["</span>"],
+        "fields": {
+            "desc": {}
+        }
+    }
+}
+搜索课外拓展 - prefix-fuzzy-wildcard
+prefix：根据前缀去查询
+fuzzy：模糊搜索，并不是指的sql的模糊搜索，而是用户在进行搜索的时候的打字错误现象，搜索引擎会自动纠正，然后尝试匹配索引库中的数据
+wildcard：占位符查询，? 单个字符，* 多个字符
