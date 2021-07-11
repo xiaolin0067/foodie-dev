@@ -319,3 +319,17 @@ discovery.seed_hosts: ["192.168.3.17", "192.168.3.26", "192.168.3.27"]
 cluster.initial_master_nodes: ["es-node3-17"]
 三台ES都进行如上配置，但是node.name需要修改为不一样的
 
+当某一节点挂掉时，其节点上面的share主分片的身份会被转移到其他节点的replica上面去
+节点恢复后原本的share身份变为replica，不会抢占回为主分片share身份
+ES的master与主节点与副本的竞争机制为非抢占式
+ES集群脑裂
+如果发生网络中断或者服务器宕机，那么集群会有可能被划分为两个部分，各自有自己的master来管理，那么这就是脑裂。
+脑裂解决方案：
+master主节点要经过多个master节点共同选举后才能成为新的主节点。就跟班级里选班长一样，并不是你1个人能决定的，需要班里半数以上的人决定。
+解决实现原理：半数以上的节点同意选举，节点方可成为新的master。
+discovery.zen.minimum_master_nodes=(N/2)+1
+N为集群的中master节点的数量，也就是那些 node.master=true 设置的那些服务器节点总数。
+在最新版7.x中， minimum_master_node 这个参数已经被移除了，这一块内容完全由es自身去管理，这样就避免了脑裂的问题，选举也会非常快。
+
+
+
