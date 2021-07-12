@@ -1,4 +1,4 @@
-package com.zzlin.config;
+package com.zzlin.es.config;
 
 import org.springframework.context.annotation.Configuration;
 
