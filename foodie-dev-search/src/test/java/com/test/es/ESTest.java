@@ -2,16 +2,28 @@ package com.test.es;
 
 import com.zzlin.es.SearchApp;
 import com.zzlin.es.pojo.Stu;
+import com.zzlin.utils.JsonUtils;
 import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
+import org.springframework.data.elasticsearch.core.SearchResultMapper;
+import org.springframework.data.elasticsearch.core.aggregation.AggregatedPage;
+import org.springframework.data.elasticsearch.core.aggregation.impl.AggregatedPageImpl;
 import org.springframework.data.elasticsearch.core.query.*;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -37,11 +49,11 @@ public class ESTest {
     @Test
     public void createIndexStu(){
         // 插入document数据，若索引不存在则进行创建，若存在则只进行新增
-        Stu stu = new Stu(1002L, "hello", 19);
+        Stu stu = new Stu(1006L, "hello-6", 23);
         // 扩展字段的mapping的更新
-        stu.setMoney(66.6f);
-        stu.setSign("sign-1002");
-        stu.setDescription("a man can see the blood directly who was a real hero");
+        stu.setMoney(668.66f);
+        stu.setSign("sign-1006");
+        stu.setDescription("the blood is yellow");
         IndexQuery indexQuery = new IndexQueryBuilder().withObject(stu).build();
         esTemplate.index(indexQuery);
     }
@@ -89,5 +101,60 @@ public class ESTest {
     @Test
     public void deleteStuDoc() {
         esTemplate.delete(Stu.class, "1002");
+    }
+
+    /**
+     * 分页搜索文档
+     */
+    @Test
+    public void searchStuDoc() {
+        Pageable pageable = PageRequest.of(0, 2);
+        SearchQuery query = new NativeSearchQueryBuilder()
+                .withQuery(QueryBuilders.matchQuery("sign", "1002"))
+                .withPageable(pageable)
+                .build();
+        AggregatedPage<Stu> stuPage = esTemplate.queryForPage(query, Stu.class);
+        System.out.println(stuPage.getTotalPages());
+        stuPage.getContent().forEach(e -> System.out.println(JsonUtils.objectToJson(e)));
+    }
+
+    /**
+     * 高亮显示搜索结果关键字
+     */
+    @Test
+    public void highlightStuDoc() {
+        String preTag = "<font color='red'>";
+        String postTag = "</font>";
+        Pageable pageable = PageRequest.of(1, 2);
+        SearchQuery query = new NativeSearchQueryBuilder()
+                .withQuery(QueryBuilders.matchQuery("description", "blood"))
+                // 高亮搜索条件
+                .withHighlightFields(
+                        new HighlightBuilder.Field("description")
+                        .preTags(preTag)
+                        .postTags(postTag)
+                )
+                .withPageable(pageable)
+                .build();
+        // 修改映射结果集SearchResultMapper
+        AggregatedPage<Stu> stuPage = esTemplate.queryForPage(query, Stu.class, new SearchResultMapper() {
+            @Override
+            public <T> AggregatedPage<T> mapResults(SearchResponse searchResponse, Class<T> aClass, Pageable pageable) {
+                List<Stu> stuList = new ArrayList<>();
+                for (SearchHit hit : searchResponse.getHits()) {
+                    Stu stu = JsonUtils.jsonToPojo(hit.getSourceAsString(), Stu.class);
+                    String highDesc =  hit.getHighlightFields().get("description").getFragments()[0].toString();
+                    stu.setDescription(highDesc);
+                    stuList.add(stu);
+                }
+                if (!stuList.isEmpty()) {
+                    // 通过此构造方法直接返回page会丢失总页数等信息
+                    return new AggregatedPageImpl<>((List<T>)stuList);
+                }
+                return null;
+            }
+        });
+        System.out.println(stuPage.getTotalPages());
+        stuPage.getContent().forEach(e -> System.out.println(JsonUtils.objectToJson(e)));
     }
 }
