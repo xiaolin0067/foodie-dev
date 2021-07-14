@@ -2,14 +2,17 @@ package com.test.es;
 
 import com.zzlin.es.SearchApp;
 import com.zzlin.es.pojo.Stu;
+import org.elasticsearch.action.index.IndexRequest;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
-import org.springframework.data.elasticsearch.core.query.IndexQuery;
-import org.springframework.data.elasticsearch.core.query.IndexQueryBuilder;
+import org.springframework.data.elasticsearch.core.query.*;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author zlin
@@ -28,6 +31,8 @@ public class ESTest {
      * 同时客户端对ES的索引进行管理也存在问题：
      * 1、@Document的shards与replicas属性设置无效，无法设置分片与副本
      * 2、@Field的FieldType类型不灵活
+     *
+     * 创建索引，添加文档，生成mapping
      */
     @Test
     public void createIndexStu(){
@@ -41,9 +46,48 @@ public class ESTest {
         esTemplate.index(indexQuery);
     }
 
+    /**
+     * 删除索引
+     */
     @Test
     public void deleteIndexStu(){
         esTemplate.deleteIndex(Stu.class);
     }
 
+    /**
+     * 更新文档
+     */
+    @Test
+    public void updateStuDoc() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("description","this is new description...");
+        map.put("money",88.8f);
+        IndexRequest indexRequest = new IndexRequest();
+        indexRequest.source(map);
+        UpdateQuery updateQuery = new UpdateQueryBuilder()
+                .withClass(Stu.class)
+                .withId("1002")
+                .withIndexRequest(indexRequest)
+                .build();
+        esTemplate.update(updateQuery);
+    }
+
+    /**
+     * 查询文档
+     */
+    @Test
+    public void getStuDoc() {
+        GetQuery getQuery = new GetQuery();
+        getQuery.setId("1002");
+        Stu stu = esTemplate.queryForObject(getQuery, Stu.class);
+        System.out.println(stu.toString());
+    }
+
+    /**
+     * 删除文档
+     */
+    @Test
+    public void deleteStuDoc() {
+        esTemplate.delete(Stu.class, "1002");
+    }
 }

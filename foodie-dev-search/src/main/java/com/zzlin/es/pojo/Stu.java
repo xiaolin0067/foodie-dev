@@ -90,4 +90,16 @@ public class Stu {
     public void setAge(Integer age) {
         this.age = age;
     }
+
+    @Override
+    public String toString() {
+        return "Stu{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", age=" + age +
+                ", money=" + money +
+                ", sign='" + sign + '\'' +
+                ", description='" + description + '\'' +
+                '}';
+    }
 }
