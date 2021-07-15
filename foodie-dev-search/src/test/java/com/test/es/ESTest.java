@@ -8,6 +8,9 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
+import org.elasticsearch.search.sort.FieldSortBuilder;
+import org.elasticsearch.search.sort.SortBuilder;
+import org.elasticsearch.search.sort.SortOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,13 +75,13 @@ public class ESTest {
     @Test
     public void updateStuDoc() {
         Map<String, Object> map = new HashMap<>();
-        map.put("description","this is new description...");
-        map.put("money",88.8f);
+//        map.put("description","this is new description...");
+        map.put("money",6666.6f);
         IndexRequest indexRequest = new IndexRequest();
         indexRequest.source(map);
         UpdateQuery updateQuery = new UpdateQueryBuilder()
                 .withClass(Stu.class)
-                .withId("1002")
+                .withId("1005")
                 .withIndexRequest(indexRequest)
                 .build();
         esTemplate.update(updateQuery);
@@ -125,7 +128,9 @@ public class ESTest {
     public void highlightStuDoc() {
         String preTag = "<font color='red'>";
         String postTag = "</font>";
-        Pageable pageable = PageRequest.of(1, 2);
+        Pageable pageable = PageRequest.of(0, 10);
+        SortBuilder moneySortBuilder = new FieldSortBuilder("money").order(SortOrder.DESC);
+        SortBuilder ageSortBuilder = new FieldSortBuilder("age").order(SortOrder.ASC);
         SearchQuery query = new NativeSearchQueryBuilder()
                 .withQuery(QueryBuilders.matchQuery("description", "blood"))
                 // 高亮搜索条件
@@ -134,6 +139,8 @@ public class ESTest {
                         .preTags(preTag)
                         .postTags(postTag)
                 )
+                .withSort(moneySortBuilder)
+                .withSort(ageSortBuilder)
                 .withPageable(pageable)
                 .build();
         // 修改映射结果集SearchResultMapper
