@@ -1,3 +1,5 @@
+https://www.elastic.co/cn/
+
 Lucene：全文搜索的Java类库，就是一个jar包
 Solr：基于Lucene进行封装，国外大厂在用
 elasticsearch：基于Lucene进行封装，提供restful风格json接口，扩展性高
@@ -331,5 +333,19 @@ discovery.zen.minimum_master_nodes=(N/2)+1
 N为集群的中master节点的数量，也就是那些 node.master=true 设置的那些服务器节点总数。
 在最新版7.x中， minimum_master_node 这个参数已经被移除了，这一块内容完全由es自身去管理，这样就避免了脑裂的问题，选举也会非常快。
 
-
+logstash：同步数据（数据源不止于MySQL）到ES中
+安装logstash
+解压安装包
+tar -zxf logstash-6.4.3.tar.gz
+mv logstash-6.4.3 /usr/local/
+cd /usr/local/logstash-6.4.3/
+mkdir sync
+cd sync/
+touch logstash-db-sync.conf
+cp /root/software/mysql-connector-java-5.1.41.jar .
+配置logstash-db-sync.conf
+配置foodie-items.sql
+启动，同步前需要先创建ES中的索引
+./logstash -f /usr/local/logstash-6.4.3/sync/logstash-db-sync.conf
+@timestamp大于配置中指定的更新时间才会同步到ES中
 
