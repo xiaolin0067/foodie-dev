@@ -1,0 +1,20 @@
+logstash：同步数据（数据源不止于MySQL）到ES中
+安装logstash
+解压安装包
+tar -zxf logstash-6.4.3.tar.gz
+mv logstash-6.4.3 /usr/local/
+cd /usr/local/logstash-6.4.3/
+mkdir sync
+cd sync/
+touch logstash-db-sync.conf
+cp /root/software/mysql-connector-java-5.1.41.jar .
+配置logstash-db-sync.conf
+配置foodie-items.sql
+启动，同步前需要先创建ES中的索引
+./logstash -f /usr/local/logstash-6.4.3/sync/logstash-db-sync.conf
+@timestamp大于配置中指定的更新时间才会同步到ES中
+若物理删除数据库中的记录，不会同步更新到ES中，所以一般使用软删除，更新记录以同步到ES中
+
+同步数据时自动mapping时自定义中文分词器
+在/usr/local/logstash-6.4.3/sync/下配置logstash-ik.json文件
+在logstash-db-sync.conf添加模板配置
