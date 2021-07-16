@@ -19,6 +19,13 @@ public class PagedGridResult {
         setRecords(pageList.getTotal());
     }
 
+	public PagedGridResult(int page, int total, long records, List<?> rows) {
+		this.page = page;
+		this.total = total;
+		this.records = records;
+		this.rows = rows;
+	}
+
 	public int getPage() {
 		return page;
 	}
