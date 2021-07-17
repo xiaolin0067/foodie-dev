@@ -10,4 +10,6 @@ public interface FdfsService {
 
     String upload(MultipartFile file, String fileExtName) throws Exception;
 
+    String uploadAliyunOSS(MultipartFile file, String userId, String fileExtName) throws Exception;
+
 }

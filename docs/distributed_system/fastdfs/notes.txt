@@ -10,6 +10,7 @@
     可扩展差：扩容与缩容差
 
 FastDFS
+分布式文件系统，其主要优势为可进行水平扩容
 https://github.com/happyfish100/fastdfs/wiki
 安装包：
 libfatscommon：FastDFS分离出的一些公用函数包
@@ -126,8 +127,15 @@ server {
 若下载没有响应检查mod_fastdfs.conf配置目录是否存在：base_path=/usr/local/fastdfs/tmp
 
 
-
-
+FastDFS后仍存在的问题：
+运维复杂：扩容缩容
+开发复杂：不能对上传的文件进行处理
+云存储阿里OSS优点：
+SDK使用简单
+强大的文件处理功能
+零运维成本
+图形化的管理控制台
+CDN加速
 
 
 
