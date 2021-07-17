@@ -1,0 +1,46 @@
+server:
+  port: 8066
+  tomcat:
+    uri-encoding: UTF-8
+spring:
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://192.168.3.26:3306/foodie-shop-dev?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&useSSL=false
+    username: root
+    password: 123456
+    hikari:
+      # 踩坑笔记：要配置如下内容，否则连接池可能连接数据库异常报错：Software caused connection abort: socket write error
+      connection-timeout: 30000       # 等待连接池分配连接的最大时长（毫秒），超过这个时长还没可用的连接则发生SQLException，默认:30秒
+      minimum-idle: 5                 # 最小连接数 HikariCP建议最小和最大连接数一致
+      maximum-pool-size: 20           # 最大连接数 HikariCP默认最大连接数为10，此处5和10是为了贴合业务
+      auto-commit: true               # 自动提交
+      idle-timeout: 600000            # 连接超时的最大时长（毫秒），超时则被释放（retired），默认:10分钟
+      pool-name: DateSourceHikariCP   # 连接池名字
+      max-lifetime: 1800000           # 连接的生命时长（毫秒），超时而且没被使用则被释放（retired），默认:30分钟 1800000ms
+      connection-test-query: SELECT 1 # 连接时的测试SQL
+  redis:
+    database: 0
+    host: 192.168.3.26
+    port: 6379
+    password: 123456
+mybatis:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  type-aliases-package: com.zzlin.pojo
+  mapper-locations: classpath:mapper/*.xml
+mapper:
+  mappers: com.zzlin.my.mapper.MyMapper
+  not-empty: false
+  identity: MYSQL
+pagehelper:
+  helperDialect: mysql
+  supportMethodsArguments: true
+  params: count=countSql
+
+# fastdfs配置
+fdfs:
+  connect-timeout: 30    # 连接超时时间
+  so-timeout: 30         # 读取超时时间
+  tracker-list: 192.168.3.26:22122
+
