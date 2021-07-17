@@ -1,4 +1,4 @@
-package com.zzlin.controller;
+package com.zzlin.sso.controller;
 
 import com.zzlin.enums.CacheKey;
 import com.zzlin.pojo.Users;

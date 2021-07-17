@@ -1,4 +1,4 @@
-package com.zzlin.config;
+package com.zzlin.sso.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

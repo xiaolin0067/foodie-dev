@@ -8,6 +8,9 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
+import org.elasticsearch.search.sort.FieldSortBuilder;
+import org.elasticsearch.search.sort.SortBuilder;
+import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -38,14 +41,25 @@ public class ItemESServiceImpl implements ItemESService {
         String postTag = "</font>";
         Pageable pageable = PageRequest.of(page, pageSize);
         String searchField = "itemName";
+        SortBuilder sortBuilder;
+        if (sort.equals("c")) {
+            sortBuilder = new FieldSortBuilder("sellCounts").order(SortOrder.DESC);
+        } else if (sort.equals("p")) {
+            sortBuilder = new FieldSortBuilder("price").order(SortOrder.ASC);
+        } else {
+            sortBuilder = new FieldSortBuilder("itemName.keyword").order(SortOrder.ASC);
+        }
         SearchQuery query = new NativeSearchQueryBuilder()
                 .withQuery(QueryBuilders.matchQuery(searchField, keywords))
                 // 高亮搜索条件
                 .withHighlightFields(
                         new HighlightBuilder.Field(searchField)
-                                .preTags(preTag)
-                                .postTags(postTag)
+                        // 高亮标签一般由前端进行自定义扩充，后端可直接返回默认的标签<em/>，前端对该标签进行自定义样式即可
+                        // <style> em {color: #d2364c; font-weight: bold;} </style>
+//                                .preTags(preTag)
+//                                .postTags(postTag)
                 )
+                .withSort(sortBuilder)
                 .withPageable(pageable)
                 .build();
         // 修改映射结果集SearchResultMapper
