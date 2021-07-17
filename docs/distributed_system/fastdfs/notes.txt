@@ -1,0 +1,135 @@
+本章概述：
+    分布式文件系统介绍
+    搭建fastdfs文件服务器
+    整合第三方文件存储服务
+    springboot与文件服务的整合
+目前文件上传的问题：
+    单向存储：只存储在单一的服务器，高度依赖Tomcat，使用Tomcat来对文件目录虚拟化
+    不支持集群
+    文件数据冗余：Tomcat挂掉之后，不能再提供上传以及下载服务
+    可扩展差：扩容与缩容差
+
+FastDFS
+https://github.com/happyfish100/fastdfs/wiki
+安装包：
+libfatscommon：FastDFS分离出的一些公用函数包
+FastDFS：FastDFS本体
+fastdfs-nginx-module：FastDFS和nginx的关联模块
+nginx：发布访问服务
+
+安装，一台tracker，一台storage：192.168.3.26-tracker，192.168.3.27-storage
+yum install -y gcc gcc-c++
+yum install -y libevent
+
+安装libfastcommon
+tar -zxf libfastcommon-1.0.42.tar.gz
+cd libfastcommon-1.0.42
+./make.sh
+./make.sh install
+
+安装fastdfs
+tar -zxf fastdfs-6.04.tar.gz
+cd fastdfs-6.04
+./make.sh
+./make.sh install
+拷贝配置文件
+cp conf/* /etc/fdfs/
+命令集：
+ll /usr/bin/fdfs*
+ll /etc/fdfs/
+tracker与storage执行如上相同的操作
+
+配置tracker服务器
+mkdir -p /usr/local/fastdfs/tracker
+vim /etc/fdfs/tracker.conf
+修改数据存储路径
+base_path=/usr/local/fastdfs/tracker
+启动tracker
+/usr/bin/fdfs_trackerd /etc/fdfs/tracker.conf
+
+配置storage服务器
+mkdir -p /usr/local/fastdfs/storage
+vim /etc/fdfs/storage.conf
+自定义组名
+group_name=foodie
+修改数据存储路径
+base_path=/usr/local/fastdfs/storage
+store_path0=/usr/local/fastdfs/storage
+修改tracker服务器地址，注释掉另外一项tracker_server配置
+tracker_server=192.168.3.26:22122
+启动storage服务，启动之前需要确保tracker服务可用
+/usr/bin/fdfs_storaged /etc/fdfs/storage.conf
+
+测试fastdfs文件上传
+vim /etc/fdfs/client.conf
+base_path=/usr/local/fastdfs/client
+修改tracker服务器地址，注释掉另外一项tracker_server配置
+tracker_server=192.168.3.26:22122
+上传文件
+/usr/bin/fdfs_test /etc/fdfs/client.conf upload ssms.sql
+
+Nginx+fastdfs配置
+Nginx需要装在storage服务器，这样才可以访问文件
+tar -zxf fastdfs-nginx-module-1.22.tar.gz
+cd fastdfs-nginx-module-1.22
+vim src/config
+搜索并删除路径中的local
+ngx_module_incs="/usr/include"
+CORE_INCS="$CORE_INCS /usr/include"
+拷贝配置文件
+cp src/mod_fastdfs.conf /etc/fdfs/
+
+已安装nginx动态添加模块
+tar -zxf nginx-1.16.1.tar.gz
+cd nginx-1.16.1
+mkdir /var/temp/nginx -p
+./configure \
+--prefix=/usr/local/nginx \
+--pid-path=/var/run/nginx/nginx.pid \
+--lock-path=/var/lock/nginx.lock \
+--error-log-path=/var/log/nginx/error.log \
+--http-log-path=/var/log/nginx/access.log \
+--with-http_gzip_static_module \
+--http-client-body-temp-path=/var/temp/nginx/client \
+--http-proxy-temp-path=/var/temp/nginx/proxy \
+--http-fastcgi-temp-path=/var/temp/nginx/fastcgi \
+--http-uwsgi-temp-path=/var/temp/nginx/uwsgi \
+--http-scgi-temp-path=/var/temp/nginx/scgi \
+--with-http_ssl_module \
+--add-module=/root/software/fastdfs/fastdfs-nginx-module-1.22/src
+make
+mv /usr/local/nginx/sbin/nginx /usr/local/nginx/sbin/nginx.bak_nofastdfs
+cp objs/nginx /usr/local/nginx/sbin/
+
+编辑mod_fastdfs.conf
+vim /etc/fdfs/mod_fastdfs.conf
+修改配置
+base_path=/usr/local/fastdfs/tmp
+tracker_server=192.168.3.26:22122
+group_name=foodie
+url_have_group_name = true
+store_path0=/usr/local/fastdfs/storage
+
+nginx.conf中加入配置
+server {
+    # 该端口为storage.conf中的http.server_port相同
+    listen       8888;
+    server_name  localhost;
+
+    location /foodie/M00 {
+        ngx_fastdfs_module;
+    }
+}
+启动nginx
+../sbin/nginx
+浏览器访问：http://192.168.3.27:8888/foodie/M00/00/00/wKgDG2DygT-AHfpKABQzHaiJh0M586.sql
+若下载没有响应检查mod_fastdfs.conf配置目录是否存在：base_path=/usr/local/fastdfs/tmp
+
+
+
+
+
+
+
+
+

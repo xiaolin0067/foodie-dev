@@ -24,12 +24,5 @@
     融合分布式中间件
     容错高可用
 
-NoSql
-    优点：高性能读取、高可用、存数据, 做缓存
-    常见分类：
-        键值对数据库(key-value) Redis, Memcache
-        列存储数据库 Hbase, Cassandra
-        文档型数据库 MongoDB, CouchDB
-        图形数据库   Neo4J, FlockDB
 
 
