@@ -26,5 +26,6 @@ systemctl restart network
 
 windows解除端口占用
 netstat -ano|findstr 8080
- taskkill /f /pid 18000
+tasklist | findstr 9120
+taskkill /f /t /im 9120
 
