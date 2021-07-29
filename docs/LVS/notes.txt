@@ -1,3 +1,6 @@
+四层负载均衡：F5硬负载均衡、LVS四层负载均衡、Haproxy四层负载均衡、Nginx四层负载均衡
+七层负载均衡：nginx七层负载均衡、Haproxy七层负载均衡、Apache七层负载均衡
+
 1. LVS (Linux Virtual Server)简介
 http://www.linux-vs.org/
 是一个四层(基于IP+Port)的负载均衡调度器
