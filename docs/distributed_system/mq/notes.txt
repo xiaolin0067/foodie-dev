@@ -100,6 +100,9 @@ insert前查询数据库中是否存在该id，若存在不进行操作，已经
 ①对数据进行落库如果做到缓存与数据库的原子性
 ②若不立刻落库，如果进行定时同步到数据库中
 
+kafka
+elk
+日志输出log4j2、日志收集FileBeat、日志过滤logstash、日志持久化elasticsearch、日志可视化kibana、监控告警watcher
 
 
 
