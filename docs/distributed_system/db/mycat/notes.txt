@@ -32,8 +32,47 @@ MyCat可以被看做是一个或者多个数据库集群构成的逻辑库。
 分片后自增ID失效，我们需要借助外部的机制保证数据的唯一标识，这种保证数据唯一标识的机制，我们叫做全局序列号。
 
 
-
-
+http://www.mycat.org.cn/
+# 安装
+tar -zxf Mycat-server-1.6.7.6-release-20210730131311-linux.tar.gz -C /usr/local/
+cd /usr/local/mycat/conf/
+vim server.xml
+修改连接数据库
+<property name="schemas">user</property>
+vim schema.xml
+配置dataHost
+<dataHost name="db26" maxCon="1000" minCon="10" balance="0"
+                  writeType="0" dbType="mysql" dbDriver="native" switchType="1"  slaveThreshold="100">
+        <heartbeat>select user()</heartbeat>
+        <writeHost host="host26" url="192.168.3.26:3306" user="root"
+                           password="123456" />
+</dataHost>
+<dataHost name="db27" maxCon="1000" minCon="10" balance="0"
+                  writeType="0" dbType="mysql" dbDriver="native" switchType="1"  slaveThreshold="100">
+        <heartbeat>select user()</heartbeat>
+        <writeHost host="host27" url="192.168.3.27:3306" user="root"
+                           password="123456" />
+</dataHost>
+配置dataNode
+<dataNode name="dn26" dataHost="db26" database="user_26" />
+<dataNode name="dn27" dataHost="db27" database="user_27" />
+配置schema
+<schema name="user" checkSQLschema="true" sqlMaxLimit="100">
+        <table name="user" dataNode="dn26,dn27" rule="auto-sharding-long" />
+</schema>
+两个数据库分别创建数据库user_26、user_27，分别创建user表
+DROP TABLE IF EXISTS `user`;
+CREATE TABLE `user`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `username` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+编辑规则autopartition-long
+vim autopartition-long.txt
+# 1000M-1500M=2
+启动mycat
+./bin/mycat console
+默认连接端口8066
 
 
 
