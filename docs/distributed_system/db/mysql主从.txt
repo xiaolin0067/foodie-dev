@@ -1,0 +1,68 @@
+主：192.168.3.26
+从：192.168.3.17
+
+一、主配置log-bin、server-id，从配置server-id
+主库
+vim /etc/my.cnf
+在[mysqld]下添加配置
+log-bin=zlin_mysql
+server-id=1
+重启mysql
+systemctl restart mysqld
+
+从库
+vim /etc/my.cnf
+在[mysqld]下添加配置
+server-id=2
+重启mysql
+systemctl restart mysqld
+
+二、主创建备份用户并授权 REPLICATION SLAVE
+( 密码规范设置
+SHOW VARIABLES LIKE 'validate_password%';
+set global validate_password_length=6;
+set global validate_password_policy=0;
+)
+创建同步用户
+create user 'repl'@'%' identified by '123456';
+授权同步权限
+grant replication slave on *.* to 'repl'@'%';
+刷新权限
+flush privileges;
+
+三、备份主库数据到从库并记录binlog位置
+主锁表，锁所有表为只读权限。(将主库中的表锁住，然后将主库中的表同步到同步并记录binlog的位置)
+flush tables with read lock;(不可退出执行该语句的客户端，否则锁表将失效)
+主找到log-bin的位置，并记录Position位置
+show master status;
+导出主库所有数据
+mysqldump -uroot -p123456 --all-databases --master-data > dbdump.db
+解锁锁表，记录锁表后的binlog位置并导出所有数据后可以进行解锁避免长时间锁表影响业务
+unlock tables;
+从库导入备份的数据
+mysql -uroot -p123456 < dbdump.db
+
+四、从库配置同步
+change master to
+master_host='192.168.3.26',
+master_user='repl',
+master_password='123456',
+master_log_file='zlin_mysql.000001',
+master_log_pos=747;
+启动同步
+start slave;
+查看同步状态
+show slave status\G
+若产生错误(因为我是复制的虚拟机才会导致这个错误)
+Last_IO_Errno: 1593
+Last_IO_Error: Fatal error: The slave I/O thread stops because master and slave have equal MySQL server UUIDs; these UUIDs must be different for replication to work.
+修改vim /var/lib/mysql/auto.cnf的UUID保证不一样(因为我是复制的虚拟机，所以这个UUID会一样)
+
+
+
+
+
+
+
+
+
