@@ -74,6 +74,43 @@ vim autopartition-long.txt
 ./bin/mycat console
 默认连接端口8066
 
+# Mycat配置
+首先配置server.xml
+配置mycat的用户名、密码、权限、schema
+配置后客户端可直接连接这里配置的连接信息进行连接
+mysql8的客户端(mysql)默认使用新的加密方式，若需要连接老的加密方式的mycat，需要添加参数 --default-auth=mysql_native_password
+mycat默认使用老的加密方式连接mysql，所以使用mysql8时需要添加一个新用户指定密码为老的加密方式
+
+schema.xml配置
+1、配置dataHost(节点主机)，包括读host、写host
+2、配置dataNode(数据节点)，指定到具体的数据库
+3、配置schema(逻辑库)，表名、数据节点、分片规则等
+
+节点主机 dataHost
+# dataHost属性balance 针对读请求
+0-不开启读写分离(所有读请求落到writeHost上)
+1-多个主从的情况下，M1-S1,M2-S2 M1与M2护卫主从，则读操作将会落到S1、M1、S2上，不会落到M1上
+2-读写均匀分配(查看均匀分配到所有读库写库上)
+3-读请求落到readHost上
+# dataHost属性writeType 针对写请求
+0-所有写请求落到第一个writeHost上，若第一个writeHost挂了才会落到第二个writeHost上(非抢占式，即使writeHost1重新启动仍会插入writeHost2)（建议使用，写库只保留一个，保证数据不错乱）
+1-随机(1.5版本后废弃)
+
+分片节点 dataNode：配置节点主机与数据库名
+逻辑库 schema
+schema属性：name-库名，sqlMaxLimit-检索时加上limit语句(只对分片表有效，若查询中带了limit则不会生效)，checkSQLschema-是否去掉SQL中的schema
+schema.table：配置逻辑表的表名、数据节点、分片规则(必须与rule.xml中的tableRule对应)
+
+# MyCat manager 默认9066端口
+查看帮助
+show @@help;
+查看分片节点
+show @@datanode;
+重写加载配置文件
+reload @@config;
+修改了数据源相关配置刷新配置文件
+reload @@config_all;
+
 
 
 
