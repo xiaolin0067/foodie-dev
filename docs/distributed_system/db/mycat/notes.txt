@@ -111,6 +111,74 @@ reload @@config;
 修改了数据源相关配置刷新配置文件
 reload @@config_all;
 
+# 水平分片模式-枚举分片模式
+编辑逻辑库配置文件
+vim schema.xml
+在writeHost里面配置readHsot，以使用读写分离
+修改rule为分片枚举
+<table rule="sharding-by-intfile" />
+编辑分片规则配置文件
+vim rule.xml
+修改tableRule的columns字段名
+<tableRule name="sharding-by-intfile">
+  <rule>
+    <columns>province_id</columns>
+    <algorithm>hash-int</algorithm>
+  </rule>
+</tableRule>
+修改规则配置
+<function name="hash-int"
+  class="io.mycat.route.function.PartitionByFileMap">
+  <property name="mapFile">partition-hash-int.txt</property>
+  <property name="defaultNode">0</property>
+</function>
+修改partition-hash-int.txt
+vim partition-hash-int.txt
+内容如下：
+10000=0
+10010=1
+DEFAULT_NODE=0
+刷新配置
+
+# 水平分片模式-取模
+编辑逻辑库配置文件
+vim schema.xml
+修改rule为取模
+<table rule="mod-long" />
+编辑分片规则配置文件
+vim rule.xml
+修改分片列名
+<tableRule name="mod-long">
+  <rule>
+    <columns>user_id</columns>
+    <algorithm>mod-long</algorithm>
+  </rule>
+</tableRule>
+修改节点数
+<function name="mod-long" class="io.mycat.route.function.PartitionByMod">
+  <property name="count">2</property>
+</function>
+刷新配置
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
