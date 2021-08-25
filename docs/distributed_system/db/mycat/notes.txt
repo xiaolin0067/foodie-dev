@@ -175,7 +175,14 @@ yum install -y haproxy
 vim /etc/haproxy/haproxy.cfg
 修改协议
 defaults
-mode                    tcp
+    mode                    tcp
+    option                  tcplog
+    #option http-server-close
+    #option forwardfor       except 127.0.0.0/8
+frontend  main *:5000
+    #acl url_static       path_beg       -i /static /images /javascript /stylesheets
+    #acl url_static       path_end       -i .jpg .gif .png .css .js
+    #use_backend static          if url_static
 修改节点
 backend app
     balance     roundrobin
