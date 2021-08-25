@@ -160,12 +160,29 @@ vim rule.xml
 </function>
 刷新配置
 
+# 全局表不进行分片，每个数据库都有全量数据，type="global"
+<table name="province" dataNode="dn26,dn27" type="global" />
 
+# Mycat子表：如订单表与订单商品表记录应该在一起，不需要跨库查询
+<table name="t_order" dataNode="dn26,dn27" rule="auto-sharding-long">
+    <childTable name="order_item" joinKey="order_id" parentKey="id" />
+</table>
 
-
-
-
-
+# Mycat的Haproxy
+安装
+yum install -y haproxy
+编辑配置文件
+vim /etc/haproxy/haproxy.cfg
+修改协议
+defaults
+mode                    tcp
+修改节点
+backend app
+    balance     roundrobin
+    server  app1 192.168.3.17:8066 check
+    server  app2 192.168.3.26:8066 check
+保存退出，启动：
+haproxy -f /etc/haproxy/haproxy.cfg
 
 
 
