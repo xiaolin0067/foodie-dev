@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<!DOCTYPE mycat:schema SYSTEM "schema.dtd">
+<mycat:schema xmlns:mycat="http://io.mycat/">
+        <!-- 未在schema中配置的表走schema的dataNode属性的库 -->
+	<schema name="foodie-shop-dev" checkSQLschema="true" sqlMaxLimit="100" dataNode="dn26">
+		<table name="orders" dataNode="dn26,dn27" rule="sharding-by-murmur" >
+            <childTable name="order_items" parentKey="id" joinKey="order_id" />
+            <childTable name="order_status" parentKey="id" joinKey="order_id" />
+        </table>
+	</schema>
+	<dataNode name="dn26" dataHost="db26" database="foodie-shop-dev" />
+	<dataNode name="dn27" dataHost="db27" database="foodie-shop-dev" />
+	<dataHost name="db26" maxCon="1000" minCon="10" balance="0"
+			  writeType="0" dbType="mysql" dbDriver="native" switchType="1"  slaveThreshold="100">
+		<heartbeat>select user()</heartbeat>
+                <!-- 写主读从 -->
+		<writeHost host="M1" url="192.168.3.26:3306" user="root" password="123456">
+                    <readHost host="S1" url="192.168.3.17:3306" user="root" password="123456"/>
+                </writeHost>
+	</dataHost>
+        <dataHost name="db27" maxCon="1000" minCon="10" balance="0"
+                          writeType="0" dbType="mysql" dbDriver="native" switchType="1"  slaveThreshold="100">
+                <heartbeat>select user()</heartbeat>
+                <writeHost host="M1" url="192.168.3.27:3306" user="root" password="123456">
+                </writeHost>
+        </dataHost>
+</mycat:schema>

@@ -91,6 +91,9 @@ public class OrderServiceImpl implements OrderService {
         newOrder.setIsDelete(YesOrNo.NO.type);
         newOrder.setCreatedTime(new Date());
         newOrder.setUpdatedTime(new Date());
+        newOrder.setTotalAmount(0);
+        newOrder.setRealPayAmount(0);
+        ordersMapper.insert(newOrder);
 
         // 2. 根据itemSpecIds保存订单商品信息表
         int totalAmount = 0;
@@ -121,13 +124,17 @@ public class OrderServiceImpl implements OrderService {
             orderItem.setOrderId(orderId);
             orderItem.setPrice(itemsSpec.getPriceDiscount());
             // 2.4 订单商品入库
+            // mycat 插入分片字表数据时，需先插入父表数据
             orderItemsMapper.insert(orderItem);
             // 2.5 减少库存
             itemService.decreaseItemSpecStock(itemsSpec.getId(), buyCounts);
         }
-        newOrder.setTotalAmount(totalAmount);
-        newOrder.setRealPayAmount(realPayAmount);
-        ordersMapper.insert(newOrder);
+        Orders updateNewOrder = new Orders();
+        updateNewOrder.setId(orderId);
+        updateNewOrder.setTotalAmount(totalAmount);
+        updateNewOrder.setRealPayAmount(realPayAmount);
+        // mycat 更新分片表的记录时不可更新分片的字段
+        ordersMapper.updateByPrimaryKeySelective(updateNewOrder);
 
         // 3. 订单状态保存
         OrderStatus orderStatus = new OrderStatus();
