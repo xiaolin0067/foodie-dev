@@ -70,8 +70,20 @@ mycat可使用数据库的自增ID来创建统一ID序列表
 XA协议的两阶段提交，XA是由X/Open组织提出的分布式事务规范
 由一个事务管理器(TM)和多个资源管理器组成(RM)，提交分为两个阶段：prepare和commit
 mysql5.7+，mysql connect 5.0+支持xa协议，在Java中数据源使用Atomikos
+springboot使用Atomikos：
+1、引入spring-boot-starter-jta-atomikos依赖
+2、配置两个数据源(RM)（须使用MysqlXADataSource并放入AtomikosDataSourceBean中进行管理），配置SqlSessionFactoryBean
+3、配置JtaTransactionManager事务管理器(TM) xaTransaction
+4、使用@Transactional(transactionManager="xaTransaction")
 
-
+# mycat默认支持分布式事务，可直接使用
+server.xml中配置项handleDistributedTransactions默认配置为0支持分布式事务
+程序中方法上加上@Transactional(rollbackFor = Exception.class)即可
+命令行中测试：
+set autocommit = 0;
+set xa = on;
+insert ......
+commit;
 
 
 
