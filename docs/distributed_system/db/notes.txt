@@ -50,6 +50,34 @@ https://shardingsphere.apache.org/
 Mycat不支持同一库内的水平切分，Sharding-Jdbc支持
 
 
+# 全局唯一ID
+UUID、统一ID序列表、推特雪花算法
+UUID：sharding-jdbc支持自动插入UUID并进行分片，可自定义分片规则
+
+mycat可使用数据库的自增ID来创建统一ID序列表
+1、编辑server.xml，配置序列自增类型为1
+2、在一个数据节点上初始化mycat提供的SQL脚本，并添加一个需要设置全局自增ID的记录
+3、编辑sequence_db_conf.properties配置表节点
+
+雪花算法：64bit的long数字，引入时间戳，保持自增。
+结构：
+0 41位时间戳 5位机房 5位机器 12位序列号
+2、基本保持全局唯一，毫秒并发4096个ID
+1、事件回调可能引起ID重复
+
+
+# 分布式事务解决方案
+XA协议的两阶段提交，XA是由X/Open组织提出的分布式事务规范
+由一个事务管理器(TM)和多个资源管理器组成(RM)，提交分为两个阶段：prepare和commit
+mysql5.7+，mysql connect 5.0+支持xa协议，在Java中数据源使用Atomikos
+
+
+
+
+
+
+
+
 
 
 
