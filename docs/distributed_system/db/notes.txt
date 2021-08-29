@@ -44,7 +44,10 @@
 如何正确的使用读写分离：一些对数据实时性要求不高的业务场景，可以考虑使用读写分离。
 
 
-
+# Sharding-Jdbc
+https://shardingsphere.apache.org/
+是一个开源的分布式关系型数据库中间件，客户端代理模式，轻量级Java框架以jar提供服务。
+Mycat不支持同一库内的水平切分，Sharding-Jdbc支持
 
 
 
