@@ -76,7 +76,7 @@ springboot使用Atomikos：
 3、配置JtaTransactionManager事务管理器(TM) xaTransaction
 4、使用@Transactional(transactionManager="xaTransaction")
 
-# mycat默认支持分布式事务，可直接使用
+## mycat默认支持分布式事务，可直接使用，sharding-jdbc也默认支持
 server.xml中配置项handleDistributedTransactions默认配置为0支持分布式事务
 程序中方法上加上@Transactional(rollbackFor = Exception.class)即可
 命令行中测试：
@@ -85,10 +85,21 @@ set xa = on;
 insert ......
 commit;
 
+## 事务补偿机制：针对每个操作都要注册一个与之对应的补偿(撤销)操作，在执行失败时进行撤销
+优点：逻辑清晰、流程简单
+缺点：数据一致性比XA还要差，可能出错的点很多
+TCC属于应用层的一种补偿机制，程序员需要编写大量代码
 
+## 本地消息表的最终一致方案
+将支付成功的消息存入本地消息表中，使用定时任务去处理消息以达到最终一致性
+优点：避免了分布式事务，实现了最终一致性
+缺点：要注意重试时的幂等性
 
-
-
+## 基于MQ的最终一致方案
+原理流程与本地消息表类似，不同点：
+1、本地消息表改为MQ
+2、定时任务改为MQ的消费者
+优点：不依赖定时任务，基于MQ更加高效可靠
 
 
 
