@@ -16,6 +16,8 @@ import com.zzlin.utils.Result;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
@@ -29,7 +31,10 @@ import org.springframework.web.client.RestTemplate;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author zlin
@@ -51,6 +56,19 @@ public class OrdersController extends BaseController {
     @Resource
     private RedisOperator redisOperator;
 
+    @Resource
+    private RedissonClient redisson;
+
+
+    @ApiOperation(value = "获取订单token", notes = "获取订单token", httpMethod = "POST")
+    @PostMapping("/token")
+    public Result getOrderToken(HttpSession session) {
+        String token = UUID.randomUUID().toString();
+        // 这里的key看需求的粒度，若只防止用户在同一个浏览器上重复提交，在读个浏览器上算正常业务时，可使用sessionId
+        redisOperator.set(CacheKey.ORDER_TOKEN.append(session.getId()), token, 600);
+        return Result.ok(token);
+    }
+
     /**
      * 创建订单
      * @return 地址列表
@@ -66,6 +84,23 @@ public class OrdersController extends BaseController {
         }
         if (StringUtils.isBlank(submitOrderBO.getItemSpecIds())) {
             return Result.errorMsg("商品规格ID为空");
+        }
+        // 校验order token
+        if (StringUtils.isBlank(submitOrderBO.getToken())) {
+            return Result.errorMsg("order token为空");
+        }
+        String sessionId = request.getSession().getId();
+        RLock lock = redisson.getLock(CacheKey.ORDER_TOKEN_LOCK.append(sessionId));
+        lock.lock(5, TimeUnit.SECONDS);
+        try {
+            String orderTokenKey = CacheKey.ORDER_TOKEN.append(sessionId);
+            String cacheOrderToken = redisOperator.get(orderTokenKey);
+            if (StringUtils.isBlank(cacheOrderToken) || !submitOrderBO.getToken().equals(cacheOrderToken)) {
+                return Result.errorMsg("order token不正确");
+            }
+            redisOperator.del(orderTokenKey);
+        }finally {
+            lock.unlock();
         }
         // 获取用户购物车中的商品
         String userShopCartCacheKey = CacheKey.SHOP_CART.append(submitOrderBO.getUserId());

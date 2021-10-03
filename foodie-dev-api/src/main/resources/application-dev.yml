@@ -4,7 +4,7 @@ server:
 spring:
   datasource:
     # 新版本必须指定是否使用ssl连接：&useSSL=false
-    url: jdbc:mysql://192.168.3.17:8066/foodie-shop-dev?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&useSSL=false
+    url: jdbc:mysql://192.168.3.26:3306/foodie-shop-dev?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&useSSL=false
     username: root
     password: 123456
   redis:

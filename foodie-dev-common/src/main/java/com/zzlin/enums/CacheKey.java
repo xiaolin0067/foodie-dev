@@ -49,7 +49,15 @@ public enum CacheKey {
     /**
      * 用户全局门票cookie的key
      */
-    USER_TICKET_COOKIE("user_ticket")
+    USER_TICKET_COOKIE("user_ticket"),
+    /**
+     * 订单token
+     */
+    ORDER_TOKEN("order_token"),
+    /**
+     * 订单token分布式锁的key
+     */
+    ORDER_TOKEN_LOCK("order_token_lock")
     ;
 
     public final String value;
