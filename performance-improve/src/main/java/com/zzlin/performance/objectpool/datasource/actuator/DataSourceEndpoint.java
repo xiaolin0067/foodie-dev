@@ -1,5 +1,6 @@
 package com.zzlin.performance.objectpool.datasource.actuator;
 
+import com.zzlin.performance.objectpool.datasource.MyConnection;
 import com.zzlin.performance.objectpool.datasource.ZlinDataSource;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
@@ -30,7 +31,7 @@ public class DataSourceEndpoint {
     @ReadOperation
     public Map<String, Object> poolInfo() {
         Map<String, Object> resultMap = new HashMap<>(3);
-        GenericObjectPool<Connection> pool = dataSource.getPool();
+        GenericObjectPool<MyConnection> pool = dataSource.getPool();
         resultMap.put("NumActive", pool.getNumActive());
         resultMap.put("NumIdle", pool.getNumIdle());
         resultMap.put("CreatedCount", pool.getCreatedCount());

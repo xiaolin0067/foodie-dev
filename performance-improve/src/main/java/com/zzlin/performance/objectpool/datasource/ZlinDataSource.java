@@ -18,15 +18,17 @@ import java.util.logging.Logger;
 @Slf4j
 public class ZlinDataSource implements DataSource {
 
-    private GenericObjectPool<Connection> pool;
+    private GenericObjectPool<MyConnection> pool;
 
-    public GenericObjectPool<Connection> getPool() {
+    public GenericObjectPool<MyConnection> getPool() {
         return pool;
     }
 
     public ZlinDataSource() {
+        ConnectionPooledObjectFactory factory = new ConnectionPooledObjectFactory();
+        this.pool = new GenericObjectPool<>(factory);
+        factory.setObjectPool(pool);
         log.info("初始化数据库连接池");
-        this.pool = new GenericObjectPool<>(new ConnectionPooledObjectFactory());
     }
 
     @Override

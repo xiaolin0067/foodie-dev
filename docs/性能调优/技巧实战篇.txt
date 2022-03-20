@@ -17,4 +17,6 @@ PooledObject：包装业务对象，使之被对象池管理，一般使用Defau
 
 Commons-Poll2实战，编写一个待监控的数据库连接池，学习收益：巩固对象池、扩展actuator
 
+apache并发命令行工具，-c 并发线程数 -n 循环次数
+ab -c 10 -n 100 http://192.168.3.14:8088/index/carousel
 

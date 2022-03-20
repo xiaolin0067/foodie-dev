@@ -1,6 +1,7 @@
 package com.zzlin.performance.objectpool.datasource;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
@@ -12,7 +13,9 @@ import java.sql.*;
  * @date 20220320
  */
 @Slf4j
-public class ConnectionPooledObjectFactory implements PooledObjectFactory<Connection> {
+public class ConnectionPooledObjectFactory implements PooledObjectFactory<MyConnection> {
+
+    private ObjectPool<MyConnection> objectPool;
 
     static {
         try {
@@ -23,24 +26,27 @@ public class ConnectionPooledObjectFactory implements PooledObjectFactory<Connec
     }
 
     @Override
-    public PooledObject<Connection> makeObject() throws Exception {
+    public PooledObject<MyConnection> makeObject() throws Exception {
         Connection connection = DriverManager.getConnection(
                 "jdbc:mysql://192.168.3.26:3306/foodie-shop-dev?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&useSSL=false",
                 "root",
                 "123456"
         );
+        MyConnection myConnection = new MyConnection();
+        myConnection.setConnection(connection);
+        myConnection.setObjectPool(getObjectPool());
         log.info("创建一个数据库连接");
-        return new DefaultPooledObject<>(connection);
+        return new DefaultPooledObject<>(myConnection);
     }
 
     @Override
-    public void destroyObject(PooledObject<Connection> pooledObject) throws Exception {
+    public void destroyObject(PooledObject<MyConnection> pooledObject) throws Exception {
         log.info("关闭一个数据库连接");
         pooledObject.getObject().close();
     }
 
     @Override
-    public boolean validateObject(PooledObject<Connection> pooledObject) {
+    public boolean validateObject(PooledObject<MyConnection> pooledObject) {
         Connection connection = pooledObject.getObject();
         try {
             PreparedStatement preparedStatement = connection.prepareStatement("select 1");
@@ -56,12 +62,25 @@ public class ConnectionPooledObjectFactory implements PooledObjectFactory<Connec
     }
 
     @Override
-    public void activateObject(PooledObject<Connection> pooledObject) throws Exception {
+    public void activateObject(PooledObject<MyConnection> pooledObject) throws Exception {
         // 初始化从池中获取的对象，创建时已激活此处无需处理，可以对connection做定制操作
     }
 
     @Override
-    public void passivateObject(PooledObject<Connection> pooledObject) throws Exception {
-        // 空闲返回到对象池时，将对象取消初始化的操作
+    public void passivateObject(PooledObject<MyConnection> pooledObject) throws Exception {
+        // 钝化，空闲返回到对象池时，将对象取消初始化的操作
+        MyConnection myConnection = pooledObject.getObject();
+        Statement statement = myConnection.getStatement();
+        if (statement != null) {
+            statement.close();
+        }
+    }
+
+    public ObjectPool<MyConnection> getObjectPool() {
+        return objectPool;
+    }
+
+    public void setObjectPool(ObjectPool<MyConnection> objectPool) {
+        this.objectPool = objectPool;
     }
 }
