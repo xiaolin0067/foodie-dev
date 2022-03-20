@@ -29,3 +29,15 @@ spring:
 mybatis:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl    # 开启查询SQL日志
+
+management:
+  endpoint:
+    health:
+      show-details: always           # 查看详情
+  endpoints:
+    web:
+      exposure:
+        include: '*'                 # 开放所有监控端点
+info:
+  project-name: foodie-dev
+  owner-email: test@test.com

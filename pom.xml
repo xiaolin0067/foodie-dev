@@ -177,6 +177,12 @@
             <version>1.7.21</version>
         </dependency>
 
+        <!-- spring boot actuator监控 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
     </dependencies>
 
 </project>
