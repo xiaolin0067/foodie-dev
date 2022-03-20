@@ -34,6 +34,12 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>com.zzlin</groupId>
+            <artifactId>performance-improve</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
     </dependencies>
 
 </project>

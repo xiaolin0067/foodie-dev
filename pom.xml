@@ -17,6 +17,7 @@
         <module>foodie-sso</module>
         <module>foodie-dev-search</module>
         <module>foodie-dev-fs</module>
+        <module>performance-improve</module>
     </modules>
 
     <!--

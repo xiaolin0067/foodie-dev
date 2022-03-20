@@ -1,0 +1,20 @@
+池化技术：对象池、线程池、连接池
+
+对象池优缺点：池化一些大对象，创建慢的对象，提升性能；缺点：有学习成本，增加了代码复杂度
+
+Commons-Poll2：apache开源的对象池框架
+文档地址：
+https://commons.apache.org/proper/commons-pool/
+https://github.com/apache/commons-pool
+
+用法：
+ObjectPool：对象池
+对象池核心类：GenericObjectPool, GenericKeyedObjectPool
+Factory：创建&管理PooledObject，需要自己扩展
+创建自己的Factory：1、实现接口 PooledObjectFactory<T>，2、继承 BasePooledObjectFactory<T>
+将Factory包装成一个线程同步的类：PoolUtils.synchronizedPooledFactory(Factory)
+PooledObject：包装业务对象，使之被对象池管理，一般使用DefaultPooledObject：包装原始对象实现监控与状态跟踪
+
+Commons-Poll2实战，编写一个待监控的数据库连接池，学习收益：巩固对象池、扩展actuator
+
+
