@@ -52,10 +52,10 @@ public class IndexController {
     @ApiOperation(value = "获取首页轮播图列表", notes = "获取首页轮播图列表", httpMethod = "GET")
     @GetMapping("/carousel")
     public Result carousel() {
-        String carouselJson = redisOperator.get(CacheKey.INDEX_CAROUSEL.value);
-        if (StringUtils.isNotBlank(carouselJson)) {
-            return Result.ok(JsonUtils.jsonToList(carouselJson, Carousel.class));
-        }
+//        String carouselJson = redisOperator.get(CacheKey.INDEX_CAROUSEL.value);
+//        if (StringUtils.isNotBlank(carouselJson)) {
+//            return Result.ok(JsonUtils.jsonToList(carouselJson, Carousel.class));
+//        }
         List<Carousel> carousels = carouseService.queryAll(YesOrNo.YES.type);
         redisOperator.set(CacheKey.INDEX_CAROUSEL.value, JsonUtils.objectToJson(carousels));
         return Result.ok(carousels);

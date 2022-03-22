@@ -16,7 +16,60 @@ Factory：创建&管理PooledObject，需要自己扩展
 PooledObject：包装业务对象，使之被对象池管理，一般使用DefaultPooledObject：包装原始对象实现监控与状态跟踪
 
 Commons-Poll2实战，编写一个待监控的数据库连接池，学习收益：巩固对象池、扩展actuator
+abandon：是对象池对象的一个状态，对象还在对象池中
+evict：清理对象的过程abandoned，invalid对象，清理的不一定是abandoned对象
+
+GenericObjectPoolConfig配置项
+配置属性,描述,默认值
+softMinEvictableldleTimeMillis,作用同minEvictableldleTimeMillis，如果minEvictableldleTimeMillis > 0，此配置会被minEvictableldleTimeMillis覆盖,-1
+testOnBorrow,出借前有效性测试,false
+testOnCreate,创建后有效性测试,false
+testOnReturn,还回前有效性测试,false
+testWhileldle,空闲有效性测试,false
+timeBetweenRunsMillis,Evictor的定时器周期，当且仅当>0时，才会在创建Evictor定时器。详见BaseGenericObjectPool#setTimeBetweenEvictionRunsMillis,-1
+
+AbandonedConfig配置项
+配置属性,描述,默认值
+logAbandoned,应用在废弃,false
+logWriter,logAbandoned=true时候的日志打印器,System.out
+removeAbandonedOnBorrow,借用对象时，是否要检查并移除掉废弃的对象,false
+removeAbandonedOnMaintenance,当废弃的对象达到removeAbandonedTimeout时，是否移除,false
+removeAbandonedTimeout,废弃的对象达到多久时移除,300秒
+requireFullStackTrace,logAbandoned=true时，是否打印完整的栈信息,true
+useUsageTracking,如果对象池实现了UsageTracking接口，那么在操作PooledObject时，是否记录栈跟踪信息并保留最新栈信息，以便于调试被废弃的对象,false
 
 apache并发命令行工具，-c 并发线程数 -n 循环次数
 ab -c 10 -n 100 http://192.168.3.14:8088/index/carousel
+
+线程池
+提供单线程执行，定时执行，可控制并发，功能强大。是一种特殊的对象池。
+阻塞队列：当队列为空时，获取对象会阻塞;当队列满时，放入对象会阻塞，多线程环境下自动管理线程的等待与唤醒
+
+抛出异常,特殊值,阻塞,超时
+插入,add(e),offer(e),put(e),offer(e, time, unit)
+移除,remove(),poll(),take(),poll(time, unit)
+检查,element(),peek(),-,-
+
+类名 有界 特性
+ArrayBlockingQueue	有界	1.内部基于数组实现2.初始化时必须指定容量大小(因为没有无参构造器)3.一旦指定容量大小，就不能修改了
+LinkedTransferQueue	无	1.底层基于链表2.用于数据交换3.比其他队列多了transfer()及tryTransfer()方法
+DelayQueue	无	1.其中的元素必须实现Delayed接口2其中的元素需要排序，一般情况下按照过期时间的优先级排序。3.使用场景∶定时关闭连接、缓存对象、超时处理场景
+LinkedBlockingQueue	有/无	1.容量可选，默认无界(Integer.MAx_VALUE)2.内部基于链表实现
+PriorityBlockingQueue	无	1.带优先级的阻塞队列2.允许插入NULL对象3.元素必须实现Comparable接口，队列的排序规则需要用
+SynchronousQueue	有	1.不存储元素，内部容量为02.一个线程发起插入操作后，就会被阻塞，直到另一个线程发起相应的删除操作才会恢复，因此又被称为同步队列3.主要实现了take()和put()操作，且需配对使用。
+
+定时任务线程池：ScheduledThreadPoolExecutor
+ForkJoinPool：JDK7开始提供，把一个大任务拆分成若干个小任务，最终再把每个小任务的结果汇总的框架
+比较适合分而治之、递归计算的CPU密集场景，亮点：实现了工作窃取算法
+new ArrayList<>().parallelStream()就是使用该线程池实现
+
+
+
+
+
+
+
+
+
+
 
