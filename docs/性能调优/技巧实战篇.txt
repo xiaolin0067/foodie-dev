@@ -51,17 +51,67 @@ ab -c 10 -n 100 http://192.168.3.14:8088/index/carousel
 检查,element(),peek(),-,-
 
 类名 有界 特性
-ArrayBlockingQueue	有界	1.内部基于数组实现2.初始化时必须指定容量大小(因为没有无参构造器)3.一旦指定容量大小，就不能修改了
-LinkedTransferQueue	无	1.底层基于链表2.用于数据交换3.比其他队列多了transfer()及tryTransfer()方法
+ArrayBlockingQueue	有界	1.内部基于数组实现，2.初始化时必须指定容量大小(因为没有无参构造器)3.一旦指定容量大小，就不能修改了
+LinkedTransferQueue	无	1.底层基于链表，2.用于数据交换3.比其他队列多了transfer()及tryTransfer()方法
 DelayQueue	无	1.其中的元素必须实现Delayed接口2其中的元素需要排序，一般情况下按照过期时间的优先级排序。3.使用场景∶定时关闭连接、缓存对象、超时处理场景
-LinkedBlockingQueue	有/无	1.容量可选，默认无界(Integer.MAx_VALUE)2.内部基于链表实现
-PriorityBlockingQueue	无	1.带优先级的阻塞队列2.允许插入NULL对象3.元素必须实现Comparable接口，队列的排序规则需要用
-SynchronousQueue	有	1.不存储元素，内部容量为02.一个线程发起插入操作后，就会被阻塞，直到另一个线程发起相应的删除操作才会恢复，因此又被称为同步队列3.主要实现了take()和put()操作，且需配对使用。
+LinkedBlockingQueue	有/无	1.容量可选，默认无界(Integer.MAx_VALUE)，2.内部基于链表实现
+PriorityBlockingQueue	无	1.带优先级的阻塞队列，2.允许插入NULL对象3.元素必须实现Comparable接口，队列的排序规则需要用
+SynchronousQueue	有	1.不存储元素，内部容量为0，2.一个线程发起插入操作后，就会被阻塞，直到另一个线程发起相应的删除操作才会恢复，因此又被称为同步队列3.主要实现了take()和put()操作，且需配对使用。
 
 定时任务线程池：ScheduledThreadPoolExecutor
 ForkJoinPool：JDK7开始提供，把一个大任务拆分成若干个小任务，最终再把每个小任务的结果汇总的框架
 比较适合分而治之、递归计算的CPU密集场景，亮点：实现了工作窃取算法
 new ArrayList<>().parallelStream()就是使用该线程池实现
+
+线程池调优
+CPU密集型：CoreSize + 1
+IO密集型：2 * CoreSize
+混合型：经验公式：N * U * (1 + WT/ST)
+N：CPU核心数，U：目标CPU利用率，WT：线程等待时间，ST：线程运行时间
+jvisualvm，选择项目-抽样器-CPU，自用时间即线程运行时间，总时间-自用时间=WT线程等待时间
+Queue调优：计算单个任务占用内存与线程池计划占用内存
+
+数据库连接池：
+Hikari：spring主打连接池
+Tomcat连接池
+DBCP2：基于commons-pool2
+Alibaba Druid
+Redis连接池：
+Jedis：基于commons-pool2
+Lettuce：基于commons-pool2
+Redissont
+HTTP连接池
+Apache HttpClient、OKHTTP自带连接池
+RestTemplate、Feign底层可使用HttpClient/OKHTTP的连接池
+连接池优化
+1、连接数=2N＋可用磁盘数，N-CPU核心数
+2、分离:2个连接池,一个连接池用于较快的查询，另一个用于报表等较慢的查询
+
+同步∶程序按照定义的顺序执行，每一行都必须等待上一行完成后才能执行
+异步:程序执行时，无需等待异步调用的语句返回，即可执行后面的操作
+异步场景：耗时操作中，将不影响主流程的操作异步执行，降低响应时间
+
+@Async注解注意点
+@Async注解标注的方法必须返回void或Future
+建议将@Async标注的方法放到独立的类中去，本类调用复杂
+建议自定义BlockingQueue的大小：spring.task.execution.pool.queue-capacity
+
+远程调用异步化：
+1、AsyncRestTemplate
+2、WebClient，基于Reactor、WebFlux，spring 5.0提供，是AsyncRestTemplate的替代
+https://www.baeldung.com/spring-5-webclient
+3、生产消费模型
+
+feign目前不支持异步调用
+
+
+
+
+
+
+
+
+
 
 
 
