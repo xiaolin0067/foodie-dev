@@ -104,19 +104,76 @@ https://www.baeldung.com/spring-5-webclient
 
 feign目前不支持异步调用
 
+线程安全问题
+产生条件：1、存在共享数据，2、多个线程同时操作共享数据
 
+synchronized
+总体原则：尽量避免操作系统内核态与用户态的切换开销，使用对象头中的Mark Word的数据状态来实现偏向锁与轻量级锁
+是可重入锁：持有外层的锁也会同时持有里层的锁
+修饰实例方法∶给当前实例加锁，进入同步代码前要获得当前实例的锁
+修饰静态方法∶给当前类加锁，进入同步代码前要获得指定类对象的锁
+修饰代码块: 给指定对象加锁，进入同步代码前要获得指定对象的锁
+synchronized原理：
+对象存储结构
+1、对象头：实现synchronized的基础。
+   Mark Word：存储对象的运行时数据，如hash code, gc年龄, 锁状态标志, 线程持有的锁等
+       偏向锁：默认启动5秒后开启，立即开启参数：-XX:+UseBiasedLocking --XX:BiasedLockingStartupDelay=0
+   类型指针
+   数组长度：对象为数组才有
+2、实例数据
+3、对齐填充：JVM要求对象大小必须是8byte的整数倍
 
+锁分级
+锁	优点	缺点	适用场景
+偏向锁	加锁和解锁不需要额外的消耗，和执行非同步方法比仅存在纳秒级的差距	如果线程间存在锁竞争，会带来额外的锁撤销的消耗	适用于只有一个线程访问同步块场景
+轻量级锁	竞争的线程不会阻塞，提高了程序的响应速度	如果始终得不到锁竞争的线程使用自旋会消耗CPU	追求响应时间,锁占用时间很短，用于多个线程交替进入同步代码场景
+重量级锁  线程竞争不使用自旋，不会消耗CPU	线程阻塞，响应时间缓慢	追求吞吐量,锁占用时间较长，用于多个线程同时竞争同步代码的场景
 
+synchronized优化机制
+锁消除：通过逃逸分析出代码若不存在线程安全问题则不进行加锁，逃逸分析：分析变量能否逃出它的作用域
+锁粗化：将多个连续的加锁、解锁操作连接在一起，扩展成一个范围更大的锁
 
+ReentrantLock：实现了-互斥性，可重入性，公平性
+公平锁：线程会按照获取锁的先后顺序拿到锁，而非公平锁允许插队-效率也较高
+公平锁∶如果另一个线程持有锁或者有其他线程在等待队列中等待这个锁，那么新发出的请求的线程将被放入到队列中
+非公平锁，当锁被某个线程持有时，新发出请求的线程才会被放入队列。如果在发出请求的时候，锁变成可用状态，这个线程会跳过队列中的等待线程获得锁。
+线程协作推荐使用：Condition
 
+ReentrantLock原理：AQS+CAS
+AQS：AbstractQueuedSynchronizer，内部维护了一个Node类型的双向链表，node本质是对线程的封装
+用于构建锁和同步容器的框架，简化同步细节
+加锁实现：检查state属性是否为0或请求线程为持锁线程的话state加1
+CAS：compareAndSet
 
+synchronized和ReentrantLock区别
+相同点：都实现了互斥、可重入
+区别：
+1、实现机制
+synchronized : JVM实现
+ReentrantLock : JDK实现
+2、性能
+<JDK 1.6 : synchronized比ReentrantLock差很多
+>= JDK 1.6∶性能差不多
+3、使用
+synchronized :方便简洁，由JVM保证加锁解锁
+ReentrantLock :丢动加解锁
+4、功能
+ReentrantLock可指定公平锁、非公平锁
+ReentrantLock有丰富的API
+ReentrantLock提供了Condition
+优先使用synchronized
 
+ReentrantReadWriteLock :读锁共享，写锁互斥，等大幅提升读多写少场景性能
+StampedLock：JDK 8引入，ReentrantReadWriteLock的增强版
 
-
-
-
-
-
+锁调优：
+减少锁的持有时间，锁住逻辑要尽可能快速执行
+减少锁的粒度：将大的锁对象拆分成多个小对象
+锁粗化：将多个锁住代码块合并为一个
+无锁(CAS)
+锁分离
+  读写分离：使用ReentrantReadWriteLock和StampedLock来优化synchronized和ReentrantLock
+  操作分离：LinkedBlockingQueue，入队出队锁独立
 
 
 
