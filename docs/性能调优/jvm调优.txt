@@ -28,7 +28,7 @@ Eden, From survivor, To survivor | Tenured | Metaspace
   为何需要程序计数器：Java是多线程语言，当线程发生切换在次获得CPU时间片时需要知道线程执行到了哪一行，从何处继续执行。
 
 方法内联
-  即时编译器在编译期间把方法调用连接起来（把两个方法合并到一起），来减少方法调用压栈和出栈操作的开销。
+  即时编译器在编译期间把方法调用连接起来(把两个方法合并到一起)，来减少方法调用压栈和出栈操作的开销。
   方法调用存在压栈和出栈的操作，若方法为热点方法调用方法压栈和出栈开销也不低。
 方法内联的条件：
 1、方法体足够小
@@ -48,7 +48,7 @@ Eden, From survivor, To survivor | Tenured | Metaspace
   -XX:MaxInlineSize=n 35 如果非热点方法的字节码超过该值，则无法内联，单位字节
   -XX:FreglnlineSize=n 325 如果热点方法的字节码超过该值，则无法内联，单位字节
   -XX:InlineSmallCode=n 1000 目标编译后生成的机器码代销大于该值则无法内联，单位字节
-  -XX:MaxInlineLevel=n 9 内联方法的最大调用帧数（嵌套调用的最大内联深度)
+  -XX:MaxInlineLevel=n 9 内联方法的最大调用帧数(嵌套调用的最大内联深度)
   -XX:MaxTrivialSize=n 6 如果方法的字节码少于该值，则直接内联，单位字节
   -XX:MinInliningThreshold=n 250 如果目标方法的调用次数低于该值，则不去内联
   -XX:LiveNodeCountlnliningCutoff=n 40000 编译过程中最大活动节点数(IR节点)的上限，仅对C2编译器有效
@@ -85,6 +85,248 @@ Eden, From survivor, To survivor | Tenured | Metaspace
 -XX:+DoEscapeAnalysis 开启 是否开启逃逸分析
 -XX:+EliminateAllocations 开启 是否开启标量替换
 -XX:+EliminateLocks 开启 是否开启锁消除
+
+-Xverify: none 关闭检查类是否存在，优化启动速度。
+
+
+垃圾回收
+什么场景下该使用什么垃圾回收策略?
+  在对内存要求苛刻的场景∶想办法提高对象的回收效率，多回收掉一些对象，腾出更多内存
+  在CPU使用率高的情况下:降低高并发时垃圾回收的频率，让CPU更多地去执行你的业务而不是垃圾回收
+回收区域?
+  虚拟机栈，本地方法栈，程序计数器是线程隔离的，随线程的创建而创建，随线程的销毁而销毁，不需要考虑垃圾回收。
+  堆中主要回收线程创建的对象
+  方法区中主要回收废弃的常量以及不需要使用的类
+对象在什么时候能够被回收?
+  可达性分析：以根对象(GC Roots)作为起点向下搜索，走过的路径被称为引用链(Reference Chain)，如果某个对象到根对象没有引用链相连时，就认为这个对象是不可达的，可以回收。
+            GC Roots包括哪些对象?
+              虚拟机栈(栈帧中的本地变量表)中引用的对象
+              方法区中类静态属性引用的对象
+              方法区中常量引用的对象
+              本地方法栈中JNI (即Native方法)引用的对象
+            引用?
+              强引用(Strong Reference)
+                形如Object obj = new Object()的引用，只要强引用在，永远不会回收被引用的对象
+              软引用(Soft Reference)
+                形如SoftReference<String> sr = new SoftReference<>("hello")是用来描述一些有用但非必需的对象
+                软引用关联的对象，只有在内存不足的时候才会回收
+              弱引用(Weak Reference)
+                形如WeakReference<String> sr = new WeakReference<>("hello")弱引用也是用来描述非必需对象的
+                无论内存是否充足，都会回收被弱引用关联的对象
+              虚引用(Phantom Reference)
+                形如ReferenceQueue<String> queue = new ReferenceQueue<>();PhantomReference<String> pr = new PhantomReference<>("hello" , queue);
+                不影响对象的生命周期，如果一个对象只有虚引用，那么它就和没有任何引用一释茬往荷的模都苛能被垃圾向收器回收。
+                虚引用主要用来跟踪对象被垃圾回收器回收的活动，必须和引用队列(Referenceoueue)配合使用。
+                当垃圾回收器准备回收一个对象时，如果发现它还有虚引用，就会在向收对象的内之前,把这个虚引用加入到与之关联的引用队列中。
+                程序可以通过判断引用队列中是否已经加入了虚引用，来了解被引用的对象是否将要被垃圾回收。
+                如果程序发现某个虚引用已被加入到引用队列，那么就可以在所引用的对象的内存被回收之前采取必要的行动。
+            没有引用就一定会被回收？
+              一个对象即使不可达，也不一定会被回收，回收对象前会执行对象的finalize()方法，可能会被重新引用导致对象永远无法被回收。
+              应避免使用finalize()方法，操作不当可能会导致问题
+              finalize()优先级低，何时会被调用无法确定，因为什么时间发生GC不确定;
+              建议使用try...catch...finally来替代finalize()
+  引用计数法：通过对象的引用计数器来判断该对象是否被引用(循环引用对象无法回收，Java未使用此方法)
+
+垃圾回收算法
+基础垃圾回收算法：
+  标记-清除(Mark-Sweep)：标记需要回收的对象，清理掉要回收的对象
+    优点：实现简单，缺点：存在内存碎片、分配内存速度会受影响
+  标记-整理(Mark-Compact)：标记需要回收的对象，把所有的存活对象压缩到内存的一端，清理掉边界外的所有空间
+    优点：无碎片，缺点：整理存在开销
+  复制(Copy)：把内存分为两块，每次只使用一块，将正在使用的内存中的存活对象复制到未使用的内存中去，
+             然后清除掉正在使用的内存中的所有对象，交换两个内存的角色，等待下次回收
+    优点：性能好、无碎片，缺点：内存利用率低
+综合垃圾回收算法：
+  分代收集算法(各种商业虚拟机堆内存的垃圾收集基本上都采用了分代收集)
+    把内存分成多个区域，不同区域使用不同的回收算法回收对象
+  增量算法
+    每次只收集一小片区域的内存空间的垃圾
+
+分代收集算法
+  回收类型
+    新生代回收(Minor GC或称为Young GC)
+    老年代回收(Major GC)
+    清理整个堆(Full GC)
+    由于执行Major GC通常伴随执行Minor GC，所以Major GC约等于Full GC
+典型对象分配过程：
+  1、对象创建时会先放到Eden，当Eden满了之后便会出发垃圾回收：
+       将Eden中存活的对象拷贝到From survivor或To survivor中，
+       若当前一次垃圾回收拷贝到了From survivor，则下一次会将From survivor拷贝到To survivor中，周而复始。
+       使用了复制(Copy)算法。
+  2、当对象每逃过一次垃圾回收，对象的年龄就会加1，若对象年龄达到阈值(默认为15)，就会被移动至老年代。
+  3、老年代一般使用标记-清除(Mark-Sweep)或标记-整理(Mark-Compact)算法来进行回收。
+新建的对象不一定分配到伊甸园：
+  1、对象大于-XX:PretenureSizeThreshold，就会直接分配到老年代(默认为0分配到Eden区)
+  2、新生代空间不足，就会直接分配到老年代(如创建一个很大的数组，若放到新生代的话会造成大量的拷贝)
+对象不一定要达到年龄才进入老年代：
+  动态年龄∶如果Survivor空间中所有相同年龄对象大小的总和大于Survivor空间的一半，那么年龄大于等于该年龄的对象就可以直接进老年代
+不同区域触发垃圾回收的条件：
+  Minor GC：伊甸园(Eden)空间不足
+  Full GC：
+    1、老年代空间不足(或没有连续的内存分配对象)
+    2、元空间不足
+    3、新生代垃圾回收后晋升到老年代的的对象所占用的空间大于老年代的剩余空间
+    4、显式调用System.gc()：建议垃圾回收器执行垃圾回收, -XX:+DisableExplicitGC参数，忽略掉System.gc()的调用
+分代的好处：
+  更有效的清除不再需要的对象
+  提升了垃圾回收的效率
+分代收集算法调优原则：
+  合理设置Survivor区域的大小，避免内存浪费(因其使用复制算法，内存利用率不高)
+  让GC尽量发生在新生代Minor GC，尽量减少Full GC的发生
+
+参数 作用 默认值
+-XX:NewRatio=n 老年代:新生代内存大小比值 2
+-xx:SurvivorRatio=n 伊甸园:survivor区内存大小比值 8
+-XX:PretenureSizeThreshold=n 对象大小该值就在老年代分配，0表示不做限制 0
+-Xms 需小堆内存
+-Xmx 最大堆内存
+-Xmn 新生代大小
+-XX:+DisableExplicitGC 忽略掉System.gc()的调用 启用
+-XX:NewSize=n 新生代初始内存大小
+-XX:MaxNewSize=n 新生代最大内存
+
+垃圾收集器
+  垃圾收集算法︰为实现垃圾回收提供理论支持
+  垃圾收集器∶利用垃圾收集算法，实现垃圾回收的实践落地
+术语-Stop The World(STW)
+  简写为STW，也叫全局停顿，Java代码停止运行，native代码继续
+  运行，但不能与JVM进行交互
+  原因∶多半由于垃圾回收导致;也可能由Dump线程、死锁检查、Dump堆等导致
+  危害:服务停止、没有响应;主从切换、危害生产环境
+术语-并行收集vs并发收集
+  并行收集∶指多个垃圾收集线程并行工作，但是收集的过程中，用户线程(你的业务线程)还是处于等待状态的
+  并发收集: 指用户线程与垃圾收集线程同时工作
+术语-吞吐量
+  CPU用于运行用户代码的时间与CPU总消耗时间的比值
+  公式:运行用户代码时间/(运行用户代码时间＋垃圾收集时间)
+
+新生代收集器：
+1、Serial收集器
+  最基本的、发展历史最悠久的收集器，使用复制算法
+  特点：单线程，简单、高效，收集过程全程Stop The World
+  适用场景：客户端程序(应用以java -client -jar xxx模式运行时，默认使用的就是Serial)，单核机器(嵌入式/低性能机器)
+2、ParNew收集器
+  Serial收集器的多线程版，除使用了多线程以外，其他和Serial收集器一样，包括:JVM参数、Stop The World的表现、垃圾收集算法都是一样的。
+  特点：多线程，可使用-XX:ParallelGCThreads设置垃圾收集的线程数(设置为CPU核心数)
+3、Parallel Scavenge收集器
+  也叫吞吐量优先收集器，采用的也是复制算法，也是并行的多线程收集器，这一点和ParNew类似
+  特点：1、可以达到一个可控制的吞吐量
+          -XX:MaxGCPauseMillis: 尽力控制最大的垃圾收集停顿时间
+          -XX:GCTimeRatio: 设置吞吐量的大小，取值0-100，系统花费不超过1/(1+n)的时间用于垃圾收集
+       2、自适应GC策略∶可用-XX:+UseAdptiveSizePolicy打开
+         打开自适应策略后，无需手动设置新生代的大小(-Xmn). Eden与Survivor区的比例(-Xx:SurvivorRatio)等参数
+         虚拟机会自动根据系统的运行状况收集性能监控信息，动态地调整这些参数，从而达到最优的停顿时间以及最高的吞吐量
+  使用场景：注重吞吐量的场景
+老年代收集器：
+1、Serial Old收集器(串行老年代收集器)
+  Serial收集器的老年代版，采用标记-整理算法
+  适用场景：可以和Serial/ParNew/Parallel Scavenge这三个新生代的垃圾收集器配合使用
+          CMS收集器出现故障的时候，会用Servial Old作为后备
+2、Parallel Old收集器
+  Parallel Scavenge收集器的老年代版本，采用标记-整理算法
+  使用场景：注重吞吐量的场景
+3、CMS收集器，CMS : Concurrent Mark Sweep
+  并发收集器，采用标记-清除算法
+  执行过程：1、初始标记(initial mark)标记GC Roots能直接关联到的对象，会stop The World，但只标记GC Roots能直接关联到的对象过程相对较短
+          2、并发标记(concurrent mark)找出所有GC Roots能关联到的对象，并发执行，无Stop The World
+          3、并发预清理(concurrent-preclean)不一定会执行，重新标记那些在并发标记阶段，引用被更新的对象，从而减少后面重新标记阶段的工作量。
+            并发执行，无Stop The World，可使用XX:-CMSPrecleaningEnabled关闭并发预清理阶段，默认打开
+          4、并发可中止的预清理阶段(concurrent-abortable-preclean)不一定会执行，和并发预清理做的事情一样，并发执行，无Stop The World
+            当Eden的使用量大于CMSScheduleRemarkEdenSizeThreshold 的阈值(默认2M)时，才会执行该阶段。
+            主要作用∶允许我们能够控制预清理阶段的结束时机。比如扫描多长时间(CMSMaxAbortablePrecleanTime，默认5秒)
+            或者Eden区使用占比达到一定阈值(CMSScheduleRemarkEdenPenetration，默认50%)就结束本阶段。
+          5、重新标记(remark)修正并发标记期间，因为用户程序继续运行，导致标记发生变动的那些对象的标记
+            一般来说，重新标记花费的时间会比初始标记阶段长一些，但比并发标记的时间短
+          6、并发清除(concurrent sweep)基于标记结果，清除掉要清除前面标记出来的垃圾并发执行，无Stop The World
+            为什么不是并发整理呢?很难在并发的情况下用户线程继续执行，并发清理垃圾同时整理内存。
+          7、并发重置(concurrent reset)清理本次CMS GC的上下文信息，为下一次GC做准备。
+          面试3、4阶段可不说明
+  优点：Stop The World的时间比较短、大多过程并发执行
+  缺点：1、CPU资源比较敏感，并发阶段可能导致应用吞吐量的降低
+       2、无法处理浮动垃圾。
+       3、不能等到老年代几乎满了才开始收集
+         预留的内存不够-> Concurrent Mode Failure -> Serial Old作为后备
+         可使用CMSInitiatingOccupancyFraction设置老年代占比达到多少就触发垃圾收集，默认68%
+       4、内存碎片
+         标记-清除导致碎片的产生
+         UseCMsCompactAtFullCollection:在完成Full GC后是否要进行内存碎片整理，默认开启
+         CMSFullGCsBeforeCompaction :进行几次Full GC后就进行一次存碎片整理，默认O
+  适用场景：希望系统停顿时间短，响应速度快的场景，比如各种服务器应用程序
+4、G1收集器(Garbge First：指会优先处理垃圾多的region)
+  面向服务器端应用的垃圾收集器，既可以用在新生代也可以用在老年代，带来了很多革命性的变化。
+  G1的堆内存布局和其他的都不一样：
+    将内存划分为多个大小相等的区域(region)通过参数-XX: G1HeapRegionSize指定Region的大小，取值范围为1MB~32MB，应为2的N次幂。
+    G1将每个region也进行了分类，每个类的内存区域不都是连续的：Eden、Survivor、old、Humongous：用来存储大对象(对象的大小超过了region的一半)的，也作为老年代来看待。
+      若对象非常大，超过了一个region的大小，则会被划分到多个连续的Humongous里面。
+    设计思想：内存分块(Region)、跟踪每个Region里面的垃圾堆积的价值(回收掉region内的垃圾能获得多少空间)大小
+            构建一个优先列表，根据允许的收集时间，优先回收价值高的Region
+    垃圾收集机制：
+      Young GC：(和年轻代回收类似，只不过回收单位换成了region)
+        所有Eden Region都满了的时候，就会触发Young GC，伊甸园里面的对象会转移到Survivor Region里面去。
+        原先Survivor Region中的对象转移到新的Survivor Region中，或者晋升到Old Region，空闲Region会被放入空闲列表中，等待下次被使用
+      Mixed GC (核心)
+        老年代大小占整个堆的百分比达到一定阈值(可用-XX:InitiatingHeapOccupancyPercent指定，默认45%)，就触发Mixed GC
+        会回收所有Young Reqion，同时回收部分(根据配置的GC时间和region价值来选择)Old Region
+        1、初始标记( Initial Marking)标记GC Roots能直接关联到的对象，和CMS类似，存在Stop The World
+        2、并发标记(Concurrent Marking)同CMS的并发标记并发执行，没有Stop The World
+        3、最终标记(Final Marking)修正在并发标记期间引起的变动，存在Stop The World
+        4、筛选回收(Live Data Counting and Evacuation)对各个Region的回收价值和成本进行排序根据用户所期望的停顿时间(MaxGCPauseMillis)来制定回收计划，并选择一些Region回收。
+          选择一系列Region构成一个回收集(可理解为一个Set<Region>)
+          把决定回收的Region中的存活对象复制到空的Region中，也是复制算法
+          删除掉需回收的Region -> 无内存碎片
+          存在Stop The World
+      Full Gc
+        复制对象内存不够，或者无法分配足够内存(比如巨型对象没有足够的连续分区分配)时，会触发Full GC
+        Full GC模式下，使用Serial Old模式，G1优化原则:尽量减少Full GC的发生
+减少Full GC的思路?
+  1、增加预留内存(增大-XX:G1ReservePercent，默认为堆的10%)
+  2、更早地回收垃圾(减少-XX:InitiatingHeapOccupancyPercent，老年代达到该值就触发Mixed GC，默认45%)
+  3、增加并发阶段使用的线程数(增大-XX:ConcGCThreads, 会影响吞吐量)
+G1收集器的特点
+  可以作用在整个堆
+  可控的停顿：MaxGCPauseMillis=200
+  无内存碎片
+G1收集器的适用场景
+  占用内存较大的应用(6G以上)
+  替换CMS垃圾收集器
+G1 or CMS?
+  对于JDK8∶都可以用，如果内存<= 6G，建议用CMS，如果内存> 6G，考虑使用G1（经验之谈)
+  如果>JDK8: 用G1，CMS从JDK9已经被废弃了
+其他垃圾收集器(仍处于实验阶段，生产环境慎用)：Shenandoah、ZGC、Epsilon
+
+JVM参数文档：
+https://blog.csdn.net/tolmanlau/article/details/107398449
+https://chriswhocodes.com
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
