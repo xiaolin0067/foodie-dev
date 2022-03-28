@@ -10,18 +10,46 @@ JDK内置工具
     jps -l remote.domain
     jps -l rmi://remote.domain:1231
   jstat
+    可以查看堆内存各部分的使用量，以及加载类的数量
     统计gc信息
-    jstat -gcutil [pid] [print millisecond interval]
+    jstat -gcutil [pid] [interval millisecond]
+
+    -class 显示有关类加载器行为的统计信息
+    -compiler 显示有关Java HotSpot VM Just-in-Time(JIT)编译器行为的统计信息
+    -gc 显示有关垃圾收集堆行为的统计信息
+    -gccapacity 显示各区大小
+    -gccause 最近一次GC统计和原因
+    -gcnew 显示新生代行为的统计信息
+    -gcnewcapacity 显示有关新生代大小及其对应空间的统计信息
+    -gcold 显示有关老年代行为的统计信息和元空间统计信息
+    -gcoldcapacity 显示老年代大小
+    -gcmetacapacity 显示有关元空间大小的统计信息
+    -gcutil 显示有关垃圾收集统计信息的摘要
+    -printcompilation 显示Java HotSpot VM编译方法统计信息
 故障排查工具
   jinfo
+    查看系统参数和进程JVM参数，热更新部分JVM参数
   jmap
+    分析堆内存，可dump堆内存快照，统计堆对象数量和大小，类加载情况
+    -clstats 连接到正在运行的进程，并打印Java堆的类加载器统计信息
+    -finalizerinfo 连接到正在运行的进程，并打印等待finalization的对象的信息
     分析内存，统计堆中对象大小和数量，按大小倒序输出
     jmap -histo [pid] | less
 	只统计存活的对象
 	jmap -histo:live [pid] | less
-  jstack
+	dump堆内存快照，带上live会触发一次Full GC
+	jmap -dump:live,format=b,file=filename <pid>
+	要想获取Java堆Dump，除使用jmap外，还有以下方法:
+      使用-XX:+HeapDumpOnOutOfMemoryError，让虚拟机在OOM异常出现后自动生成堆Dump文件
+      使用-XX:+HeapDumpOnCtrlBreak，可使用[Ctrl]+[Break]，让虚拟机生成堆Dump文件
+      在Linux操作系统下，发送kill -3 pid命令
+      对于spring Boot应用，也可以使用Spring Boot Actuator提供的/actuator/heapdump实现堆Dump。
+  jstack (Stack Trace for java)
+    分析线程堆栈信息，dump线程快照(线程快照也叫Thread Dump或者javacore文件)
+    -l 在线程堆栈信息后显示有关锁的额外信息
+    -e 展示有关线程的额外信息(比如分配了多少内存、定义了多少个类等等)
   jcmd
-  jhat
+  jhat (JVM Heap Analysis Tool)，用来分析jmap生成的堆Dump文件，jdk11已废弃，可用VisualVM或Memory Analyzer Tool代替
   jhsdb
 可视化工具
   jhsdb
@@ -40,7 +68,8 @@ JDK内置工具
 	使用profiler生成CPU火焰图：profiler start, profiler stop --format html
   JProfile-收费
 
-
+博客：
+https://blog.csdn.net/weixin_43477531/article/details/120145571
 
 
 
