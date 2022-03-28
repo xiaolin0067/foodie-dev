@@ -10,9 +10,15 @@ JDK内置工具
     jps -l remote.domain
     jps -l rmi://remote.domain:1231
   jstat
+    统计gc信息
+    jstat -gcutil [pid] [print millisecond interval]
 故障排查工具
   jinfo
   jmap
+    分析内存，统计堆中对象大小和数量，按大小倒序输出
+    jmap -histo [pid] | less
+	只统计存活的对象
+	jmap -histo:live [pid] | less
   jstack
   jcmd
   jhat
@@ -29,4 +35,29 @@ JDK内置工具
 第三方工具
   Memory Analyzer Tool
   JITWatch
+  Arthas
+    文档地址：https://arthas.aliyun.com/doc/index.html
+	使用profiler生成CPU火焰图：profiler start, profiler stop --format html
   JProfile-收费
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
