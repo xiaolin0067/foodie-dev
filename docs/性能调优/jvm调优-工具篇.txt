@@ -48,14 +48,65 @@ JDK内置工具
     分析线程堆栈信息，dump线程快照(线程快照也叫Thread Dump或者javacore文件)
     -l 在线程堆栈信息后显示有关锁的额外信息
     -e 展示有关线程的额外信息(比如分配了多少内存、定义了多少个类等等)
-  jcmd
+  jcmd (JVM Command)
+    将诊断命令发送到运行的虚拟机
+    性能计数器
+    jcmd [pid] PerfCounter.print
+    代码缓存的布局和边界
+    jcmd [pid] Compiler.codecache
+    dump堆内存
+    jcmd [pid] GC.heap_dump -all filename.hprof
+    打印带有堆栈跟踪的线程，与jstack类似
+    jcmd [pid] Thread.print -l
+    可录制JFR信息
   jhat (JVM Heap Analysis Tool)，用来分析jmap生成的堆Dump文件，jdk11已废弃，可用VisualVM或Memory Analyzer Tool代替
-  jhsdb
+  jhsdb (Java Hotspot Debugger)
+    Hotspot进程调试器，用于从崩溃的JVM附加到Java进程或核心转储，Java9才引入
+    Java8开启方式：
+      chmod +x $JAVA_HOME/lib/sa-jdi.jar
+      # 交互式命令行启动(jhasdb clhsdb)
+      java -cp $JAVA_HOME/lib/sa-jdi.jar sun.jvm.hotspot.CLHSDB
+        flags: 展示所有-XX开始的参数
+      # 交互式GUI调试器启动(jhasdb hsdb)
+      java -cp $JAVA_HOME/lib/sa-jdi.jar sun.jvm.hotspot.CLHSDB
 可视化工具
   jhsdb
+    jdk内置图形管理界面监控
+    jhsdb hsdb --pid [pid]
+    可以查看内存区域地址有哪些对象，以及对象的详细信息
   jconsole
+    jdk内置图形管理界面监控
+    概览 内存 线程 类 VM概要 MBean
   VisualVM
-  JDK Mission Control
+    java8及以前的版本，jdk内置图形管理界面监控，9及以上的版本需要下载
+    jvisualvm
+    查看堆内存，线程信息，可直接dump快照
+    取样器：分析热点方法
+    profiler：提供程序运行期方法级的处理器执行时间分析以及内存分析
+  JDK Mission Control(JMC)，商业授权工具，Java8收费，Java11中任何人可使用，https://jdk.java.net/jmc/
+    作为JMX(Java Management Extensions，即Java管理扩展)控制台， 监控虚拟机MBean提供的数据
+    可持续收集数据的JFR (Java Flight Recorder)，并可作为JFR的可视化分析工具
+    在正式探讨JMC之前，有必要先聊下JFR
+      JFR (Java Flight Recorder)是一种用于收集有关运行中的Java应用的诊断信息和性能数据的工具，它几乎没有性能开销
+      因此，即使在负载很大的生产环境中也可以使用。JFR主要用于以下场景:
+      性能分析
+        JFR可连续捕获应用的信息。比如执行概要分析(显 示程序花费时间的地方)， 线程停顿/等待时间概要分析
+        (显示线程为什么不运行的原因)，分配概要分析(显示分配压力的位置)，垃圾回收详细信息等
+      黑盒分析
+        由于JFR开销非常低，因此可持续打开Flight Recorder, 让JFR将信息保存到缓存区，然后在稍后再去分析这块数据，定位特定异常的原因
+      支持与调试
+        联系Oracle支持人员寻求帮助时，JFR收集到的数据可能至关重要
+    被监控的应用小于JDK11启动需增加参数才可以使用JFR
+      一XX:+UnlockCommercialFeatures -XX:+FlightRecorder
+    特点
+      优点∶JMC的主要优点在于对JFR的支持
+           JFR在生产环境中对吞吐量的影响较小一般不会高于1%
+           JFR监控过程是可动态的，无需重启
+           JFR监控过程对应用完全透明，无需修改应用的代码，也无需安装额外的插件或代理JFR提供的数据质量非常高，对监控、排查的参考价值更大
+      缺点︰
+           JFR并不完全向后兼容。比如，在JDK11里面生成的JFR文件，用早期的JMC(例如JMC 5.5)无法打开
+           JMC 7.0.1无法分析堆dump文件(hprof格式)，但官方Wiki宣称支持分析堆dump文件
+
 这些工具从可用性以及授权的不同，主要可以分为三类：
   正式支持工具：表示这类工具会有长期的技术支持，不同的平台、不同的JDK版本之间，这些工具可能会有一定差异，但总体来说还是比较兼容的。
   实验性工具：这类工具会被声明是实验性质，不会有技术支持，一些工具甚至可能会在某个新的JDK版本中突然就消失了。不过这些命令其实也都非常稳定，而且功能很强大，也是可以用在生产的。在实际项目中定位问题发挥的作用也非常的大，所以千万不要一看某个工具是实验性的就不学了。
@@ -71,17 +122,32 @@ JDK内置工具
 博客：
 https://blog.csdn.net/weixin_43477531/article/details/120145571
 
+功能           JHSDB                                                   JCMD                            类似工具
+展示Java进程    N/AI                                                    jcmd                            jps -lm
+堆Dump         jhsdb jmap --binaryheap                                 jcmd pid GC.heap_dump           jmap -dump pid
+堆使用直方图     jhsdb jmap --histo                                      jcmd pid Gc.class_histogram     jmap -histo pid
+线程Dump       jhsdb jstack --locks (subset of locked thread frames)   jcmd pid Thread.print           jstack pid
+展示系统属性     jhsdb jinfo --sysprops                                  jcmd pid VM.system_properties   jinfo -sysprops pid
+列出JVM标记     jhsdb jinfo --flags                                     jcmd pid VM.flags               jinfo -flags pid
 
-
-
-
-
-
-
-
-
-
-
+远程连接Java应用来进行监控-基于SSH
+一、启动远程应用
+  远程服务器执行:
+java -Djava.rmi.server.hostname=192.168.3.26 \
+-Dcom.sun.management.jmxremote.port=1235 \
+-Dcom.sun.management.jmxremote.rmi.port=1250 \
+-Dcom.sun.management.jmxremote.ssl=false \
+-Dcom.sun.management.jmxremote.authenticate=false \
+-jar xxx-jar
+  注意，这里的hostname写localhost即可。当然，你还可以去开启认证、开启ssl。
+  参数行内：-Djava.rmi.server.hostname=192.168.3.26 -Dcom.sun.management.jmxremote.port=1235 -Dcom.sun.management.jmxremote.rmi.port=1250 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false
+二、SSH端口转发
+  在使用远程监控工具的本机执行如下命令，SSH实现端口转发
+ssh -v -D 9696 root@192.168.3.26
+三、VisualVM代理配置
+  工具->选项->网络->手动代理设置->SOCKS代理(127.0.0.1:9696)->没有代理主机清空
+四、添加JMX连接
+  连接(192.168.3.26:1235)
 
 
 
