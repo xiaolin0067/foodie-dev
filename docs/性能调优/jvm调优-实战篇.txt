@@ -1,0 +1,96 @@
+JVM参数选项
+  1、标准选项(Standard Options for Java)
+    用于执行常见操作，例如检查JRE版本，设置类路径，启用详细输出等，各种虚拟机的实现都会去支持标准参数
+    查看支持的参数
+      java -help
+    使用格式
+      格式不统一，以java -help的结果为准
+    使用示例
+      java -version
+      java -agentlib:jdwp=help
+      java --show-version
+  2、附加选项(Extra Options forJava)
+    额外参数(Extra Options for Java)，是JDK11文档中的说法。JDK8的文档将额外参数称之为"非标准参数(Non-Standard Options)"，但可以理解为是一个东西，只是改了个名而已。
+    HotSpot虚拟机的通用选项，其他厂牌的JVM不一定会支持这些选项，并且在未来可能会发生变化。这些选项以-X开头。
+    查看支持的参数
+      java -X
+    使用示例
+      java -Xmx80m
+      java -Xint
+  3、高级选项(Advanced Options)
+      高级选项是为开发人员提供的选项，用于调整Java HotSpot虚拟机操作的特定区域，这些区域通常具有特定的系统要求，
+      并且可能需要对系统配置参数的特权访问。其他厂牌的JVM不一定会支持这些选项，并且在未来可能会发生变化。高级选项以-XX开头。
+    查看支持的参数
+      方式一:使用如下命令
+      java -XX:+UnlockExperimentalVMOptions -XX:+UnlockDiagnosticVWOptions -XX:+PrintFlagsInitial
+        UnlockExperimentalVMOptions：用于解锁实验性参数，如果不加该标记，不会打印实验性参数
+        UnlockDiagnosticVWOptions：用于解锁诊断性参数，如果不加该标记，不会打印诊断性参数
+        PrintFlagsInitial：打印支持的XX选项，并展示默认值。如需获得程序运行时生效值，用PrintFlagsFinal
+      方式二：使用jhsdb flags
+    使用示例：
+      -XX:+PrintGC
+      -XX:NewRatio=4
+JVM日志
+  JDK 8垃圾收集日志打印参数
+  -Xms50m -Xmx50m -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps -XX:+PrintGCCause -Xloggc:/Users/itmuch.com/gclog.log
+  JDK 8运行时日志打印参数
+  -XX:+TraceClassLoading -XX:+TraceBiasedLocking
+  JDK 11写法
+  -Xms50m -Xmx50m -Xlog:gc*=trace:file=/Users/itmuch.com/xloggc.log
+  -Xlog:class+load=debug,biasedlocking=debug:file=/Users/itmuch.com/trace.log
+  建议将JDK 11用于生产环境
+
+CPU过高问题定位
+  1、top + jstack
+    top查看CPU过高进程，查看进程中线程的运行信息：
+      top -Hp [pid]
+    top -Hp打印的PID是线程ID，将10进制转换为16进制
+      printf %x [num]
+    dump线程信息
+      jstack [pid] > pid.log
+    查看线程堆栈
+      cat pid.log| grep -A30 [16进制的tid]
+  2、JMC
+    MBean服务器 -> 线程 -> (勾选)CPU概要分析 -> 刷新 -> 按CPU占用率排序
+    Java进程需要开启JMX
+  可能导致CPU过高的几种场景与解决
+    无限while循环：尽量避免无限循环、让循环执行得慢(sleep)一点
+    频繁GC：降低GC频率
+    频繁创建新对象：合理使用单例
+    序列化和反序列化：选择合理的API实现功能、选择好用的序列化/反序列化类库
+    正则表达式：减少字符匹配期间执行的回溯
+    频繁的线程上下文切换：降低切换的频率
+内存溢出
+  堆内存溢出、方法区溢出、栈内存溢出、直接内存溢出
+  dump堆内存
+    -XX:+HeapDumpOnOutOfMemoryError
+  MAT
+    Leak Suspects(分析内存泄漏) -> Problem Suspect 1
+      ① -> Details -> Accumulated Objects in Dominator Tree -> Shallow Heap最大的对象 -> List Objects -> with incoming references(别人调用自己) -> 展开树找到自己的代码
+      ② -> See stacktrace
+  VisualVM
+    Instances by size -> 最大的示例 -> Open in New Tab -> reference(被谁引用)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

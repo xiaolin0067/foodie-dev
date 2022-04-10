@@ -112,8 +112,36 @@ JDK内置工具
   实验性工具：这类工具会被声明是实验性质，不会有技术支持，一些工具甚至可能会在某个新的JDK版本中突然就消失了。不过这些命令其实也都非常稳定，而且功能很强大，也是可以用在生产的。在实际项目中定位问题发挥的作用也非常的大，所以千万不要一看某个工具是实验性的就不学了。
   商业授权工具：指的主要是JMC以及JMC需要用到的JFR，这些工具在商业环境中使用的话是要付费的，但一般来说在个人开发环境中使用是免费的。
 第三方工具
-  Memory Analyzer Tool
-  JITWatch
+  Memory Analyzer Tool(MAT)：将内存分析做到了极致
+    https://www.eclipse.org/mat/
+    主要功能：找出内存泄漏的原因、找出重复引用的类和jar、分析集合的使用、分析类加载器
+    Shallow vs Retained Heap(浅堆与保留堆)
+      浅堆(Shallow Heap): 一个对象消耗的内存。一个对象引用需要32或64bit(取决于OS体系结构)，每个Integer4个字节，每个Long8个字节等。根据堆转储格式，这个大小也可能会被调整(例如，对齐为8bit),从而更好地模拟VM的实际消耗量。
+      X的保留集(Retained set): 当X被垃圾回收时，由GC删除的对象集。同理，如果X没有被回收，那么该集合中的对象都会"保留下来"。
+      X的保留堆(Retained heap)︰ X的保留集中的所有对象的浅层大小的总和，即X保持活动的内存。换而言之，Retained heap指的是对象X的保留内存大小，即由于它的存活导致多大的内存没有被回收。
+      前导对象集的保留集(例如特定类的所有对象，或特定类加载器加载的所有类的所有对象，或者仅仅是一堆任意对象): 前导对象不可达时，被释放的那些对象。
+    一般来说，对象的浅堆是对象在堆中的大小，而同一对象的保留大小是在垃圾回收对象时将释放的堆内存量。Retained set包括这些对象以及只能通过这些对象访问的所有其他对象。保留大小是保留集中包含的所有对象的总堆大小。
+    X支配Y︰ 如果对象图中从起始（或Root)节点到Y的每条路径都必须经过X，那么就说对象X支配对象Y
+    直接支配者: 某个对象路径最短的支配者
+    Actions:常用的内存分析动作
+      Histogram:列出内存中的对象，对象的个数及其大小(查看堆内存的直方图)。点击后生成的报表:
+        Class Name: 类名称， java类名
+        Objects: 类的对象的数量，这个对象被创建了多少个
+        Shallow Heap: 一个对象内存的消耗大小，不包含对其他对象的引用
+        Retained Heap: 是shallow Heap的总和，也就是该对象被GC之后所能回收到内存的总和
+      Dominator Tree: 列出最大的那些对象，以及他们为什么存活(查看支配树)。
+      Top Consumers: 打印最昂贵的对象，以内和包分组
+      Duplicate Classes: 检测被多个classloader加载的类
+    Reports: 报表
+      Leak Suspects: 自动分析内存泄漏原因，并能直接定位到Class，找到可能导致内存泄漏的行数。
+      Top Components: 列出内存占用超过1%的组件报告信息
+    Step By Step
+      Component Report: 一组工具的集合，用于分析指定包或ClassLoader下的对象的集合
+  JITWatch: 可查看汇编代码
+    JITWatch是JIT编译器的日志分析器与可视化工具。可用来检查内联决策、热点方法、字节码以及汇编的各种细节。它经常和HSDIS配合使用。
+    GitHub: https://github.com/AdoptOpenJDK/jitwatch
+    Wiki: https://github.com/AdoptOpenJDK/jitwatch/wiki/Troubleshooting
+
   Arthas
     文档地址：https://arthas.aliyun.com/doc/index.html
 	使用profiler生成CPU火焰图：profiler start, profiler stop --format html
