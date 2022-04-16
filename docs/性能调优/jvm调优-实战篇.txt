@@ -71,6 +71,102 @@ CPU过高问题定位
   VisualVM
     Instances by size -> 最大的示例 -> Open in New Tab -> reference(被谁引用)
 
+Java虚拟机规范：
+  如果线程请求的栈深度大于虚拟机所允许的最大深度，将抛StackOverflowError
+  如果虚拟机的栈内存允许动态扩展，当无法申请到足够内存时，将抛出OutOfMemoryError
+Hotspot虚拟机：栈内存不可扩展、统一用Xss设置栈的大小(有的虚拟机可以用Xss设置虚拟机栈，Xoss设置本地方法栈)
+如何运行更多线程?
+  减少Xss配置
+  增加栈能分配的内存(机器总内存–操作系统内存–堆内存–方法区内存–程序计数器内存–直接内存)
+  尽量杀死其他程序
+  操作系统对线程数目的限制
+    1. cat /proc/sys/kernel/threads-max
+      作用：系统支持的最大线程数，表示物理内存决定的理论系统进程数上限，一般会很大
+      修改：sysctl -w kernel.threads-max=7726
+    2. cat /proc/sys/kernel/pid_max
+      作用：查看系统限制某用户下最多可以运行多少进程或线程
+      修改：sysctl -w kernel.pid_max=65535
+    3. cat /proc/sys/vm/max_map_count
+      作用：限制一个进程可以拥有的VMA(虚拟内存区域)的数量，虚拟内存区域是一个连续的虚拟地址空间区域。
+    在进程的生命周期中，每当程序尝试在内存中映射文件，链接到共享内存段，或者分配堆空间的时候，这些区域将被创建。
+      修改：sysctl -w vm.max_map_count=262144
+    4. ulimit –u
+       作用：查看用户最多可启动的进程数目
+       修改：ulimit -u 65535
+
+方法区总结
+  方法区溢出的场景
+    常量池里对象太大
+    加载的类的"种类"太多
+      动态代理的操作库生成了大量的动态类
+      JSP项目
+      脚本语言动态类加载
+  不同JDK版本，方法区存放结构不同，相同的代码报错也可能不同
+  如何避免方法区溢出
+    根据JDK版本，为常量池保留足够空间
+      JDK6∶设大PermSize、MaxPermSize
+      >=JDK7︰设大Xms、Xmx
+    防止类加载过多导致的溢出
+      <=JDK 7∶设大PermSize、MaxPermSize
+      >=JDK 8:留空元空间相关的配置，或设置合理大小的元空间
+
+什么是直接内存?
+  直接内存是一块由操作系统直接管理的内存，也叫堆外内存
+  可以使用Unsafe或ByteBuffer分配直接内存
+  可用-XX:MaxDirectMemorySize控制，默认是0，表示不限制
+为什么要有直接内存?
+  性能优势，IO效率高，堆内存vs直接内存：https://yq.aliyun.com/articles/326662
+直接内存使用场景
+  有很大的数据需要存储，生命周期很长
+  频繁的IO操作，比如并发网络通信
+实战:分配直接内存
+  Unsafe.allocateMemory(size);
+  ByteBuffer.allocateDirect(size); (ByteBuffer也是使用Unsafe来实现的)
+  1. Unsafe导致直接内存溢出报错没有小尾巴
+  2. -XX:MaxDirectMemorySize=100m对Unsafe不起作用
+  3. ByteBuffer直接内存溢出报错是java.lang.OutOfMemoryError: Direct buffer memory
+  4. -XX:MaxDirectMemorySize对ByteBuffer有效
+有关直接内存的经验之谈
+  堆Dump文件看不出问题或者比较小，可考虑直接内存溢出问题
+  配置内存时，应给直接内存预留足够的空间
+
+代码缓存区(Code Cache)与代码缓存区满
+代码缓存区：存储编译后的代码
+  代码编译执行和解释执行性能不在一个数量级，故需保证代码都得到编译缓存到code cache中来保证程序性能
+代码缓存区总结
+  设置合理的代码缓存区大小
+  如果项目平时性能OK，但突然出现性能下降，业务没有问题，可排查是否由代码缓存区满所导致
+
+使用G1GC：-XX:+UseG1GC
+# 实用工具
+GC日志可视化分析工具
+  GCEasy: https://www.gceasy.io/ 在线工具，不开源
+  GCViewer: https://github.com/chewiebug/GCViewer 不完全支持"统一日志管理"打印出的日志
+  GCPlot: https://github.com/dmart28/gcplot 很久不维护了
+线程dump日志可视化分析工具
+  https://www.fastthread.io/
+  https://thread.console.heapdump.cn/
+JVM参数查询分析与生成
+  https://opts.console.perfma.com/
+
+项目变慢的可能性有哪些?
+  项目依赖的资源导致变慢: 数据库、中间件、网络抖动、网络攻击等
+  线程争抢过于激烈
+  服务器问题：操作系统问题，其他进程争抢资源
+  Full GC, Stop The World过长
+  Code Cache满了，导致即时编译器停止工作，使用解释模式运行
+
+TLAB是什么?
+  全称Thread Local Allocation Buffer，即线程本地分配缓冲区
+  是一块线程专用的内存分配区域，JVM会为每个线程分配一块TLAB区域，占用Eden区的空间
+  也是线程共享的，只是每个线程分配对象内存的默认区域，即：分配独享，使用共享
+为什么要有TLAB?
+  加速对象分配：对象在堆内存中进行分配，而堆内存是线程共享的，故可能存在多个线程同时在堆上分配内存空间，所以每一个对象内存分配都需要做同步处理
+             JVM底层使用CAS与失败重试的方式保证正常分配。但是若竞争非常激烈，在堆内存上分配内存效率势必会下降，而实际上对象内存分配是高频操作
+             因此设计了TLAB给每个线程设计了一块私有内存，避免对象分配冲突，提高内存分配效率。
+TLAB局限性：TLAB空间较小，所以大对象无法在TLAB分配，只能直接分配到线程共享的堆里面
+
+
 
 
 
