@@ -1,0 +1,87 @@
+数据库调优维度
+  业务需求：勇敢地对不合理的需求说不
+  系统架构：做架构设计的时候，应充分考虑业务的实际情况，考虑好数据库的各种选择(读写分离?高可用?实例个数?分库分表?用什么数据库?)
+  SQL及索引：根据需求编写良好的SQL，并去创建足够高效的索引
+  表结构：设计良好的表结构
+  数据库参数设置：设置合理的数据库性能参数(join buffer、sort buffer...)
+  系统配置：操作系统提供了各种资源使用策略，设置合理的配置，以便于数据库充分利用资源(swap应尽可能小 -> swappiness)
+  硬件：SSD or 机械硬盘
+
+mysql官方测试数据库
+  https://dev.mysql.com/doc/index-other.html
+  https://github.com/datacharmer/test_db
+
+慢查询日志
+  方式一、修改配置文件my.cnf，在[mysqld]段落中加入如上参数即可
+    [mysqld]
+    slow_query_log = ON
+    log_output = 'FILE,TABLE'
+    long_query_time = 2
+    重启MySQL: service mysqld restart
+  方式二、通过全局变量设置，这种方式无需重启即可生效，但一旦重启，配置又会丢失
+    set global slow_query_log = 'ON';
+    set global log_output = 'FILE,TABLE';
+    # long_query_time需要切换session才能生效
+    set global long_query_time = 2;
+    将慢查询日志同时记录到文件以及mysql.slow_log表中
+  查看慢查询记录
+    查看TABLE记录：select * from mysql.slow_log;
+    查看slow FILE文件：
+    show variables like '%slow_query_log_file%';
+    分析慢查询日志文件
+      mysqldumpslow -s r -t 10 -a /var/lib/mysql/node3-26-slow.log
+      pt-query-digest
+SQL性能分析
+  EXPLAIN
+    explain extended select * from employees;
+    可视化分析
+      IDEA：Explain plan
+      MysqlWorkBench
+    show warnings;
+  SHOW PROFILE: 简单、方便，已废弃
+  INFORMATION_SCHEMA.PROFILING: 和SHOW PROFILE本质一样
+  PERFORMANCE_SCHEMA: 未来之光，但目前来说使用不够方便
+  OPTIMIZER_TRACE：跟踪优化器做出的各种决策、了解优化器的执行细节、理解SQL的执行过程，进而优化SQL
+
+数据库诊断
+  SHOW FULL PROCESSLIST; = SELECT * FROM INFORMATION_SCHEMA.PROCESSLIST;
+    按照客户端IP分组,看哪个客户端的连接数最多
+    select client_ip, count(client_ip) as client_num from (select substring_index ( host, ':', 1 ) as client_ip from information_schema.processlist) as connect_info group by client_ip order by client_num desc;
+    查看正在执行的线程，并按time倒排序，看看有没有执行时间特别长的线程
+    select * from information_schema.processlist where command != 'sleep' order by Time desc;
+    找出所有执行时间超过5分钟的线程，拼凑出kill语句，方便后面查杀
+    select concat ('kill', id, ';') from information_schema.processlist where Command != 'Sleep' and Time > 300 order by Time desc;
+  SHOW STATUS;
+    show global status like '%slow%';
+  SHOW VARIABLES;
+    SHOW VARIABLES like '%%';
+  SHOW TABLE STATUS;
+  SHOW INDEX FROM EMPLOYEES;
+  SHOW ENGINE INNODB STATUS\G
+  SHOW MASTER STATUS;
+  SHOW SLAVE STATUS;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
