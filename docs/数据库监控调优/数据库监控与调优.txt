@@ -61,6 +61,69 @@ SQL性能分析
   SHOW MASTER STATUS;
   SHOW SLAVE STATUS;
 
+B-Tree(B+Tree)索引
+  特性，以下情况可以使用到索引：
+    完全匹配: index(name) => where name = '大目'
+    范围匹配: index(age) => where age > 5
+    前缀匹配（即右模糊可以使用索引，左模糊不能使用索引）: 
+      index(name) => where name like '大%'
+  限制：
+    对于组合索引需符合最左前缀原则，其索引列顺序很重要，对于不同的查询条件可对相同的索引列创建不同顺序的组合索引：index(name, age, sex)
+      查询条件不包括最左列,无法使用索引
+        where age=5 and sex=1 无法使用索弓
+      跳过了索弓|中的列,则无法完全使用索引
+        where name = '大目' and sex = 32 只能用name这一列的索引
+	  查询中有某个列的范围(模糊)查询,则其右边所有列都无法使用索引
+	    where name = '大目' and age > 32 and sex = 1 只能用name、age两列
+Hash索引
+  Memory引擎可手动指定Hash索引：create table test_hash_index(id bigint(20) not null, name varchar(45) not null, key using hash (name)) engine = memory;
+  InnoDB引擎支持自适应Hash索引，InnoDB引擎发现某些值访问的非常频繁时会在内存里创建一个Hash索引。
+    show variables like 'innodb_adaptive_hash_index';
+    set global innodb_adaptive_hash_index = 'ON';
+  特性：一般性能比B-Tree(B+Tree)要好一些，不产生Hash冲突事件复杂度为O(1)
+  限制：
+    Hash索索引并不是按照索引值排序，所以没法使用排序，order by
+    不支持部分索引列匹配查找
+      hash(a, b) => where a = 1
+	只支持等值查询(例如=、IN)，不支持范围查询、模糊查询
+	Hash冲突越严重,性能下降越厉害
+创建索引的原则（原则只是参考，不要死守教条）
+  建议创建索引的场景：
+    1、select、update、delete语句的where条件字段，要符合最左原则
+	2、需要分组、排序（group by, order by）的字段
+	3、dintinct()的字段
+	4、字段值有唯一性约束，创建唯一索引
+	5、多表查询联结的字段应创建索引，且类型务必一致（避免隐式转换可能导致索引无法使用）
+  不建议创建索引：
+    1、where字句里用不到的字段
+	2、表记录很少
+	3、有大量重复数据，选择性低（索引的选择性越高,查询效率越好,因为可以在查找是过滤更多行）
+	4、频繁更新的字段,如果创建索弓|要考虑其索引|维护开销
+导致索引失效的场景:
+  1.索引列不独立--独立是指：列不能是表达式的一部分，也不能是函数的参数
+  2.使用了左模糊--避免左模糊'%xxx'，业务要求可使用搜索引擎
+  3.使用0R查询的部分字段没有索引--or的所有字段都要有索引
+  4.字符串条件未使用''引起来--传入索引列匹配类型必须一致
+  5.不符合最左前缀原则的查询
+      存在index(last_name, first_name)
+        explain select * from employees where first_name = 'facello';
+      解决方案: 调整索引的顺序，变成index(first_name, last_name)或者index(first_name)
+  6.索引字段建议添加NOT NULL约束--将索引字段设置为not null并设置默认值
+      单列索引无法储null值，复合索引无法储全为null的值
+	  查询时，采用is null条件时，不能利用到索引，只能全表扫描
+	  MySQL官方建议尽量把字段定义为NOT NULL，除非需求必要必要
+  7.隐式转换导致索引失效--表联结查询的关联字段类型必须一致
+
+
+
+
+
+
+
+
+
+
+
 
 
 
