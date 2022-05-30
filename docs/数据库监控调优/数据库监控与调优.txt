@@ -98,7 +98,8 @@ Hash索引
     1、where字句里用不到的字段
 	2、表记录很少
 	3、有大量重复数据，选择性低（索引的选择性越高,查询效率越好,因为可以在查找是过滤更多行）
-	4、频繁更新的字段,如果创建索弓|要考虑其索引|维护开销
+	4、频繁更新的字段,如果创建索引要考虑其索引维护开销
+	5、参与列计算的的列不适合添加索引
 导致索引失效的场景:
   1.索引列不独立--独立是指：列不能是表达式的一部分，也不能是函数的参数
   2.使用了左模糊--避免左模糊'%xxx'，业务要求可使用搜索引擎
@@ -113,6 +114,54 @@ Hash索引
 	  查询时，采用is null条件时，不能利用到索引，只能全表扫描
 	  MySQL官方建议尽量把字段定义为NOT NULL，除非需求必要必要
   7.隐式转换导致索引失效--表联结查询的关联字段类型必须一致
+索引调优技巧：
+  1、长字段的索引调优
+    ①给长字段的表额外增加一个hash列并将该列添加索引，insert时将长字段的hash结果存入该字段。
+	    hash列应具备以下要求：[字段长度应该比较小，SHA1/MD5是不合适的]、[应尽量避免hash冲突，目前流行CRC32或者FNV64()]
+		select * from employees where first_name = 'Facello';
+		变更为：select * from employees where first_name_hash = CRC32('Facello') and first_name = 'Facello';
+		缺点：不能解决模糊搜索（like）的问题
+    ②前缀索引，可以让索引更小、对上层透明业务无需改造
+	    alter table employees add key (first_name(7));
+	    索引选择性 = 不重复的索引值 / 数据表的总记录数（数值越大，表示选择性越高，性能越好）
+        计算完整列的选择性：select count(distinct first_name)/count(*) from employees;
+		计算前缀索引不同前缀数的索引选择性，找到最合适的一个：
+		    select count(distinct left(first_name, 7)) / count(*) from employees;
+        “后缀索引”：额外创建一个字段，如first_name_reverse，将first_name逆序处理后存储，然后对first_name_reverse创建前缀索引
+		缺点：无法做order by, group by; 无法使用覆盖索引
+单列索引vs组合索引：
+  SQL存在多个条件，多个单列索引，会使用索引合并(explain type = index_merge)
+  如果出现索引合并，往往说明索引不够合理
+  如果SQL暂时没有性能问题，暂时可以不管
+  组合索引要注意索引列顺序[符合最左前缀原则]
+覆盖索引：查询的字段就是索引字段
+  尽量只返回想要的字段，使用覆盖索引，减少网络传输的开销
+重复索引：
+  在相同的列上按照相同的顺序创建的索引
+  尽量避免重复索引，如果发现重复索引应该删除
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
