@@ -115,6 +115,7 @@ Hash索引
 	  MySQL官方建议尽量把字段定义为NOT NULL，除非需求必要必要
   7.隐式转换导致索引失效--表联结查询的关联字段类型必须一致
 索引调优技巧：
+  非主键索引会记录主键
   1、长字段的索引调优
     ①给长字段的表额外增加一个hash列并将该列添加索引，insert时将长字段的hash结果存入该字段。
 	    hash列应具备以下要求：[字段长度应该比较小，SHA1/MD5是不合适的]、[应尽量避免hash冲突，目前流行CRC32或者FNV64()]
@@ -136,9 +137,68 @@ Hash索引
   组合索引要注意索引列顺序[符合最左前缀原则]
 覆盖索引：查询的字段就是索引字段
   尽量只返回想要的字段，使用覆盖索引，减少网络传输的开销
-重复索引：
-  在相同的列上按照相同的顺序创建的索引
-  尽量避免重复索引，如果发现重复索引应该删除
+索引是有开销的：索引的增删改的维护开销，索引越多维护开销越大，所以在条件允许的情况下应该尽量少创建一些索引。
+重复索引：在相同的列上按照相同的顺序创建的索引。
+  create table test_table ( id int not null primary key auto_increment, b int not null, unique(id), index(id)) engine = InnoDB;
+  尽量避免重复索引，如果发现重复索引应该删除。
+冗余索引：如果已经存在索引index(A, B)，又创建了index(A)，那么index(A)就是index(A, B)的冗余索引
+  一般来说应该删除，但存在特例，例如：explain select * from salaries where from_date = '1986-06-26' order by emp_no;
+    index(from_date)：type=ref extra=null，使用了索引
+    index(from_date)某种意义上来说就相当于index(from_date, emp_no)
+    index(from_date, to_date)：type=ref extra=Using filesort, order by字句无法使用索引
+    index(from_date, to_date)某种意义上来说就相当于index(from_date, to_date, emp_no)
+未使用的索引：累赘，删除
+JOIN语句优化：
+  笛卡尔连接(cross join)
+    select * from users a cross join orders b;
+    如果cross join带有on子句，就相当于inner join
+    seLect * from users a cross join orders b on a.id = b.user_ id;
+  1、嵌套循环JOIN算法，Nested-Loop Join(NLU)
+  2、块嵌套循环JOIN算法，Block Nested-Loop Join(BNLJ)
+      通过引入join buffer从而在内存循环降低表的扫描次数，使用join buffer的条件：
+	    1、连接类型是ALL、index或range
+		2、第一个nonconst table（非常量表）不会分配join buffer ,即使类型是ALL或者index
+      join buffer只会缓存需要的字段，而非整行数据
+      可通过join_buffer_size变量设置join buffer的大小，一般全局采用默认值256k，可自定义当前session的size设置大一些
+	    show variables like 'join_buffer_size';
+        set [global] join_buffer_size = 1024*1024*50;
+      每个能被缓存的join都会分配一个join buffer，一个查询可能拥有多个join buffer
+	  join buffer在执行联接之前会分配，在查询完成后释放
+      如何判断SQL使用了BNLJ？
+	    explain select * from users a left join orders b on a.id = b.user_id;
+		extra中出现了表示使用了BNLJ：Using join buffer (Block Nested Loop)
+  3、批量键值访问算法，Batched Key Access Join(BKA)
+	  MRR：将随机IO转换成顺序IO，从而提升性能，默认开启
+	    背景：在非主键索引的范围查询条件下，可能会导致随机IO（数据实际存储是按照主键ID排列的，非主键索引过滤出来的数据主键ID顺序可能乱序，导致随机IO）
+        optimizer_switch的子参数
+		  mrr：是否开启mrr，on开启，off关闭
+          mrr_cost_based：表示是否要开启基于成本计算的MRR
+		read_rnd_buffer_size：指定mrr缓存大小，存放索引内存的大小
+	  如何判断SQL使用了MRR？
+	    # 基于成本的MRR默认很保守，关闭后MRR更容易被使用
+        set optimizer_switch = 'mrr_cost_based=off;
+		elplain中的extra包含Using MRR表示使用了MRR
+	  BKA在MySQL5.6引入，BKA基石：Multi Range Read(MRR)
+        BKA参数，optimizer_switch的子参数
+	      batched_key_access：on开启，off关闭，默认关闭
+	4、HASH JOIN，MySQL 8.0.18引入,用来替代BNLJ
+	    https://dev.mysql.com/doc/refman/8.0/en/hash-joins.html
+        join buffer缓存外部循环的hash表，内层循环遍历时到hash表匹配
+		MySQL8.0.18才引入，且有很多限制，比如不能作用于外连接，比如left join/right join等等
+		从8.0.20开始限制少了很多，且废弃了BNLJ，建议用8.0.20或更高版本
+		从MySQL 8.0.18开始，hash join的join buffer是递增分配的,这意味着，你可以为将join_buffer_size设置得比较大
+		而在MySQL 8.0.18中如果你使用了外连接，外连接没法用hash join，此时join_buffer_size会按照你设置的值直接分配内存。因此join_buffer_size还是得谨慎设置
+
+
+
+
+	  
+
+
+
+
+
+
 
 
 
