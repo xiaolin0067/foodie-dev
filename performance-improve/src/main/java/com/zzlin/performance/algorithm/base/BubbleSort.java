@@ -10,7 +10,7 @@ public class BubbleSort {
         int[] arr = new int[]{8,5,6,9,1,3,4,7,2};
         bubbleSort(arr);
         for (int value : arr) {
-            System.out.println(value);
+            System.out.print(value + "");
         }
     }
 
