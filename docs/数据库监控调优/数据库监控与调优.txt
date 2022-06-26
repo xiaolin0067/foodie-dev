@@ -11,6 +11,11 @@ mysql官方测试数据库
   https://dev.mysql.com/doc/index-other.html
   https://github.com/datacharmer/test_db
 
+查看所有查询日志，使用后立即关闭
+  SET GLOBAL general_log = 'ON';
+  SET GLOBAL general_log = 'OFF';
+  show variables like '%general_log%';
+
 慢查询日志
   方式一、修改配置文件my.cnf，在[mysqld]段落中加入如上参数即可
     [mysqld]
@@ -188,6 +193,8 @@ JOIN语句优化：
 		从8.0.20开始限制少了很多，且废弃了BNLJ，建议用8.0.20或更高版本
 		从MySQL 8.0.18开始，hash join的join buffer是递增分配的,这意味着，你可以为将join_buffer_size设置得比较大
 		而在MySQL 8.0.18中如果你使用了外连接，外连接没法用hash join，此时join_buffer_size会按照你设置的值直接分配内存。因此join_buffer_size还是得谨慎设置
+  总结：各种join的区别；熟练掌握NLJ、BNLJ的原理；了解BKA、HASH JOIN的原理
+
 
 
 

@@ -38,7 +38,8 @@ JDK内置工具
 	只统计存活的对象
 	jmap -histo:live [pid] | less
 	dump堆内存快照，带上live会触发一次Full GC
-	jmap -dump:live,format=b,file=filename <pid>
+	jmap -dump:live,format=b,file=filename.hprof <pid>
+	jmap -dump:format=b,file=tmp.hprof [pid]
 	要想获取Java堆Dump，除使用jmap外，还有以下方法:
       使用-XX:+HeapDumpOnOutOfMemoryError，让虚拟机在OOM异常出现后自动生成堆Dump文件
       使用-XX:+HeapDumpOnCtrlBreak，可使用[Ctrl]+[Break]，让虚拟机生成堆Dump文件
