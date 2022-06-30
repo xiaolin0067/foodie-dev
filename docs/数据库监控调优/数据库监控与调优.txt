@@ -39,6 +39,7 @@ mysql官方测试数据库
 SQL性能分析
   EXPLAIN
     explain extended select * from employees;
+	id越大越先执行，相同的id则上面的先执行
     可视化分析
       IDEA：Explain plan
       MysqlWorkBench
@@ -194,12 +195,116 @@ JOIN语句优化：
 		从MySQL 8.0.18开始，hash join的join buffer是递增分配的,这意味着，你可以为将join_buffer_size设置得比较大
 		而在MySQL 8.0.18中如果你使用了外连接，外连接没法用hash join，此时join_buffer_size会按照你设置的值直接分配内存。因此join_buffer_size还是得谨慎设置
   总结：各种join的区别；熟练掌握NLJ、BNLJ的原理；了解BKA、HASH JOIN的原理
+JOIN调优原则
+  1、用小表驱动大表
+      一般无需人工考虑，关联查询优化器会自动选择最优的执行顺序
+	  但是也存在优化器判断不准确的情况，可以使用STRAIGHT_JOIN来强制指定左边的表驱动右边的表
+  2、where条件要使用索引，尽可能减少外层循环数据量
+  3、join的字段应该尽量创建索引，并且类型需要一致，explain 后跟 show warning;可查看
+  4、尽可能减少扫描的行数，explain rows
+  5、参与join的表不要太多，阿里规约建议不超过3张，可以拆分为多条查询若全部命中主键反而比一条SQL更快
+  6、如果被驱动表的join字段用不了索引，且内存较为充足，可以考虑把join buffer设置的大一点
+LIMIT语句调优
+  explain select * from employees limit 300000,10; 
+  1、使用覆盖索引，只查询索引字段
+      explain select emp_no from employees limit 300000,10; 
+  2、覆盖索引+join（先查询索引字段有哪些取值，然后再查询所有字段扫描这些索引）
+      explain select * from employees e innor join
+	    (select emp_no from employees limit 300000,10) t on e.emp_no = t.emp_no;
+    join字段一样时可简写为
+	  explain select * from employees e innor join
+	    (select emp_no from employees limit 300000,10) t using(emp_no);
+  3、覆盖索引+子查询（先查询到这一页的最先索引字段值，然后在在这个索引上取10条）
+    select * from employees where emp_no >= (select emp_no from employees limit 300000,1) limit 10;
+  4、范围查询+limit语句（拿到上一页的最大值）
+    select * from employees where emp_no >= 10010 limit 10;
+  5、拿到起始主键值和结束主键值
+    select * from employees where emp_no between 20000 and 20010;
+  6、需求上禁止传入过大的页码
+COUNT语句的特性
+  1.当没有非主键索引时，会使用主键索引
+  2.如果存在非主键索引的话，会使用非主键索引
+  3.如果存在多个非主键索引，会使用一个最小的非主键索引
+      为什么?
+      innodb非主键索引，叶子节点存储的是：索引+主键
+      主键索引叶子节点：主键+表数据
+      在1个page里面，非主键索引可以存储更多的条目，对于一张表，1000000数据，使用非主键索引扫描page 100，主键索引500
+      所以使用最小的非主键索引扫描的页更少
+  4、count(字段)会排除掉该字段值为null的行，没有特殊需求用count(*)
+  5、count(*)和count(1)没有区别 https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count
+  6、对于MyISAM引擎，没有where条件的count(*)会非常快，InnoDB在8.0.13以上版本也对没有where条件的count(*)做了优化
+COUNT语句的优化
+  1、创建一个更小的非主键索引
+  2、把数据库引擎换成MyISAM，实际项目用的很少，般不会修改数据库引擎
+  3、汇总表table[table_name, count] = employees, 2000000
+      好处：结果比较准确
+      缺点：增加了维护的成本
+  4、sql_calc_found_rows，在做完查询后自动的执行COUNT
+      select sql_calc_found_rows * from salaries limit 10;
+  	select found_rows() as salary_count;
+    缺点：8.0.17已经废弃，后续会删除
+  5、将count(*)结果缓存
+    优点:性能比较高，结果比较准确
+    缺点:引入了额外的组件，增加了架构的复杂度，需要维护
+  6、information_schema.tables
+    select * from information_schema.tables where table_schema = 'employees' and table_name = 'salaries';
+    优点：不操作salaries表，不论salaries有 多少数据，都可以迅速地返回结果
+    缺点：估算值，并不是准确值
+  7、show table status where Name = 'salaries';
+  8、explain select * from salaries;
+  若计算某个范围的数量
+    select count(*) from salaries where emp_no > 10010;
+  最小emp_no与10010很接近，可采用总数 - <=10010的数反向计算来进行优化，也可使用汇总表和缓存来计算结果，减少扫描行数
+    select count(*) - (select count(*) from salaries where emp_no <= 10010) from salaries;
+ORDER BY优化
+  最好的做法是：利用索引避免排序，利用索引本身的有序性让MySQL跳过排序的过程
+  rowid排序
+    1、从表中获取满足WHERE条件的记录
+    2、对于每条记录,将记录的主键及排序键(id,order_column)取出放入sort buffer(由sort_buffer_size控制)，IO操作
+    3、如果sort buffer能存放所有满足条件的(id,order_column)，则进行排序。否则sort buffer满后，排序并写到临时文件，排序算法：快速排序
+    4、若排序中产生了临时文件，需要利用归并排序算法保证结果有序
+    5、循环执行上述过程,直到所有满足条件的记录全部参与排序
+    6、扫描排好序的(id,order_column)对，并利用id去取SELECT需要返回的其他字段，IO操作，取数据前会对ID放到read_rnd_buffer_size排序
+    7、返回结果集
+    特点：
+      1、看sort buffer是否能存放结果集里面的所有(id,order_column)，如果不满足，就会产生临时文件
+      2、一次排序需要两次IO
+  全字段排序(优化排序)
+    直接取出SQL中需要的所有字段,放到sort buffer，由于sort buffer已经包含了查询需要的所有字段
+    因此在sort buffer中排序完成后可直接返回
+    max_length_for_sort_data：当ORDER BY中出现字段的总长度小于该值，使用全字段排序，否则使用rowid排序
+  打包字段排序：将字段紧密的排列在一起而不是使用固定长度空间
+  优化：
+    1、利用索引，防止filesort的发生
+    2、如果发生了filesort，并且没办法避免，想办法优化filesort
+    3、调大sort_buffer_size，减少/避免临时文件、归并操作
+        optimizer trace中num_initial_chunks_spilled_to_disk的值
+        sort_merge_passes变量的值
+    4、调大read_rnd_buffer_size，让一次顺序IO返回的结果更多
+    5、设置合理的max_length_for_sort_data的值，一般不建议随意调整
+    6、调小max_sort_length(排序时最多取多少字节)
+  OPTIMIZER_TRACE使用
+  1、开启OPTIMIZER_TRACE功能，并设置要展示的数据条目数:
+  SET OPTIMIZER_TRACE=”enabled=on", END_MARKERS_IN_JSON=on;
+  SET optimizer_trace_offset=-30, optimizer_trace_limit=30;
+  2、执行需要分析的SQL
+  3、trace filesort_summary，select * from information_schema.optimizer_trace where query like '%xxx%';
+  小结：
+    什么场景下能用索引避免排序,什么场景下不能
+    MySQL排序的三种模式，特点必须掌握，了解大概的步骤
+    会用optimizer trace去分析filesort的结果
+
+Percona Toolkit
+  官网：https://www.percona.com/doc/percona-toolkit/3.0/index.html
+  分析慢查询日志：pt-query-digest mysql-slow-2022-01-07.log > 0107.report
 
 
 
 
 
-	  
+
+
+ 
 
 
 
