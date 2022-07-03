@@ -22,6 +22,10 @@ public class QuickSort {
         if (left >= right) {
             return;
         }
+//        if (left > right - 60) {
+//            在arr[left~right]上使用插入排序，O(N^2)算法在小样本量时跑得快
+//            return;
+//        }
         swap(arr, left + (int) (Math.random() * (right - left + 1)), right);
         int[] p = partition(arr, left, right);
         quickSort(arr, left, p[0]-1);

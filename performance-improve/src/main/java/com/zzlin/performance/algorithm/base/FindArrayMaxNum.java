@@ -1,6 +1,7 @@
 package com.zzlin.performance.algorithm.base;
 
 /**
+ * 二分查找
  * @author zlin
  * @date 20220605
  */

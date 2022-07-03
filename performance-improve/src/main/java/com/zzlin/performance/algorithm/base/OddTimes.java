@@ -1,6 +1,8 @@
 package com.zzlin.performance.algorithm.base;
 
 /**
+ * 1、数组中只有一个数出现了奇数次，找出这个出现奇数次的数
+ * 2、数组中有两个数出现了奇数次，找出这两个出现奇数次的数
  * @author zlin
  * @date 20220605
  */
