@@ -1,4 +1,4 @@
-package com.zzlin.performance.algorithm.base;
+package com.zzlin.performance.algorithm.base.sort.bucket;
 
 /**
  * 非比较排序-基数排序

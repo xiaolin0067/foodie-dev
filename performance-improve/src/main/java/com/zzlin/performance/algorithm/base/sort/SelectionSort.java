@@ -1,7 +1,8 @@
-package com.zzlin.performance.algorithm.base;
+package com.zzlin.performance.algorithm.base.sort;
 
 /**
  * 选择排序
+ * 时间复杂度O(N^2)，空间复杂度O(1)，不能做到稳定性
  * @author zlin
  * @date 20220602
  */

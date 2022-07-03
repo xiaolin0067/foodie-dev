@@ -1,7 +1,8 @@
-package com.zzlin.performance.algorithm.base;
+package com.zzlin.performance.algorithm.base.sort;
 
 /**
  * 冒泡排序
+ * 时间复杂度O(N^2)，空间复杂度O(1)，可以做到稳定性
  * @author zlin
  * @date 20220602
  */
@@ -11,7 +12,7 @@ public class BubbleSort {
         int[] arr = new int[]{8,5,6,9,1,3,4,7,2};
         bubbleSort(arr);
         for (int value : arr) {
-            System.out.print(value + "");
+            System.out.print(value + ", ");
         }
     }
 

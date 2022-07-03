@@ -1,7 +1,8 @@
-package com.zzlin.performance.algorithm.base;
+package com.zzlin.performance.algorithm.base.sort;
 
 /**
  * 插入排序
+ * 时间复杂度O(N^2)，空间复杂度O(1)，可以做到稳定性
  * @author zlin
  * @date 20220605
  */
@@ -22,7 +23,7 @@ public class InsertionSort {
      * 算法流程按照最差的情况来估计时间复杂度：O(N^2)
      * 0~0保证有序
      * 0~1保证有序，1与0比较，若小于则交换
-     * 0~2保证有序，2与1比较，若小于则交换，与0比较，小于则交换
+     * 0~2保证有序，2与1比较，若小于则交换，1与0比较，小于则交换，否则啥也不做进入下一个循环
      */
     public static void insertionSort(int[] arr) {
         if (arr == null || arr.length < 2) {

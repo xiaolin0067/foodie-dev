@@ -1,9 +1,9 @@
-package com.zzlin.performance.algorithm.base;
+package com.zzlin.performance.algorithm.base.sort;
 
 /**
  * 快速排序
  * O(N^2)
- * 加上随机分组，则为O(N + logN)
+ * 加上随机分组，则为O(N*logN)，不能做到稳定性
  * 空间复杂度 O(logN)
  * @author zlin
  * @date 20220608
@@ -14,7 +14,7 @@ public class QuickSort {
         int[] arr = new int[]{4,3,5,6,5,0,1,7,8,5};
         quickSort(arr, 0, arr.length - 1);
         for (int value : arr) {
-            System.out.print(value + " ");
+            System.out.print(value + ", ");
         }
     }
 
