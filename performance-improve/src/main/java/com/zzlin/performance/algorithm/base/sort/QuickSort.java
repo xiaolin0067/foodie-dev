@@ -26,12 +26,24 @@ public class QuickSort {
 //            在arr[left~right]上使用插入排序，O(N^2)算法在小样本量时跑得快
 //            return;
 //        }
+        // 随机找到一个位置，将他放到数组的最后，避免最坏O(N^2)情况，123456789
         swap(arr, left + (int) (Math.random() * (right - left + 1)), right);
+        // 用数组的最右侧right位置上的数做划分，划分为小于该数 等于该数 大于该数的三块区域，将这个数与大等于这个数的区域的最左侧交换
+        // 然后将等于区域的左边界与右边界返回
         int[] p = partition(arr, left, right);
+        // 然后再在小于该数区域与大于该数区域做递归
         quickSort(arr, left, p[0]-1);
         quickSort(arr, p[1]+1, right);
     }
 
+    /**
+     * 将数组以结束位置的数划分成三个区域，并返回等于区域的开始结束位置
+     * 小于 | 等于 | 大于
+     * @param arr 待排数组
+     * @param left 开始位置
+     * @param right 结束位置
+     * @return 等于结束位置数区域的左边界与右边界
+     */
     private static int[] partition(int[] arr, int left, int right) {
         int num = arr[right];
         for (int i = left; i <= right;) {
