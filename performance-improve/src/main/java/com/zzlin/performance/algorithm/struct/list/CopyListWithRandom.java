@@ -42,6 +42,7 @@ public class CopyListWithRandom {
         if (head == null) {
             return null;
         }
+        // 这里map存的是内存地址
         Map<Node, Node> map = new HashMap<>();
         // 给链表所有节点复制一个值到map的value
         Node cur = head;
