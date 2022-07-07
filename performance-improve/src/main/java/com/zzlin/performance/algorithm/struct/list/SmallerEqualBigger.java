@@ -1,6 +1,7 @@
 package com.zzlin.performance.algorithm.struct.list;
 
 /**
+ * 单链表荷兰国旗问题
  * @author zlin
  * @date 20220707
  */
@@ -33,18 +34,27 @@ public class SmallerEqualBigger {
         }
     }
 
+    /**
+     * 把链表划分为小于范围，等于范围，大于范围
+     * 只用有限个空间
+     * 空间复杂度O(1)
+     */
     public static Node smallerEqualBigger(Node head, int pivot) {
         if (head == null) {
             return null;
         }
-        Node sh = null, st = null, eh = null, et = null, bh = null, bt = null, next = null;
+        Node sh = null, st = null, eh = null, et = null, bh = null, bt = null, next;
         while (head != null) {
+            // 记录下一个节点
             next = head.next;
+            // 把下一个节点置为null，否则会成环
             head.next = null;
             if (head.val < pivot) {
                 if (sh == null) {
+                    // 若开始范围为空，则开始结束都为空，都置为当前节点
                     sh = st = head;
                 }else {
+                    // 否则把结束范围节点只想当前节点，并把结束范围移向当前节点
                     st.next = head;
                     st = head;
                 }
