@@ -28,6 +28,7 @@ public class TreeMaxWidth {
         n3.right = n7;
         widthOrderRecur(n1);
         System.out.println();
+        System.out.println(getTreeMaxWidthWithMap(n1));
         System.out.println(getTreeMaxWidth(n1));
     }
 
@@ -74,7 +75,7 @@ public class TreeMaxWidth {
      * 实现原理：记录每个节点所在的层数。将头节点放入map并记录为第一层，他的则子节点都是第二层，子节点的子节点就是第三层
      * 宽度优先遍历是每次都处理一层的所有节点，即可将该层的节点数累加并将较大着记录为最大长度
      */
-    public static int getTreeMaxWidth(Node root) {
+    public static int getTreeMaxWidthWithMap(Node root) {
         if (root == null) {
             return 0;
         }
@@ -105,6 +106,45 @@ public class TreeMaxWidth {
             }
         }
         return Math.max(levelNodeNum, maxLen);
+    }
+
+    /**
+     * 获得树的最大宽度，仅使用队列
+     * 宽度优先遍历树，记录层的最后一个节点，进入该层对每一个节点计数，走到该层的最后节点时比对并返回
+     */
+    public static int getTreeMaxWidth(Node root) {
+        if (root == null) {
+            return 0;
+        }
+        Queue<Node> queue = new LinkedList<>();
+        queue.add(root);
+        Node curLevelEnd = root;
+        Node nextLevelEnd = null;
+        int curLevelLen = 0;
+        int maxLen = Integer.MIN_VALUE;
+        while (!queue.isEmpty()) {
+            Node n = queue.poll();
+            if (n.left != null) {
+                // 只要不为空，就设为下一层的最后一个节点，这样该层遍历完后一定能得到最终的下一层的最后节点
+                nextLevelEnd = n.left;
+                queue.add(n.left);
+            }
+            if (n.right != null) {
+                // 只要不为空，就设为下一层的最后一个节点，这样该层遍历完后一定能得到最终的下一层的最后节点
+                nextLevelEnd = n.right;
+                queue.add(n.right);
+            }
+            // 当前层数量累加
+            curLevelLen++;
+            if (n == curLevelEnd) {
+                // 若走到了当前层的最后一个节点，比对当前层的宽度是否是最大的，并重置下一层长度为0，当前层与下一层的最后节点
+                maxLen = Math.max(curLevelLen, maxLen);
+                curLevelLen = 0;
+                curLevelEnd = nextLevelEnd;
+                nextLevelEnd = null;
+            }
+        }
+        return maxLen;
     }
 
 }
