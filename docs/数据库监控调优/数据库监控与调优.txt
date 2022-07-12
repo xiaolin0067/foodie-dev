@@ -294,17 +294,89 @@ ORDER BY优化
     MySQL排序的三种模式，特点必须掌握，了解大概的步骤
     会用optimizer trace去分析filesort的结果
 
+GROUP BY语句调优，1、2、3方式性能依次递减
+  1、松散索引扫描(Loose Index Scan)：无需扫描满足条件的所有索引键即可返回结果
+    分析这条SQL如何执行：explain select emp_no, min(salary) from salaries group by emp_no;
+    表有[emp_no, salary]的组合索引
+      [10001 , 50000]
+      [10001 , 51000]
+      ...
+      [10002 , 30000]
+      [10002 , 32000]
+      ...
+    普通扫描：
+      1.先扫描emp_no = 10001的数据，并计算出最小的salary是多少，[10001, 50000]
+      2.扫描emp_no = 10002，并计算出最小的salary是多少，[10002, 30000]
+      3.遍历出每个员工的最小薪资，并返回
+    改进: (松散索引扫描)
+      1.先扫描emp_no = 10001的数据，取出第一条就是这个员工工资最小的数据
+      2.直接跳过所有的emp_no = 10001的数据，继续扫描emp_no = 10002的数据，取第一条
+      3.以此类推
+    explain的extra展示Using index for group-by, 说明使用了松散索引扫描
+    使用松散索引的条件：
+      1、查询作用在单张表上
+      2、GROUP指定的所有字段要符合最左前缀原则,且没有其他字段
+          比如有索引index(c1, c2, c3), 如果GROUP BY c1, c2则可以使用松散引扫描; 但GROUP BY c2, c3和GROUP BY c1, c2, c4则不能
+      3、如果存在聚合函数,只支持MIN()/MAX(),并且如果同时使用了MIN()和MAX(),则必须作用在同一个字段，
+          聚合函数作用的字段必须在索引中,并且要紧跟GROUP BY所指定的字段。
+          比如有索引index(c1, c2, c3), select c1, c2, min(c3), max(c3) from t1 group by c1, c2;可以使用松散索引扫描
+      4、如果查询中存在除GROUP BY指定的列以外的其他部分,则必须以常量的形式出现
+          比如select c1,c3 from t1 group by c1,c2;不能使用
+          比如select c1,c3 from t1 where c3 = 3 group by c1,c2;可以
+      5、索引必须索引整个字段的值, 不能是前缀索引
+          比如有字段c1 VARCHAR(20), 但如果该字段使用的是前缀索引index(c1(10))而不是index(c1), 无法使用松散索引扫描
+      6、其他特定聚合函数用法能用.上松散索引扫描的条件：
+          AVG(DISTINCT)、SUM(DISTINCT)、 COUNT(DISTINCT) ,其中AVG(DISTINCT)、SUM(DISTINCT)可接受单个参数;
+          而COUNT(DISTINCT)可接受多个参数。并且查询中必须不存在GROUP BY或DISTINCT语句，并且满足前面的5个条件。
+  2、紧凑索引扫描(Tight Index Scan)：需要扫描满足条件的所有索引键才能返回结果
+      性能一般比松散索引|扫描差,但一般都可接受。
+      如下查询聚合函数字段为sum，使用了经凑索引，extra没有明显标识，type=index extra=Using index
+      explain select emp_no, sum(salary) from salaries group by emp_no;
+  3、临时表(Temporary table)
+      紧凑索引扫描也没有办法使用的话, MySQL将会读取需要的数据, 并创建一个临时表, 用临时表实现GROUP BY操作
+      如下字段查询字段无索引，将使用临时表, type=all extra=Using temporary
+      explain select max(hire_date) from employees group by hire_date;
+  优化：如果GROUP BY使用了临时表,想办法用上松散索引扫描或紧凑索引扫描
+DISTINCT语句调优
+  DISTINCT是在GROUP BY操作之后, 每组只取1条, 和GROUP BY优化思路-样
+总结：
+松散索引扫描, 性能最好, explain中会有Using index for group-by
+紧凑索引扫描, 性能第二, explain中无明显标识
+临时表, 性能最差, explain中会有Using temporary
+避免临时表,使用松散/紧凑索引扫描
+
+表设计
+  第一范式(1NF)
+    字段具有原子性,即数据库表的每一个字段都是不可分割的原子数据项,不能是集合、数组、记录等非原子数据项
+    当实体中的某个属性有多个值时,必须拆分为不同的属性
+  第二范式(2NF)
+    满足1NF的基础上, 要求每一行数据具有唯一性, 并且非主键字段完全依赖主键字段
+    两个字段为表的联合主键，某字段只与主键其中一个字段有关而与另外一个无关，需要拆成两个表
+  第三范式(3NF)
+    满足2NF的基础上, 不能存在传递依赖
+    表中字段需要直接依赖与主键，而不能依赖与其中一个字段，该字段依赖主键来使得产生传递依赖
+    需要新增表，使字段直接依赖于主键
+  三范式的好处一般是用于防止数据冗余, 但在实际项目中存在反模式设计, 适当增加冗余, 从而提升查询效率
+表设计原则
+  1、字段少而精, 建议20个以内(经验之谈), 超过可以拆分
+      把常用的字段放到一起
+      把不常用的字段独立出去
+      大字段(TEXT/BLOB/CLOB等等)独立出去
+  2、尽量用小型字段
+      用数字替代字符串
+  3、避免使用允许为NULL的字段
+      允许NULL字段很难查询优化
+      允许为NULL字段的索引需要额外空间
+  4、合理平衡范式与冗余
+  5、如果数据量非常大,考虑分库分表
+MySQL大表优化方案（精华文章）
+https://segmentfault.com/a/1190000006158186
+
 Percona Toolkit
   官网：https://www.percona.com/doc/percona-toolkit/3.0/index.html
   分析慢查询日志：pt-query-digest mysql-slow-2022-01-07.log > 0107.report
 
 
-
-
-
-
-
- 
 
 
 

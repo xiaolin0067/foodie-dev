@@ -95,7 +95,7 @@ public class HeapSort {
 
     public static void buildMaxHeap2(int[] arr, int heapSize) {
         for (int i = (heapSize - 1) / 2; i >= 0; i--) {
-            heapIfy(arr, i, heapSize);
+            heapIfy2(arr, i, heapSize);
         }
     }
 
@@ -111,7 +111,7 @@ public class HeapSort {
         }
         if (largest != index) {
             swap(arr, index, largest);
-            heapIfy(arr, largest, heapSize);
+            heapIfy2(arr, largest, heapSize);
         }
 
     }
