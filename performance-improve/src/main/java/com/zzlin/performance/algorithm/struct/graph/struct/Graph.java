@@ -11,6 +11,9 @@ import java.util.HashSet;
  */
 public class Graph {
 
+    /**
+     * 在只有城市或数据范围不大的情况下，可以将这里的HashMap换成数组会更快
+     */
     public HashMap<Integer, Node> nodes;
     public HashSet<Edge> edges;
 

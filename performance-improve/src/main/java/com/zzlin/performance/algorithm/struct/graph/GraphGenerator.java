@@ -18,6 +18,7 @@ public class GraphGenerator {
      *   [weight,from,to],
      *   [weight,from,to]
      * ]
+     * 在只有城市或数据范围不大的情况下，可以将nodes的HashMap换成数组会更快
      * @return Graph
      */
     public static Graph createGraphByTwoDimensionArray(Integer[][] matrix) {
@@ -37,6 +38,7 @@ public class GraphGenerator {
             }
             Node fromNode = graph.nodes.get(fromVal);
             Node toNode = graph.nodes.get(toVal);
+            // 填充属性
             Edge edge = new Edge(weight,fromNode, toNode);
             fromNode.nexts.add(toNode);
             fromNode.edges.add(edge);
