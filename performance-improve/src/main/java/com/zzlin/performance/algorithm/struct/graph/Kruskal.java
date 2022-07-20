@@ -7,6 +7,7 @@ import com.zzlin.performance.algorithm.struct.graph.struct.Node;
 import java.util.*;
 
 /**
+ * 克鲁斯卡尔算法
  * kruskal算法实现最小生成树
  * 最小生成树：保证图所有节点的连通性的前提下，使得所有边的权重之和最小（去除一些边，保证连通性，权重最低）
  * kruskal算法
