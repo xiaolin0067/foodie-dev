@@ -33,6 +33,8 @@ JDK内置工具
     分析堆内存，可dump堆内存快照，统计堆对象数量和大小，类加载情况
     -clstats 连接到正在运行的进程，并打印Java堆的类加载器统计信息
     -finalizerinfo 连接到正在运行的进程，并打印等待finalization的对象的信息
+    -heap 查看进程各分代内存占用情况
+      jmap -heap [pid]
     分析内存，统计堆中对象大小和数量，按大小倒序输出
     jmap -histo [pid] | less
 	只统计存活的对象
@@ -47,6 +49,7 @@ JDK内置工具
       对于spring Boot应用，也可以使用Spring Boot Actuator提供的/actuator/heapdump实现堆Dump。
   jstack (Stack Trace for java)
     分析线程堆栈信息，dump线程快照(线程快照也叫Thread Dump或者javacore文件)
+      jstack [-l] [-e] [pid]
     -l 在线程堆栈信息后显示有关锁的额外信息
     -e 展示有关线程的额外信息(比如分配了多少内存、定义了多少个类等等)
   jcmd (JVM Command)
