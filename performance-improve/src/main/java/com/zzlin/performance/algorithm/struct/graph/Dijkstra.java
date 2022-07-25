@@ -64,6 +64,10 @@ public class Dijkstra {
             return null;
         }
         Pair<Node, Integer> pair = Pair.of(null, Integer.MAX_VALUE);
+        // 有一个堆的优化：这里选最小值是遍历所有的节点和其距离，可以改为堆结构来做优化
+        // 但是此处使用常规的堆（系统实现的堆）结构并不会达到优化的目的，因为一个节点的出现可能会影响已有的节点的原来最短距离
+        // 系统实现的堆（所有语言的都一样），只能是给一堆数据，给你最小/大的数据，堆中所有数据值不能变，否则重新全局扫描将导致时间复杂度与遍历差不多
+        // 堆的改写（当堆中的数据会发生变化时）：需要自己建一个堆，当堆中节点的值发生变化时，从这个堆的局部，这个值开始往上或往下调整。
         for (Map.Entry<Node, Integer> distance : distanceMap.entrySet()) {
             // 如果node已被选择过或者是距离大于当前最小的距离的话跳过
             if (selectedSet.contains(distance.getKey()) || distance.getValue() >= pair.getRight()) {
