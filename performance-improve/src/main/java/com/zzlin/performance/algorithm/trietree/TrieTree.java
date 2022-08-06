@@ -4,7 +4,14 @@ import org.apache.commons.lang3.StringUtils;
 
 /**
  * 前缀树
- *
+ * 介绍前缀树
+ * 何为前缀树?如何生成前缀树?
+ * 例子:
+ * 一个字符串类型的数组arr1，另一个字符串类型的数组arr2。
+ *   arr2中有哪些字符，是arr1中出现的?请打印。
+ *   arr2中有哪些字符，是作为arr1中某个字符串前缀出现的?请打印。
+ *   arr2中有哪些字符，是作为arr1中某个字符串前缀出现的?请打印。
+ *   arr2中出现次数最大的前缀。
  * @author zlin
  * @date 20220725
  */
@@ -90,7 +97,6 @@ public class TrieTree {
                     return;
                 }
                 head = head.nexts[index];
-                head.pass++;
             }
             head.end--;
         }
