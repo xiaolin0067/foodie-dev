@@ -39,6 +39,9 @@ public class JdkProxyTest {
 }
 
 interface Hello {
+    /**
+     * say hello
+     */
     void say();
 }
 

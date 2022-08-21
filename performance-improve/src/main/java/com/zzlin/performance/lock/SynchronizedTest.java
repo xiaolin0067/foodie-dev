@@ -1,4 +1,4 @@
-package com.zzlin.performance.locak;
+package com.zzlin.performance.lock;
 
 import java.util.ArrayList;
 import java.util.List;
