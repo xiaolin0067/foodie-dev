@@ -1,0 +1,51 @@
+脏读：指读取到其他事务正在处理的未提交数据
+不可重复读：指并发更新时，另一个事务前后查询相同数据时的数据不符合预期
+幻读：指并发新增、删除这种会产生数量变化的操作时，另一个事务前后查询相同数据时的不符合预期
+
+事务隔离级别                 脏读可能性 不可重复读可能性  幻读可能性          加锁读
+READ UNCOMMITTED(读未提交)    是         是             是               否
+READ COMMITTED(读已提交)      否         是             是               否
+REPEATABLE READ(可重复度)     否         否             是(innodb除外)    否
+SERIALIZABLE(可串行化)        否         否             否               是
+
+#获取当前事务隔离界别，默认RR(REPEATABLE-READ)可重复读
+SHOW VARIABLES LIKE 'transaction_isolation';
+#设置当前会话事务隔离级别为“读未提交”
+SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+MySQL默认Repeatable Read(RR)-可重复读，MySQL 5.1以后默认存储引擎就是InnoDB，因此MySQL默认RR也能解决幻读问题
+innodb引擎在可重复度级别下也可解决幻读
+
+MVCC
+
+在MySQL InnoDB存储引擎下RC、RR基于MvCC(多版本并发控制)进行并发事务控制
+MVCC是基于”数据版本”(undo_log)对并发事务进行访问
+UNDO_LOG
+MySQL确保版本链数据不再被“引用"后再进行删除。
+
+ReadView是“快照读”SQL执行时MVCC提取数据的依据
+快照读：就是最普通的Select查询SQL语句
+当前读：指代执行下列语句时进行数据读取的方式
+lnsert、Update、Delete
+Select...for update
+Select...lock in share mode
+
+ReadView是一个数据结构，包含4个字段
+m_ids：当前活跃的事务编号集合
+min_trx_id：最小活跃事务编号
+max_trx_id：预分配事务编号，当前最大事务编号+1
+creator_trx_id：ReadView创建者的事务编号
+
+读已提交(RC):在每一次执行快照读时生成ReadView
+可重复读(RR):仅在第一次执行快照读时生成ReadView，后续快照读复用。
+（例外：一个事务中连续两个快照读中出现当前读，切当前读有覆盖到了其他事务新增的数据。会生成两个ReadView导致幻读）
+
+版本链数据访问规则:
+判断当前事务id等于creator_trx_id(4)吗?成立说明数据就是自己这个事务更改的，可以访问
+判断trx_id < min_trx_id(2)?成立说明数据已经提交了，可以访问
+判断trx_id> max_trx_id(5)?成立说明该事务是在ReadView生成以后才开启，不允许访问
+判断min_trx_id(2]<= trx_id <= max_trx_id(5)，成立在m_ids数据中对比，不存数据在的则代表数据是已提交的，可以访问。
+
+
+
+
