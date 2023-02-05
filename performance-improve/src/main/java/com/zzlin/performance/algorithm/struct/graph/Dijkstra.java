@@ -22,6 +22,7 @@ public class Dijkstra {
      *
      * 狄克斯特拉算法。是从一个顶点到其余各顶点的最短路径算法，解决的是有权图中最短路径问题。
      * 迪杰斯特拉算法主要特点是从起始点开始，采用贪心算法的策略，每次遍历到始点距离最近且未访问过的顶点的邻接节点，直到扩展到终点为止。
+     * 还有一种 A* 算法，无需了解
      */
     public static Map<Node, Integer> dijkstra(Node head) {
         if (head == null) {
@@ -48,6 +49,7 @@ public class Dijkstra {
                 int minDistance = oldDistance == null ? newDistance : Math.min(oldDistance, newDistance);
                 distanceMap.put(toNode, minDistance);
             }
+            // 最后全部加入selectedSet后会无节点可选，退出循环
             minNode = getMinDistanceUnselectedNode(distanceMap, selectedSet);
         }
         return distanceMap;
