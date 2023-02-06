@@ -43,12 +43,12 @@ public class BestArrange {
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    static class Program {
+    private static class Program {
         private int start;
         private int end;
     }
 
-    static class ProgramEndComparator implements Comparator<Program> {
+    private static class ProgramEndComparator implements Comparator<Program> {
 
         @Override
         public int compare(Program o1, Program o2) {
