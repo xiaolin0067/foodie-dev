@@ -25,17 +25,35 @@ import java.util.PriorityQueue;
  */
 public class IPO {
 
+    /**
+     * 你每做完一个项目，马上获得的收益，可以支持你去做下一个项目，项目不可重复做
+     *
+     * @param k 最多做k个项目
+     * @param w 初始的资金
+     * @param costs 表示i号项目的花费
+     * @param profits 表示i号项目的利润
+     * @return 获得的最大钱数
+     */
     public static int findMaximizedCapital(int k, int w, int[] costs, int[] profits) {
+        // 最小花费的堆
         PriorityQueue<Node> minCostQueue = new PriorityQueue<>(new MinCostComparator());
+        // 最大利润的堆
         PriorityQueue<Node> maxProfitQueue = new PriorityQueue<>(new MaxProfitComparator());
         for (int i = 0; i < costs.length; i++) {
             minCostQueue.add(new Node(costs[i], profits[i]));
         }
-        int result = 0;
         for (int i = 0; i < k; i++) {
-
+            // 当前本金能做哪些项目全部加入到最大利润的堆中
+            while (!minCostQueue.isEmpty() && minCostQueue.peek().getCost() <= w) {
+                maxProfitQueue.add(minCostQueue.poll());
+            }
+            // 最大利润的堆为空，说明啥项目都做不了了，直接返回钱数
+            if (maxProfitQueue.isEmpty()) {
+                return w;
+            }
+            w += maxProfitQueue.poll().getProfit();
         }
-        return result;
+        return w;
     }
 
 
