@@ -1,5 +1,7 @@
 package com.zzlin.performance.algorithm.base.sort;
 
+import java.util.Random;
+
 /**
  * 堆排序
  * time O(N*logN)，heap O(1)，不能做到稳定性
@@ -10,7 +12,12 @@ package com.zzlin.performance.algorithm.base.sort;
 public class HeapSort {
 
     public static void main(String[] args) {
-        int[] arr = new int[]{8,5,6,9,1,3,4,7,2};
+//        int[] arr = new int[]{8,5,6,9,1,3,4,7,2};
+        int[] arr = new int[10];
+        Random random = new Random();
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] = random.nextInt();
+        }
         heapSort(arr);
         for (int value : arr) {
             System.out.print(value + ", ");
@@ -33,29 +40,34 @@ public class HeapSort {
             heapInsert(arr, i);
         }
         int heapSize = arr.length;
-        // 把最大值放到最后
+        // 把最大值放到最后，即排好了一个位置
         swap(arr, 0, --heapSize);
         while (heapSize > 0) {
             // 重新高成一个大顶堆
             heapIfy(arr, 0, heapSize);
-            // 再把顶放到最后
+            // 再把顶放到最后没排好的位置，排好倒数第二、第三...位
             swap(arr, 0, --heapSize);
         }
     }
 
     /**
+     * 生成堆结构：将每一个新增节点向上堆化到合适的位置
+     *
      * 将index位置的数向上移动到大顶堆的合适的位置
      */
     public static void heapInsert(int[] arr, int index) {
+        int parent;
         // 如果当前位置比他的父位置大，则将当前位置和父位置进行交换，将当前位置改为父位置继续判断
-        while (arr[index] > arr[(index - 1) / 2]) {
-            swap(arr, index, (index -1) / 2);
-            index = (index -1) / 2;
+        while (arr[index] > arr[parent = ((index - 1) / 2)]) {
+            swap(arr, index, parent);
+            index = parent;
         }
     }
 
     /**
-     * 堆化
+     * 向下堆化
+     * 移除定节点后，将最后一个节点复制到顶节点，然后和左右孩子比较以找到合适的位置
+     *
      * 将index位置的数向下移动到大顶堆的合适的位置
      */
     public static void heapIfy(int[] arr, int index, int heapSize) {

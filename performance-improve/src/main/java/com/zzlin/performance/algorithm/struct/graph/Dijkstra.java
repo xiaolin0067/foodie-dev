@@ -1,6 +1,7 @@
 package com.zzlin.performance.algorithm.struct.graph;
 
 import com.zzlin.performance.algorithm.struct.graph.struct.Edge;
+import com.zzlin.performance.algorithm.struct.graph.struct.Graph;
 import com.zzlin.performance.algorithm.struct.graph.struct.Node;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -14,6 +15,18 @@ import java.util.Set;
  * @date 20220720
  */
 public class Dijkstra {
+
+    public static void main(String[] args) {
+        Integer[][] graphArray = new Integer[][]{
+                {5,0,1},{20,0,2},{17,0,3},{2,1,2},{1,2,3},{10,1,4},{5,3,4}
+        };
+        Graph graph = GraphGenerator.createGraphByTwoDimensionArray(graphArray);
+        Node node = graph.nodes.get(0);
+        Map<Node, Integer> dijkstra = dijkstra(node);
+        dijkstra.forEach((key, val) -> {
+            System.out.println(key.getValue() + ": " + val);
+        });
+    }
 
     /**
      * Dijkstra算法

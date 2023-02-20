@@ -1,5 +1,7 @@
 package com.zzlin.performance.algorithm.struct.graph.struct;
 
+import lombok.Data;
+
 import java.util.ArrayList;
 
 /**
@@ -7,6 +9,7 @@ import java.util.ArrayList;
  * @author zlin
  * @date 20220716
  */
+@Data
 public class Node {
     /**
      * 节点存储的值
