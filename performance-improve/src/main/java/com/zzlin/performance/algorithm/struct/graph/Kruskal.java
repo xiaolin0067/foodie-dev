@@ -44,7 +44,8 @@ public class Kruskal {
     }
 
     /**
-     * 并查集结构
+     * 并查集结构：做合并做查询都是O(1)常数级别
+     * 一般数据结构达不到这种级别
      */
     public static class UnionFind {
         /**
