@@ -8,6 +8,12 @@ package com.zzlin.performance.algorithm.improvement.hash;
  */
 public class KMP {
 
+    public static void main(String[] args) {
+        System.out.println(getIndexOf("aaad", "aad"));
+        System.out.println(getIndexOf("aaad", "d"));
+        System.out.println(getIndexOf("aaad", "ad"));
+    }
+
     /**
      * 字符串str1和str2，str1是否包含str2，如果包含返回str2在str1中开始的位置如何做到时间复杂度0(N)完成?
      * 在 txt 中查找子串 pat，如果存在，返回这个子串的起始索引，否则返回 -1
