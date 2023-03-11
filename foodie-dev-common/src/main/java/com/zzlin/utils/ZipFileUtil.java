@@ -52,8 +52,8 @@ public class ZipFileUtil {
             throw new RuntimeException("sourcePath does not exists, sourcePath=" + sourcePath);
         }
         File outFile = new File(outPath);
-        if (outFile.exists() || outFile.isDirectory()) {
-            throw new RuntimeException("outPath is directory or file already exists, outPath=" + outPath);
+        if (outFile.exists()) {
+            throw new RuntimeException("outPath already exists, outPath=" + outPath);
         }
         // 输出文件创建上级目录
         Files.createDirectories(outFile.getParentFile().toPath());
