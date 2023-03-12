@@ -18,6 +18,10 @@ package com.zzlin.performance.algorithm.improvement.hash;
  */
 public class Manacher {
 
+    public static void main(String[] args) {
+        System.out.println(maxLcpLength("qabawerabbatyuabcdcbaiop"));
+    }
+
     public static int maxLcpLength(String param) {
         if (param == null || param.isEmpty()) {
             return 0;
@@ -30,7 +34,7 @@ public class Manacher {
         // r为回文右边界+1，即最右的有效区位置是r-1
         int r = -1;
         // 处理串的最大回文半径
-        int max = Integer.MAX_VALUE;
+        int max = Integer.MIN_VALUE;
         // 对每一个位置都求最大回文半径
         for (int i = 0; i < str.length; i++) {
             /*
@@ -41,7 +45,7 @@ public class Manacher {
              *   2.3. i' 的左边界在r上, i的不用验的半径为：r - i
              */
             pArr[i] = r > i ? Math.min(pArr[c * 2 - i], r - i) : 1;
-            // 当前位置的回文半径还可以扩
+            // 当前位置的回文半径还可以扩, 没有越界
             while (i + pArr[i] < str.length && i - pArr[i] > -1) {
                 if (str[i + pArr[i]] == str[i - pArr[i]]) {
                     // 回文半径外的一个位置前后相同，则回文半径++
