@@ -18,12 +18,6 @@
             <artifactId>commons-pool2</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>1.18.8</version>
-        </dependency>
-
         <!-- 远程异步调用工具webClient依赖：spring-webflux，reactor-netty -->
         <dependency>
             <groupId>org.springframework</groupId>
