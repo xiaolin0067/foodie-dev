@@ -70,4 +70,36 @@ public class JsonUtils {
         return null;
     }
 
+    /**
+     * 将对象转换为具体类型的对象
+     *
+     * @param obj 源对象
+     * @param beanType 转换类型
+     * @return 转换后的对象
+     */
+    public static <T> T objToPojo(Object obj, Class<T> beanType) {
+        try {
+            return jsonToPojo(objectToJson(obj), beanType);
+        } catch (Exception e) {
+            log.error("objToPojo error", e);
+        }
+        return null;
+    }
+
+    /**
+     * 将对象转换为具体类型的对象list
+     *
+     * @param obj 源对象
+     * @param beanType 转换类型
+     * @return 对象列表
+     */
+    public static <T> List<T> objToList(Object obj, Class<T> beanType) {
+        try {
+            return jsonToList(objectToJson(obj), beanType);
+        } catch (Exception e) {
+            log.error("objToList error", e);
+        }
+        return null;
+    }
+
 }
