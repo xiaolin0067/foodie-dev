@@ -1,4 +1,4 @@
-package com.zzlin.performance.algorithm.improvement.tree.dp;
+package com.zzlin.performance.algorithm.improvement.dp.tree;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
