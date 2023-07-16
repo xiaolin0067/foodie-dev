@@ -9,6 +9,24 @@ import java.util.List;
  */
 public class SynchronizedTest {
 
+    public static void main(String[] args) {
+        SynchronizedTest t1 = new SynchronizedTest();
+        SynchronizedTest t2 = new SynchronizedTest();
+        new Thread(() -> t1.synchronizedThisTest(),"thread1").start();
+        new Thread(() -> t2.synchronizedThisTest(),"thread2").start();
+    }
+    private void synchronizedThisTest() {
+        synchronized (this) {
+            System.out.println(Thread.currentThread().getName() + "-----START------" + System.currentTimeMillis());
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            System.out.println(Thread.currentThread().getName() + "-----END------" + System.currentTimeMillis());
+        }
+    }
+
     /**
      * 变量逃逸
      */

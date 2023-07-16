@@ -10,10 +10,40 @@ public class MargeSort {
 
     public static void main(String[] args) {
         int[] arr = new int[]{8,5,6,9,1,3,4,7,2};
-        margeSort(arr, 0, arr.length-1);
+        margeSort1(arr, 0, arr.length-1);
         for (int value : arr) {
             System.out.print(value + ", ");
         }
+    }
+
+    private static void margeSort1(int[] arr, int left, int right) {
+        if (left > right) {
+            throw new RuntimeException("参数错误");
+        }
+        if (left == right) {
+            return;
+        }
+        int mid = left + ((right - left) >> 1);
+        margeSort1(arr, left, mid);
+        margeSort1(arr, mid + 1, right);
+        marge1(arr, left, mid, right);
+    }
+
+    private static void marge1(int[] arr, int left, int mid, int right) {
+        int[] margeArr = new int[right - left + 1];
+        int margeIndex = 0;
+        int p0 = left;
+        int p1 = mid + 1;
+        while (p0 <= mid && p1 <= right) {
+            margeArr[margeIndex++] = arr[p0] <= arr[p1] ? arr[p0++] : arr[p1++];
+        }
+        while (p0 <= mid) {
+            margeArr[margeIndex++] = arr[p0++];
+        }
+        while (p1 <= right) {
+            margeArr[margeIndex++] = arr[p1++];
+        }
+        System.arraycopy(margeArr, 0, arr, left, margeArr.length);
     }
 
     /**
@@ -63,7 +93,6 @@ public class MargeSort {
             margeArray[margeArrayIndex++] = arr[p1++];
         }
         // 以上两个只有一个会被执行到，只有一个会先结束
-
         System.arraycopy(margeArray, 0, arr, left, margeArray.length);
     }
 

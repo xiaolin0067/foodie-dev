@@ -10,9 +10,22 @@ public class BubbleSort {
 
     public static void main(String[] args) {
         int[] arr = new int[]{8,5,6,9,1,3,4,7,2};
-        bubbleSort(arr);
+        bubbleSort1(arr);
         for (int value : arr) {
             System.out.print(value + ", ");
+        }
+    }
+
+    private static void bubbleSort1(int[] arr) {
+        if (arr == null || arr.length < 2) {
+            return;
+        }
+        for (int i = arr.length - 1; i > 0; i--) {
+            for (int j = 0; j < i; j++) {
+                if (arr[j] > arr[j + 1]) {
+                    swap(arr, j ,j + 1);
+                }
+            }
         }
     }
 

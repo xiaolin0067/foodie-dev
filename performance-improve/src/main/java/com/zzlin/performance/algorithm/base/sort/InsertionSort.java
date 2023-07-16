@@ -10,9 +10,17 @@ public class InsertionSort {
 
     public static void main(String[] args) {
         int[] arr = new int[]{8,5,6,9,1,3,4,7,2};
-        insertionSort(arr);
+        insertionSort1(arr);
         for (int value : arr) {
             System.out.println(value);
+        }
+    }
+
+    private static void insertionSort1(int[] arr) {
+        for (int i = 1; i < arr.length; i++) {
+            for (int j = i; j > 0 && arr[j] < arr[j - 1]; j--) {
+                swap(arr, j, j-1);
+            }
         }
     }
 

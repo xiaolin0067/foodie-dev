@@ -1,5 +1,7 @@
 package com.zzlin.performance.algorithm.base.sort;
 
+import java.util.Random;
+
 /**
  * 快速排序
  * O(N^2)
@@ -12,10 +14,35 @@ public class QuickSort {
 
     public static void main(String[] args) {
         int[] arr = new int[]{4,3,5,6,5,0,1,7,8,5};
-        quickSort(arr, 0, arr.length - 1);
+        quickSort1(arr, 0, arr.length - 1);
         for (int value : arr) {
             System.out.print(value + ", ");
         }
+    }
+
+    private static void quickSort1(int[] arr, int left, int right) {
+        if (left >= right) {
+            return;
+        }
+        swap(arr, left + new Random().nextInt(right - left), right);
+        int[] p = partition1(arr, left, right);
+        quickSort1(arr, left, p[0] - 1);
+        quickSort1(arr, p[1] + 1, right);
+    }
+
+    private static int[] partition1(int[] arr, int left, int right) {
+        int num = arr[right];
+        for (int i = left; i <= right;) {
+            if (arr[i] < num) {
+                // i++
+                swap(arr, i++, left++);
+            } else if (arr[i] > num) {
+                swap(arr, i, right--);
+            } else {
+                i++;
+            }
+        }
+        return new int[]{left, right};
     }
 
     public static void quickSort(int[] arr, int left, int right) {

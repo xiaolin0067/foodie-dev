@@ -10,9 +10,22 @@ public class SelectionSort {
 
     public static void main(String[] args) {
         int[] arr = new int[]{8,5,6,9,1,3,4,7,2};
-        selectionSort(arr);
+        selectionSort1(arr);
         for (int value : arr) {
             System.out.println(value);
+        }
+    }
+
+    private static void selectionSort1(int[] arr) {
+        int minIndex;
+        for (int i = 0; i < arr.length; i++) {
+            minIndex = i;
+            for (int j = i; j < arr.length; j++) {
+                if (arr[j] < arr[minIndex]) {
+                    minIndex = j;
+                }
+            }
+            swap(arr, i, minIndex);
         }
     }
 
@@ -46,6 +59,19 @@ public class SelectionSort {
             arr[i] = arr[minIndex];
             arr[minIndex] = tmp;
         }
+    }
+
+    public static void swap(int[] arr, int a, int b) {
+        // 交换的两个数的内存地址不能一样，否则将导致将数改为0
+        if (a == b) {
+            return;
+        }
+        // 对于异或有：0^N = N, N^N = 0
+        arr[a] = arr[a] ^ arr[b];
+        // arr[b] = arr[a] ^ arr[b] ^ arr[b] = arr[a]
+        arr[b] = arr[a] ^ arr[b];
+        // arr[a] = arr[a] ^ arr[b] ^ arr[a] = arr[b]
+        arr[a] = arr[a] ^ arr[b];
     }
 
 }

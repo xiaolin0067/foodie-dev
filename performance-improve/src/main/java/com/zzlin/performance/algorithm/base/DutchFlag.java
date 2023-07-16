@@ -17,7 +17,7 @@ public class DutchFlag {
         }
         System.out.println();
         arr = new int[]{3,5,6,3,4,5,2,6,9,0};
-        dutchFlag(arr, 7);
+        dutchFlag(arr, 5);
         for (int value : arr) {
             System.out.print(value + " ");
         }
