@@ -1,6 +1,8 @@
+P18 17.基础提升 暴力递归（下）等
+
 有序表(LUT-lookup table)，其所有操作的时间复杂的都是log(n)级别
 
-实现方式数据结构：红黑树、AVL、BS(size balance tree)、跳表(skip list)
+实现方式数据结构：红黑树、AVL、SB(size balance tree)、跳表(skip list)
 四种数据结构的时间复杂度是一样的，没有谁明显更好，只是原理不一样。BS结构常用于比赛，因其结构便于修改于扩展
 大致分为两个系列
 一、平衡搜索二叉树：红黑树、AVL、BS。
