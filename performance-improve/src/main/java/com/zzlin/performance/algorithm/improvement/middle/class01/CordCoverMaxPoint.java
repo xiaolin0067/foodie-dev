@@ -23,11 +23,11 @@ import java.util.Arrays;
 public class CordCoverMaxPoint {
 
     /**
+     * 计算覆盖多少个点
      *
-     *
-     * @param arr
-     * @param l
-     * @return
+     * @param arr 节点数组
+     * @param l 绳子的长度
+     * @return 最大覆盖多少个节点
      */
     private static int maxPoint2(int[] arr, int l) {
         int left = 0;
