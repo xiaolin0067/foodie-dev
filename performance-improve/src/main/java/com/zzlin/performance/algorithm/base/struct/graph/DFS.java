@@ -2,8 +2,9 @@ package com.zzlin.performance.algorithm.base.struct.graph;
 
 import com.zzlin.performance.algorithm.base.struct.graph.struct.Node;
 
+import java.util.Deque;
 import java.util.HashSet;
-import java.util.Stack;
+import java.util.LinkedList;
 
 /**
  * 图的深度优先遍历
@@ -17,7 +18,7 @@ public class DFS {
             return;
         }
         System.out.println("图的深度优先遍历：");
-        Stack<Node> stack = new Stack<>();
+        Deque<Node> stack = new LinkedList<>();
         HashSet<Node> set = new HashSet<>();
         stack.add(node);
         set.add(node);

@@ -29,6 +29,9 @@ JDK内置工具
 故障排查工具
   jinfo
     查看系统参数和进程JVM参数，热更新部分JVM参数
+  javap
+    查看class的字节码信息
+    javap -c -s -v -l SynchronizedDemo.class
   jmap
     分析堆内存，可dump堆内存快照，统计堆对象数量和大小，类加载情况
     -clstats 连接到正在运行的进程，并打印Java堆的类加载器统计信息

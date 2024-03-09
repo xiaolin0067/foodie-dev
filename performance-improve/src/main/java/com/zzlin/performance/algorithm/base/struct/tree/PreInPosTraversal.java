@@ -52,6 +52,74 @@ public class PreInPosTraversal {
     }
 
     /**
+     * 树的先序遍历
+     * 也即深度优先遍历
+     *
+     * @param root
+     */
+    public static void preOrderRecur(Node root) {
+        // 第一次进入
+        if (root == null) {
+            return;
+        }
+        System.out.print(root.val + " ");
+        // 第一次进入
+        preOrderRecur(root.left);
+        // 第二次进入
+        preOrderRecur(root.right);
+        // 第三次进入
+    }
+
+    public static void dfs(Node root) {
+        // 第一次进入
+        if (root == null) {
+            return;
+        }
+        System.out.print(root.val + " ");
+        // 第一次进入
+        dfs(root.left);
+        // 第二次进入
+        dfs(root.right);
+        // 第三次进入
+    }
+
+    /**
+     * 树的中序遍历
+     *
+     * @param root
+     */
+    public static void inOrderRecur(Node root) {
+        // 第一次进入
+        if (root == null) {
+            return;
+        }
+        // 第一次进入
+        inOrderRecur(root.left);
+        System.out.print(root.val + " ");
+        // 第二次进入
+        inOrderRecur(root.right);
+        // 第三次进入
+    }
+
+    /**
+     * 树的后序遍历
+     *
+     * @param root
+     */
+    public static void posOrderRecur(Node root) {
+        // 第一次进入
+        if (root == null) {
+            return;
+        }
+        // 第一次进入
+        posOrderRecur(root.left);
+        // 第二次进入
+        posOrderRecur(root.right);
+        // 第三次进入
+        System.out.print(root.val + " ");
+    }
+
+    /**
      * 不递归先序遍历
      * 将入参节点放入栈中，若栈不为空，遍历栈：
      *   1、节点出栈
@@ -91,7 +159,7 @@ public class PreInPosTraversal {
         if (root == null) {
             return;
         }
-        System.out.println("不递归后续遍历：");
+        System.out.println("不递归后序遍历：");
         Stack<Node> stack = new Stack<>();
         Stack<Node> collect = new Stack<>();
         stack.push(root);
@@ -121,7 +189,7 @@ public class PreInPosTraversal {
         if (root == null) {
             return;
         }
-        System.out.println("不递归中续遍历：");
+        System.out.println("不递归中序遍历：");
         Stack<Node> stack = new Stack<>();
         while (!stack.isEmpty() || root != null) {
             if (root != null) {
@@ -136,45 +204,6 @@ public class PreInPosTraversal {
                 root = root.right;
             }
         }
-    }
-
-    public static void preOrderRecur(Node root) {
-        // 第一次进入
-        if (root == null) {
-            return;
-        }
-        System.out.print(root.val + " ");
-        // 第一次进入
-        preOrderRecur(root.left);
-        // 第二次进入
-        preOrderRecur(root.right);
-        // 第三次进入
-    }
-
-    public static void inOrderRecur(Node root) {
-        // 第一次进入
-        if (root == null) {
-            return;
-        }
-        // 第一次进入
-        inOrderRecur(root.left);
-        System.out.print(root.val + " ");
-        // 第二次进入
-        inOrderRecur(root.right);
-        // 第三次进入
-    }
-
-    public static void posOrderRecur(Node root) {
-        // 第一次进入
-        if (root == null) {
-            return;
-        }
-        // 第一次进入
-        posOrderRecur(root.left);
-        // 第二次进入
-        posOrderRecur(root.right);
-        System.out.print(root.val + " ");
-        // 第三次进入
     }
 
 }
