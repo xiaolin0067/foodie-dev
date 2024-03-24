@@ -208,7 +208,7 @@ Eden, From survivor, To survivor | Tenured | Metaspace
 2、ParNew收集器
   Serial收集器的多线程版，除使用了多线程以外，其他和Serial收集器一样，包括:JVM参数、Stop The World的表现、垃圾收集算法都是一样的。
   特点：多线程，可使用-XX:ParallelGCThreads设置垃圾收集的线程数(设置为CPU核心数)
-3、Parallel Scavenge收集器
+3、Parallel Scavenge收集器（JDK默认收集器，可以如此查看java -XX:+PrintCommandLineFlags -version）
   也叫吞吐量优先收集器，采用的也是复制算法，也是并行的多线程收集器，这一点和ParNew类似
   特点：1、可以达到一个可控制的吞吐量
           -XX:MaxGCPauseMillis: 尽力控制最大的垃圾收集停顿时间
