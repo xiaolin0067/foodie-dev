@@ -10,18 +10,18 @@ import org.springframework.context.annotation.Primary;
  * @author zlin
  * @date 20220320
  */
-@Configuration
-public class BeansConfig {
-
-    @Bean
-    @Primary
-    public ZlinDataSource dataSource() {
-        return new ZlinDataSource();
-    }
-
-    @Bean
-    public DataSourceEndpoint dataSourceEndpoint() {
-        return new DataSourceEndpoint(dataSource());
-    }
-
-}
+//@Configuration
+//public class BeansConfig {
+//
+//    @Bean
+//    @Primary
+//    public ZlinDataSource dataSource() {
+//        return new ZlinDataSource();
+//    }
+//
+//    @Bean
+//    public DataSourceEndpoint dataSourceEndpoint() {
+//        return new DataSourceEndpoint(dataSource());
+//    }
+//
+//}

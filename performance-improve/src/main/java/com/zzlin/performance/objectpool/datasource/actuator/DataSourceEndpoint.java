@@ -16,7 +16,7 @@ import java.util.Map;
  * @author zlin
  * @date 20220320
  */
-@Endpoint(id = "mydatasource")
+//@Endpoint(id = "mydatasource")
 public class DataSourceEndpoint {
 
     private ZlinDataSource dataSource;
