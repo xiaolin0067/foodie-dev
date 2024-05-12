@@ -30,6 +30,7 @@ public class TreeMaxWidth {
         System.out.println();
         System.out.println(getTreeMaxWidthWithMap(n1));
         System.out.println(getTreeMaxWidth(n1));
+        System.out.println(getTreeMaxWidth2(n1));
     }
 
     public static class Node {
@@ -143,6 +144,26 @@ public class TreeMaxWidth {
                 curLevelEnd = nextLevelEnd;
                 nextLevelEnd = null;
             }
+        }
+        return maxLen;
+    }
+
+    public static int getTreeMaxWidth2(Node root) {
+        Queue<Node> queue = new LinkedList<>();
+        queue.add(root);
+        int maxLen = Integer.MIN_VALUE;
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            for (int i = 0; i < size; i++) {
+                Node n = queue.poll();
+                if (n.left != null) {
+                    queue.add(n.left);
+                }
+                if (n.right != null) {
+                    queue.add(n.right);
+                }
+            }
+            maxLen = Math.max(maxLen, size);
         }
         return maxLen;
     }
