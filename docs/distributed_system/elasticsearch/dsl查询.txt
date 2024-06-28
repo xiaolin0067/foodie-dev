@@ -305,5 +305,78 @@ _bulk-delete批量删除
 {"delete": {"_id": "2004"}}
 也可四个操作组合进行操作，注意批量操作的数量，若太大反而会降低性能
 
+# 地理位置存储与搜索，经纬度类型：geo_point
+# 定义geo_point类型字段
+PUT my-index-000001
+{
+  "mappings": {
+    "properties": {
+      "location": {
+        "type": "geo_point"
+      }
+    }
+  }
+}
+
+# 添加地理位置的点
+PUT my-index-000001/_doc/1
+{
+  "text": "Geopoint as an object using GeoJSON format",
+  "location": {
+    "type": "Point",
+    "coordinates": [-71.34, 41.12]
+  }
+}
+
+PUT my-index-000001/_doc/2
+{
+  "text": "Geopoint as a WKT POINT primitive",
+  "location" : "POINT (-71.34 41.12)"
+}
+
+PUT my-index-000001/_doc/3
+{
+  "text": "Geopoint as an object with 'lat' and 'lon' keys",
+  "location": {
+    "lat": 41.12,
+    "lon": -71.34
+  }
+}
+
+PUT my-index-000001/_doc/4
+{
+  "text": "Geopoint as an array",
+  "location": [ -71.34, 41.12 ]
+}
+
+PUT my-index-000001/_doc/5
+{
+  "text": "Geopoint as a string",
+  "location": "41.12,-71.34"
+}
+
+PUT my-index-000001/_doc/6
+{
+  "text": "Geopoint as a geohash",
+  "location": "drm3btev3e86"
+}
+# 计算在这个矩形中有多少点
+GET my-index-000001/_search
+{
+  "query": {
+    "geo_bounding_box": {
+      "location": {
+        "top_left": {
+          "lat": 42,
+          "lon": -72
+        },
+        "bottom_right": {
+          "lat": 40,
+          "lon": -74
+        }
+      }
+    }
+  }
+}
 
 
