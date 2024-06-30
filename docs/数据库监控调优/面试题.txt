@@ -16,15 +16,27 @@ SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
 MySQL默认Repeatable Read(RR)-可重复读，MySQL 5.1以后默认存储引擎就是InnoDB，因此MySQL默认RR也能解决幻读问题
 innodb引擎在可重复度级别下也可解决幻读
 
-MVCC
+mysql三大日志详解
+https://javaguide.cn/database/mysql/mysql-logs.html
 
-REDO_LOG
-数据更新是直接更新到Buffer Pool，然后记录redo log落盘，记录的是数据页上做了什么修改的日志记录，定时将数据落盘。
-核心控制参数：innodb_flush_log_at_trx_commit
+REDO_LOG：物理日志，记录的是在某个数据页上做了什么修改，属于InnoDB存储引擎。
+数据更新是直接更新到Buffer Pool，然后记录redo log落盘，记录的是数据页上做了什么修改的日志记录。
+刷盘情况：事务提交时通过参数控制(innodb_flush_log_at_trx_commit)、log buffer空间不足时、事务日志缓冲区满、检查点(定期)、后台刷新线程、关闭服务器
+innodb_flush_log_at_trx_commit的值有3种：
+  0：事务提交时不进行刷盘操作，等待后台线程刷盘
+  1(默认)：每次事务提交时都将进行刷盘操作
+  2：每次事务提交时都只把log buffer里的redo log内容写入page cache
 
+BIN_LOG：逻辑日志，记录内容是语句的原始逻辑(statement(SQL)/ROW/mixed)，属于MySQL Server层。
+sync_binlog：控制binlog的write和fsync的时机
+  默认是1，表示每次提交事务都会执行fsync
+  IO瓶颈时可以设置为N(N>1)，表示每次提交事务都write，但累积N个事务后才fsync，如果机器宕机会丢失最近N个事务的binlog日志。
+
+MVCC：依赖于 隐藏字段、Read View、undo log
+https://javaguide.cn/database/mysql/innodb-implementation-of-mvcc.html
 在MySQL InnoDB存储引擎下RC、RR基于MvCC(多版本并发控制)进行并发事务控制
 MVCC是基于”数据版本”(undo_log)对并发事务进行访问
-UNDO_LOG
+UNDO_LOG：逻辑日志，记录的是SQL语句
 MySQL确保版本链数据不再被“引用"后再进行删除。
 
 ReadView是“快照读”SQL执行时MVCC提取数据的依据
