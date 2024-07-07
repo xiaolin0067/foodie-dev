@@ -29,7 +29,7 @@ import java.util.List;
 @RestController
 public class ShopCatController extends BaseController {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(ShopCatController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ShopCatController.class);
 
     @Resource
     private RedisOperator redisOperator;

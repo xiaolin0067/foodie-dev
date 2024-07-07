@@ -56,7 +56,6 @@ public class TrieTree {
          * 前缀树插入字符串
          */
         public void insert(String word) {
-            // todo 校验 a~z
             if (StringUtils.isBlank(word)) {
                 return;
             }
