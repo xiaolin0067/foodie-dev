@@ -2,6 +2,7 @@ package com.zzlin.performance.algorithm.hot;
 
 import lombok.SneakyThrows;
 
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -10,12 +11,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author pang
  * @date 2024/7/17
  */
-public class PrintOddEvenNumTest {
+public class PrintOddEvenNumTest1 {
 
-    private static final int MAX = 100;
-
-    private static final Object LOCK = new Object();
-
+    private static final Semaphore semaphore = new Semaphore(1);
     private static final AtomicInteger COUNT = new AtomicInteger(1);
 
     public static void main(String[] args) {
@@ -27,15 +25,12 @@ public class PrintOddEvenNumTest {
         @SneakyThrows
         @Override
         public void run() {
-            while (COUNT.get() <= MAX) {
-                synchronized (LOCK) {
-                    if (COUNT.get() % 2 == 0) {
-                        LOCK.wait();
-                    } else {
-                        System.out.println(COUNT.getAndAdd(1) + ", " + Thread.currentThread().getName());
-                        LOCK.notify();
-                    }
+            while (COUNT.get() <= 100) {
+                semaphore.acquire();
+                if (COUNT.get() <= 100 && COUNT.get() % 2 != 0) {
+                    System.out.println(COUNT.getAndAdd(1) + ", " + Thread.currentThread().getName());
                 }
+                semaphore.release();
             }
             System.out.println(Thread.currentThread().getName() + "exit");
         }
@@ -45,15 +40,12 @@ public class PrintOddEvenNumTest {
         @SneakyThrows
         @Override
         public void run() {
-            while (COUNT.get() <= MAX) {
-                synchronized (LOCK) {
-                    if (COUNT.get() % 2 != 0) {
-                        LOCK.wait();
-                    } else {
-                        System.out.println(COUNT.getAndAdd(1) + ", " + Thread.currentThread().getName());
-                        LOCK.notify();
-                    }
+            while (COUNT.get() <= 100) {
+                semaphore.acquire();
+                if (COUNT.get() <= 100 && COUNT.get() % 2 == 0) {
+                    System.out.println(COUNT.getAndAdd(1) + ", " + Thread.currentThread().getName());
                 }
+                semaphore.release();
             }
             System.out.println(Thread.currentThread().getName() + "exit");
         }
