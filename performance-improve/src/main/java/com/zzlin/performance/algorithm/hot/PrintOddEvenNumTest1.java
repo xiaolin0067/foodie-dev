@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class PrintOddEvenNumTest1 {
 
-    private static final Semaphore semaphore = new Semaphore(1);
+    private static final Semaphore SEMAPHORE = new Semaphore(1);
     private static final AtomicInteger COUNT = new AtomicInteger(1);
 
     public static void main(String[] args) {
@@ -26,11 +26,11 @@ public class PrintOddEvenNumTest1 {
         @Override
         public void run() {
             while (COUNT.get() <= 100) {
-                semaphore.acquire();
+                SEMAPHORE.acquire();
                 if (COUNT.get() <= 100 && COUNT.get() % 2 != 0) {
                     System.out.println(COUNT.getAndAdd(1) + ", " + Thread.currentThread().getName());
                 }
-                semaphore.release();
+                SEMAPHORE.release();
             }
             System.out.println(Thread.currentThread().getName() + "exit");
         }
@@ -41,11 +41,11 @@ public class PrintOddEvenNumTest1 {
         @Override
         public void run() {
             while (COUNT.get() <= 100) {
-                semaphore.acquire();
+                SEMAPHORE.acquire();
                 if (COUNT.get() <= 100 && COUNT.get() % 2 == 0) {
                     System.out.println(COUNT.getAndAdd(1) + ", " + Thread.currentThread().getName());
                 }
-                semaphore.release();
+                SEMAPHORE.release();
             }
             System.out.println(Thread.currentThread().getName() + "exit");
         }
