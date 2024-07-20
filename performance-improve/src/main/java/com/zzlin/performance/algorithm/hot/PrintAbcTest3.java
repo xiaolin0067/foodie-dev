@@ -8,7 +8,7 @@ import lombok.SneakyThrows;
  * @author pang
  * @date 2024/7/17
  */
-public class PrintOddEvenNumTest2 {
+public class PrintAbcTest3 {
 
     private static final Object LOCK = new Object();
     private static volatile Boolean printNum = true;

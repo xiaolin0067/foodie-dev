@@ -16,6 +16,11 @@ SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
 MySQL默认Repeatable Read(RR)-可重复读，MySQL 5.1以后默认存储引擎就是InnoDB，因此MySQL默认RR也能解决幻读问题
 innodb引擎在可重复度级别下也可解决幻读
 
+三大参数：
+sync_binlog
+innodb_flush_log_at_trx_commit
+innodb_doublewrite
+
 mysql三大日志详解
 https://javaguide.cn/database/mysql/mysql-logs.html
 
@@ -31,6 +36,9 @@ BIN_LOG：逻辑日志，记录内容是语句的原始逻辑(statement(SQL)/ROW
 sync_binlog：控制binlog的write和fsync的时机
   默认是1，表示每次提交事务都会执行fsync
   IO瓶颈时可以设置为N(N>1)，表示每次提交事务都write，但累积N个事务后才fsync，如果机器宕机会丢失最近N个事务的binlog日志。
+
+innodb_doublewrite：ON
+操作系统在将页写入磁盘的过程中发生崩溃，在恢复过程中，innodb存储引擎可以从共享表空间的doublewrite中找到该页的一个最近的副本，将其复制到表空间文件，再应用redo log，就完成了恢复过程。
 
 MVCC：依赖于 隐藏字段、Read View、undo log
 https://javaguide.cn/database/mysql/innodb-implementation-of-mvcc.html
