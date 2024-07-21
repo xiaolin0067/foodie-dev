@@ -16,21 +16,21 @@ public class FindTheWinnerTest {
         System.out.println(solution.findTheWinner(5, 2) == 3);
         System.out.println(solution.findTheWinner(6, 5) == 1);
     }
-}
 
-class Solution {
-    public int findTheWinner(int n, int k) {
-        Queue<Integer> queue = new LinkedList<>();
-        for (int i = 1; i <= n; i++) {
-            queue.add(i);
-        }
-        int j = k - 1;
-        while (queue.size() > 1) {
-            for (int i = 0; i < j; i++) {
-                queue.add(queue.poll());
+    static class Solution {
+        public int findTheWinner(int n, int k) {
+            Queue<Integer> queue = new LinkedList<>();
+            for (int i = 1; i <= n; i++) {
+                queue.add(i);
             }
-            queue.poll();
+            int j = k - 1;
+            while (queue.size() > 1) {
+                for (int i = 0; i < j; i++) {
+                    queue.add(queue.poll());
+                }
+                queue.poll();
+            }
+            return queue.peek();
         }
-        return queue.peek();
     }
 }
