@@ -5,6 +5,7 @@ import java.util.Random;
 /**
  * 加权轮询算法 wrr Weighted Round Robin
  * <a href="https://leetcode.cn/problems/cuyjEf/">Leet Code 071:按权重随机选择</a>
+ * <a href="https://cloud.tencent.com/developer/article/1925852">优秀实现文章</a>
  *
  * @author pang
  * @date 2024/7/21
