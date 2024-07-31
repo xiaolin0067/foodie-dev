@@ -19,6 +19,7 @@ public class FindArrayMaxNum {
     /**
      * T(N) = 2 * T(N/2) + O(1)
      * log(b,a)=1 = d=1 -> 复杂度为O(N ^ log(b,a)) -> O(N)
+     * 时间复杂度并未降低，分治法，还不如for
      */
     public static int findMax(int[] arr, int left, int right) {
         if (left > right) {
