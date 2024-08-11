@@ -4,12 +4,12 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 /**
- * todo 修改描述信息
+ * <a href="https://leetcode.cn/problems/maximum-subsequence-score">最大子序列的分数</a>
  *
  * @author pang
  * @date 2024/8/6 01:25
  */
-public class Test {
+public class MaxSubsequenceSorce {
 
     public static void main(String[] args) {
         System.out.println(new Solution().maxScore(new int[]{1,3,3,2}, new int[]{2,1,3,4}, 3));
