@@ -1,4 +1,4 @@
-package com.zzlin.performance.algorithm.leetcode.list;
+package com.zzlin.performance.algorithm.list;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
