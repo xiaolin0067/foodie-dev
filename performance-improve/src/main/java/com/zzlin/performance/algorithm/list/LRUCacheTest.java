@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.PriorityQueue;
 
 /**
  * @author pang
@@ -18,6 +19,7 @@ public class LRUCacheTest {
         lruCache.put("3", 3);
         System.out.println(lruCache.get("1"));
         System.out.println(lruCache.get("2"));
+        PriorityQueue<Integer> queue = new PriorityQueue<>((a,b) -> Integer.compare(b,a));
         lruCache.put("4", 4);
         System.out.println(lruCache.get("1"));
         System.out.println(lruCache.get("3"));
